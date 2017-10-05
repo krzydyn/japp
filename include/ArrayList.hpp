@@ -36,7 +36,13 @@ public:
         if (i == eol) { mVec[(mOffs+mSize)%mCapa]=v; ++mSize; return ; }
 		if (i > mSize) throw std::runtime_error("index out fo range");
         unsigned j=i;
-        for (i=mSize; i > j; --i) mVec[(mOffs+i)%mCapa]=mVec[(mOffs+i-1)%mCapa];
+		if (i < mSize - i) {
+			mOffs = (mOffs + mCapa - 1)%mCapa;
+			for (i=0; i < j; ++i) mVec[(mOffs+i)%mCapa]=mVec[(mOffs+i+1)%mCapa];
+		}
+		else {
+			for (i=mSize; i > j; --i) mVec[(mOffs+i)%mCapa]=mVec[(mOffs+i-1)%mCapa];
+		}
         mVec[(mOffs+j)%mCapa]=v; ++mSize;
     }
     unsigned indexOf(const T v,unsigned start=0) const {
