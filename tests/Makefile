@@ -6,9 +6,17 @@ all:build
 
 include ../common.mk
 
-#TARGETS+=$(BUILD_DIR)/uxtcp
+TEST_TARGETS:=$(BUILD_DIR)/lists
 
-build: $(BUILD_DIR)/uxtcp
+#TARGETS+=$(TEST_TARGETS)
 
-$(BUILD_DIR)/uxtcp: $(BUILD_DIR)/unixtcp.o
-	$(CC) -o $@ $<
+build: $(TEST_TARGETS)
+
+RUN_TESTS:=$(TEST_TARGETS:$(BUILD_DIR)/%=run-%)
+
+$(RUN_TESTS):
+	@printf "$(TRM_WHI)Runnig $(@:run-%=%)...$(TRM_END)\n"
+	@$(BUILD_DIR)/$(@:run-%=%)
+	@printf "\r$(TRM_WHI)Test $(@:run-%=%) $(TRM_GRE)[OK]$(TRM_END)\n"
+
+run: build $(RUN_TESTS)
