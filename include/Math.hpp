@@ -1,5 +1,7 @@
-#ifndef __MATH_H
-#define __MATH_H
+#ifndef __MATH_HPP
+#define __MATH_HPP
+
+//TODO put into Math class as statics
 
 inline int mmin(int a, int b) {return a<b?a:b;}
 inline int mmax(int a, int b) {return a>b?a:b;}

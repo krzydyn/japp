@@ -1,3 +1,6 @@
+#ifndef __SYNCQUEUE_HPP
+#define __SYNCQUEUE_HPP
+
 #include <atomic>
 #include <queue>
 #include <mutex>
@@ -58,3 +61,5 @@ public:
 		return o;
 	}
 };
+
+#endif

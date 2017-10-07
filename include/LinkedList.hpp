@@ -1,6 +1,8 @@
 #ifndef __LINKLIST_HPP
 #define __LINKLIST_HPP
 
+#include <List.hpp>
+
 template<class T>
 class DListNode {
 	DListNode<T> *mNext, *mPrev;
@@ -26,7 +28,7 @@ public:
 	DListNode<T> *prev() const { return mPrev; }
 };
 template<class T>
-class DList {
+class DList : public List{
 	DListNode<T> head;
 	unsigned mSize;
 public:
