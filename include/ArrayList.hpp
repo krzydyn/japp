@@ -10,28 +10,34 @@
 
 template<class T>
 class ArrayList : public List<T> {
+class ArrayListIterator;
+
 public:
     ArrayList(unsigned initCapa=0) {
         mVec=null;mOffs=mSize=0;mCapa=0;
         if (initCapa) ensureCapa(initCapa);
     } 
     ~ArrayList() { if (mVec) delete [] (unsigned char*)mVec; } 
+
+	std::shared_ptr<Iterator<T>> iterator() {
+		return std::make_shared<ArrayListIterator>(*this);
+	}
     void clear() { mOffs=mSize=0; }
     unsigned size() const {return mSize;}
     void shrink(unsigned s) {if (s < mSize) mSize=s;}
-    const T& ref(unsigned i) const {
+    const T& get(unsigned i) const {
 		if (i >= mSize) throw std::runtime_error("index out fo range");
 		return mVec[(mOffs+i)%mCapa];
 	}
-    T& ref(unsigned i) {
+    T& ref(unsigned i) const {
 		if (i >= mSize) throw std::runtime_error("index out fo range");
 		return mVec[(mOffs+i)%mCapa];
 	}
-    T get(unsigned i) const {
+	void set(unsigned i, const T v) {
 		if (i >= mSize) throw std::runtime_error("index out fo range");
-		return mVec[(mOffs+i)%mCapa];
+		mVec[(mOffs+i)%mCapa] = v;
 	}
-    void insert(unsigned i,const T v) {
+    void add(unsigned i,const T v) {
         if (mSize>=mCapa) ensureCapa(mSize+1);
         if (i == eol) { mVec[(mOffs+mSize)%mCapa]=v; ++mSize; return ; }
 		if (i > mSize) throw std::runtime_error("index out fo range");
@@ -45,10 +51,14 @@ public:
 		}
         mVec[(mOffs+j)%mCapa]=v; ++mSize;
     }
-    unsigned indexOf(const T v,unsigned start=0) const {
+    unsigned indexOf(const T& v,unsigned start=0) const {
         for (unsigned i=start; i<mSize; ++i ) { if (mVec[(mOffs+i)%mCapa]==v) return i; }
         return eol;
     }
+    T copyOf(unsigned i) const {
+		if (i >= mSize) throw std::runtime_error("index out fo range");
+		return mVec[(mOffs+i)%mCapa];
+	}
     void remove(List<T>& set) {
         unsigned d=0;
         for (unsigned i=0; i<mSize; ++i) {
@@ -139,6 +149,17 @@ private:
 		mOffs=0;
         mVec=v; mCapa=ns;
     }
+
+	class ArrayListIterator : public Iterator<T> {
+	private:
+		ArrayList<T>& mList;
+    	unsigned mNext;
+
+	public:
+		ArrayListIterator(ArrayList&list) : mList(list), mNext(0) {}
+		bool hasNext() { return mNext < mList.mSize; }
+		const T& next() { return mList.get(mNext++); }
+	};
 };
 
 #endif

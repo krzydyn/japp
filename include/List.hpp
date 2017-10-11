@@ -2,7 +2,8 @@
 #define __LIST_HPP
 
 #include <iostream>
-#include <types.hpp>
+#include <lang/Types.hpp>
+#include <Iterator.hpp>
 
 template<class T>
 class List {
@@ -14,38 +15,49 @@ public:
 
 	List() {}
 	virtual ~List() {}
-
 	virtual void clear() = 0;
+
 	virtual unsigned size() const = 0;
-	boolean empty() const {return size()==0;}
-	virtual const T& ref(unsigned i) const = 0;
-	virtual T& ref(unsigned i) = 0;
-	virtual T get(unsigned i) const = 0;
-	virtual void add(const T v) {insert(size(),v);}
-	virtual void insert(unsigned i,const T v) = 0;
-	virtual unsigned indexOf(const T v,unsigned start=0) const = 0;
+	boolean isEmpty() const {return size()==0;}
+	boolean contains(const T& v) { return indexOf(v) < size(); }
+
+	virtual std::shared_ptr<Iterator<T>> iterator() = 0;
+
+	virtual unsigned indexOf(const T& v,unsigned start=0) const = 0;
+	virtual T copyOf(unsigned i) const = 0;
+	virtual const T& get(unsigned i) const = 0;
+	virtual T& ref(unsigned i) const = 0;
+	virtual void set(unsigned i, const T v) = 0;
+
+	virtual boolean add(const T& v) {add(size(),v);return true;}
+	virtual void add(unsigned i, const T v) = 0;
+	virtual boolean removeElem(const T& v) {
+		unsigned i = indexOf(v);
+		if (i < size()) {remove(indexOf(v));return true;}
+		return false;
+	}
+	virtual T remove(unsigned i) = 0;
 
 	//TODO implement ListIterator
-	virtual void remove(List<T>& set) {
+	virtual void removeAll(List<T>& set) {
 		unsigned d=0;
 		for (unsigned i=0; i<size(); ++i) {
-			const T& r = ref(i);
+			const T& r = get(i);
 			unsigned p;
 			if ((p=set.indexOf(r)) != eol) remove(p);
 		}
 	}
-	virtual T remove(unsigned i) = 0;
 
 	// stack interface (LIFO)
-	void push(T v) {insert(size(),v);}
+	void push(T v) {add(size(),v);}
 	T pop() {return remove(size()-1);}
 
 	// queue interface (FIFO)
-	void enqueue(T v) {insert(size(),v);}
-	T dequeue() {return remove(0);}
+	void enqueue(T v) {add(size(),v);}
+	T dequeue() {return remove(0U);}
 
 	virtual void print() {
-		for (unsigned i=0; i<size(); ++i) std::cout << ref(i);
+		for (unsigned i=0; i<size(); ++i) std::cout << get(i);
 		std::cout << std::endl;
 	}
 };

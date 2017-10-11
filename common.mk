@@ -5,11 +5,11 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 $(BUILD_DIR)/%.o : ./%.c
-	#echo "cc $(CC) -c $(CFLAGS) $< -o $@"
+	@#echo "cc $(CC) -c $(CFLAGS) $< -o $@"
 	$(CC) -c $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/%.o : ./%.cpp
-	#echo "cpp $(CC) -c $(CPPFLAGS) $< -o $@"
+	@#echo "cpp $(CC) -c $(CPPFLAGS) $< -o $@"
 	$(CC) -c $(CPPFLAGS) $< -o $@
 
 build: $(BUILD_DIR)

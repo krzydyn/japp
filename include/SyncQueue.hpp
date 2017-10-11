@@ -4,11 +4,11 @@
 #include <atomic>
 #include <queue>
 #include <mutex>
-#include<condition_variable>
+#include <condition_variable>
 
-class SyncQueueError : public std::runtime_error {
+class SyncQueueException : public std::runtime_error {
 public:
-	SyncQueueError() : std::runtime_error("The SyncQueue has been stopped.") {}
+	SyncQueueException() : std::runtime_error("The SyncQueue has been stopped.") {}
 };
 
 template<typename T>
@@ -32,14 +32,14 @@ public:
 		cond.notify_all();
 	}
 
-	bool empty() {
+	bool isEmpty() {
 		std::lock_guard<std::mutex> lock(mutex);
 		return queue.empty();
 	}
 
 	void enqueue(T& o) {
 		std::unique_lock<std::mutex> lock(mutex);
-		if (!running) throw SyncQueueError();
+		if (!running) throw SyncQueueException();
 		queue.push(o);
 		lock.unlock(); // unlock before notify
 		cond.notify_one();
@@ -54,7 +54,7 @@ public:
 			// Check for queue empty here, as running could
 			// have been changed after we returned but we could still
 			// return useful data.
-			throw SyncQueueError();
+			throw SyncQueueException();
 		}
 		auto o = std::move(queue.front());
 		queue.pop();
