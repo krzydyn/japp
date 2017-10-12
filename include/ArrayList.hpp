@@ -159,6 +159,12 @@ private:
 		ArrayListIterator(ArrayList&list) : mList(list), mNext(0) {}
 		bool hasNext() { return mNext < mList.mSize; }
 		const T& next() { return mList.get(mNext++); }
+		void remove() {
+			if (mNext > 0) {
+				--mNext;
+				mList.remove(mNext);
+			}
+		}
 	};
 };
 

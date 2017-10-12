@@ -38,13 +38,11 @@ public:
 	}
 	virtual T remove(unsigned i) = 0;
 
-	//TODO user Iterator
 	virtual void removeAll(List<T>& set) {
 		unsigned d=0;
-		for (unsigned i=0; i<size(); ++i) {
-			const T& r = get(i);
+		for (Iterator<T> i = iterator(); i->hasNext(); ) {
 			unsigned p;
-			if ((p=set.indexOf(r)) != eol) remove(p);
+			if ((p=set.indexOf(i->next())) != eol) i->remove();
 		}
 	}
 
@@ -57,7 +55,9 @@ public:
 	T dequeue() {return remove(0U);}
 
 	virtual void print() {
-		for (unsigned i=0; i<size(); ++i) std::cout << get(i);
+		for (Iterator<T> i = iterator(); i->hasNext(); ) {
+			std::cout << i->next();
+		}
 		std::cout << std::endl;
 	}
 };
