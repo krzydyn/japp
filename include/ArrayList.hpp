@@ -19,8 +19,8 @@ public:
     } 
     ~ArrayList() { if (mVec) delete [] (unsigned char*)mVec; } 
 
-	std::shared_ptr<Iterator<T>> iterator() {
-		return std::make_shared<ArrayListIterator>(*this);
+	Iterator<T> iterator() {
+		return makeIterator<ArrayListIterator>(*this);
 	}
     void clear() { mOffs=mSize=0; }
     unsigned size() const {return mSize;}
@@ -150,7 +150,7 @@ private:
         mVec=v; mCapa=ns;
     }
 
-	class ArrayListIterator : public Iterator<T> {
+	class ArrayListIterator : public IteratorBase<T> {
 	private:
 		ArrayList<T>& mList;
     	unsigned mNext;

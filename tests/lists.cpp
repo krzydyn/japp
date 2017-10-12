@@ -31,7 +31,7 @@ static void test_ArrayList() {
 	std::cout << "guard = " << guard << std::nl;
 
 	for (int i=1; i < 10; ++i) {list.enqueue(i);++guard;}
-	for (std::shared_ptr<Iterator<int>> i = list.iterator(); i->hasNext(); ) {
+	for (Iterator<int> i = list.iterator(); i->hasNext(); ) {
 		int v = i->next();
 		std::cout << "val = " << v << std::nl;
 	}

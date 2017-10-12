@@ -21,7 +21,7 @@ public:
 	boolean isEmpty() const {return size()==0;}
 	boolean contains(const T& v) { return indexOf(v) < size(); }
 
-	virtual std::shared_ptr<Iterator<T>> iterator() = 0;
+	virtual Iterator<T> iterator() = 0;
 
 	virtual unsigned indexOf(const T& v,unsigned start=0) const = 0;
 	virtual T copyOf(unsigned i) const = 0;
@@ -38,7 +38,7 @@ public:
 	}
 	virtual T remove(unsigned i) = 0;
 
-	//TODO implement ListIterator
+	//TODO user Iterator
 	virtual void removeAll(List<T>& set) {
 		unsigned d=0;
 		for (unsigned i=0; i<size(); ++i) {
