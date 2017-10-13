@@ -3,8 +3,8 @@
 
 #include <thread>
 #include <functional>
-#include <ArrayList.hpp>
 #include <SyncQueue.hpp>
+#include <util/ArrayList.hpp>
 
 class ThreadPool {
 	public:

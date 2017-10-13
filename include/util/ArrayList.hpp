@@ -1,12 +1,10 @@
-#ifndef __ARRAYLIST_HPP
-#define __ARRAYLIST_HPP
+#ifndef __UTIL_ARRAYLIST_HPP
+#define __UTIL_ARRAYLIST_HPP
 
-#include <List.hpp>
-#include <Math.hpp>
+#include <util/List.hpp>
+#include <lang/Math.hpp>
 
-#define boolean bool
-#define null 0
-#define eol ((unsigned)-1)
+namespace util {
 
 template<class T>
 class ArrayList : public List<T> {
@@ -167,5 +165,7 @@ private:
 		}
 	};
 };
+
+} //namespace util
 
 #endif

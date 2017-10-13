@@ -1,5 +1,9 @@
-#ifndef __EXCEPTIONS_HPP
-#define __EXCEPTIONS_HPP
+#ifndef __LANG_EXCEPTIONS_HPP
+#define __LANG_EXCEPTIONS_HPP
+
+#include <stdexcept>
+#include <string>
+#include <lang/Types.hpp>
 
 namespace lang {
 
@@ -23,6 +27,11 @@ public:
 	OutOfMemoryError(std::string msg="") : Error(msg) {}
 };
 
+class NullPointerException : public Exception {
+public:
+	NullPointerException(std::string msg="") : Exception(msg) {}
+};
+
 class UnsupportedOperationException : public Exception {
 public:
 	UnsupportedOperationException(std::string msg="") : Exception(msg) {}
@@ -31,6 +40,7 @@ public:
 class IndexOutOfBoundsException : public Exception {
 public:
 	IndexOutOfBoundsException(std::string msg="") : Exception(msg) {}
+	IndexOutOfBoundsException(int i) : Exception("Index "+std::to_string(i)) {}
 };
 
 } //namespace lang

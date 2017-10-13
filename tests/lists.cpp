@@ -1,5 +1,6 @@
+#include <util/ArrayList.hpp>
+
 #include <SyncQueue.hpp>
-#include <ArrayList.hpp>
 
 namespace std {
 	template< class CharT, class Traits >

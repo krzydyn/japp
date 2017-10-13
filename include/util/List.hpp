@@ -1,9 +1,11 @@
-#ifndef __LIST_HPP
-#define __LIST_HPP
+#ifndef __UTIL_LIST_HPP
+#define __UTIL_LIST_HPP
 
 #include <iostream>
 #include <lang/Types.hpp>
 #include <Iterator.hpp>
+
+namespace util {
 
 template<class T>
 class List {
@@ -61,5 +63,9 @@ public:
 		std::cout << std::endl;
 	}
 };
+
+} //namespace util
+
+using namespace util;
 
 #endif

@@ -6,7 +6,7 @@ all:build
 
 include ../common.mk
 
-TEST_TARGETS:=$(BUILD_DIR)/lists $(BUILD_DIR)/threads
+TEST_TARGETS:=$(BUILD_DIR)/lists $(BUILD_DIR)/threads $(BUILD_DIR)/strings
 
 #TARGETS+=$(TEST_TARGETS)
 

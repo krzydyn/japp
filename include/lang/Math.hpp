@@ -1,5 +1,5 @@
-#ifndef __MATH_HPP
-#define __MATH_HPP
+#ifndef __LANG_MATH_HPP
+#define __LANG_MATH_HPP
 
 //TODO put into Math class as statics
 
