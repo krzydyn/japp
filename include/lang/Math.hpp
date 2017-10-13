@@ -1,7 +1,72 @@
 #ifndef __LANG_MATH_HPP
 #define __LANG_MATH_HPP
 
-//TODO put into Math class as statics
+#include <lang/Exceptions.hpp>
+#include <cmath>
+#undef min
+#undef max
+
+namespace lang {
+
+class Math {
+public:
+	static constexpr double E = 2.7182818284590452354;
+	static constexpr double PI = 3.14159265358979323846;
+
+	static double sin(double a) { return std::sin(a); }
+	static double cos(double a) { return std::cos(a); }
+	static double tan(double a) { return std::tan(a); }
+	static double asin(double a) { return std::asin(a); }
+	static double acos(double a) { return std::acos(a); }
+	static double atan(double a) { return std::atan(a); }
+	inline static double toRadians(double angdeg) {
+		return angdeg / 180.0 * PI;
+	}
+	inline static double toDegrees(double angrad) {
+		return angrad * 180.0 / PI;
+	}
+	static double exp(double a) { return std::exp(a); }
+	static double log(double a) { return std::log(a); }
+	static double log10(double a) { return std::log10(a); }
+	static double sqrt(double a) { return std::sqrt(a); }
+	static double cbrt(double a) { return std::cbrt(a); }
+	static double IEEEremainder(double x, double y) { return std::remainder(x, y); }
+	static double ceil(double a) { return std::ceil(a); }
+	static double floor(double a) { return std::floor(a); }
+	static double rint(double a) { return 0; }
+	static double atan2(double y, double x) { return std::atan2(y, x); }
+
+	static double pow(double a, double b) { return std::pow(a, b); }
+	static int round(float a) { return (int) std::floor (a + 0.5f); }
+	static long round(double a) { return (long) std::floor(a + 0.5f); }
+
+	static double random() {}
+
+	static int addExact(int x, int y) {
+		int r = x + y;
+		if (((x ^ r) & (y ^ r)) < 0) throw ArithmeticException("integer overflow");
+		return r;
+	}
+	static long addExact(long x, long y) {
+		long r = x + y;
+		if (((x ^ r) & (y ^ r)) < 0) throw ArithmeticException("integer overflow");
+		return r;
+	}
+
+	template<class T>
+	inline static const T& min(const T& a, const T& b) {
+		return a < b ? a : b;
+	}
+
+	//return value is faster then return const ref !!!
+	template<class T>
+	inline static T max(const T& a, const T& b) {
+		return a < b ? b : a;
+	}
+
+};
+
+} //namespace lang
 
 inline int mmin(int a, int b) {return a<b?a:b;}
 inline int mmax(int a, int b) {return a>b?a:b;}

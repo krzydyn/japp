@@ -27,6 +27,10 @@ public:
 	OutOfMemoryError(std::string msg="") : Error(msg) {}
 };
 
+class ArithmeticException : public Exception {
+public:
+	ArithmeticException(std::string msg="") : Exception(msg) {}
+};
 class NullPointerException : public Exception {
 public:
 	NullPointerException(std::string msg="") : Exception(msg) {}

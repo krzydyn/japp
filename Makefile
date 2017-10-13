@@ -22,6 +22,10 @@ BUILD_DIRS:=$(SUBDIRS:%=build-%)
 CLEAN_DIRS:=$(SUBDIRS:%=clean-%)
 .PHONY: $(BUILD_DIRS) $(CLEAN_DIRS)
 
+rebuild:
+	make clean
+	make all
+
 all: $(BUILD_DIRS)
 clean: $(CLEAN_DIRS)
 	@rm -rf $(BUILD_DIR)
