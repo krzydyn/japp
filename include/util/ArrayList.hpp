@@ -3,11 +3,17 @@
 
 #include <util/List.hpp>
 #include <lang/Math.hpp>
+#include <cstring>
 
 namespace util {
 
+boolean util_equals(int a, int b) { return a == b; }
+boolean util_equals(const Object& a, const Object& b) { return a.equals(b); }
 template<class T>
-class ArrayList : public List<T>, public Object {
+boolean util_equals(const T& a, const T& b) { return std::memcmp(&a,&b,sizeof(a)) == 0; }
+
+template<class T>
+class ArrayList : public Object, public List<T> {
 class ArrayListIterator;
 
 public:
@@ -31,11 +37,15 @@ public:
 		if (i >= mSize) throw std::runtime_error("index out fo range");
 		return mVec[(mOffs+i)%mCapa];
 	}
-	void set(unsigned i, const T v) {
+	void set(unsigned i, const T& v) {
 		if (i >= mSize) throw std::runtime_error("index out fo range");
 		mVec[(mOffs+i)%mCapa] = v;
 	}
-    void add(unsigned i,const T v) {
+
+	//TODO this is implemented in List, but g++ compilation error is raised (why?)
+    boolean add(const T& v) {add(eol,v);return true;}
+
+    void add(unsigned i,const T& v) {
         if (mSize>=mCapa) ensureCapa(mSize+1);
         if (i == eol) { mVec[(mOffs+mSize)%mCapa]=v; ++mSize; return ; }
 		if (i > mSize) throw std::runtime_error("index out fo range");
@@ -50,9 +60,11 @@ public:
         mVec[(mOffs+j)%mCapa]=v; ++mSize;
     }
     unsigned indexOf(const T& v,unsigned start=0) const {
-        for (unsigned i=start; i<mSize; ++i ) { if (mVec[(mOffs+i)%mCapa]==v) return i; }
-        return eol;
-    }
+		for (unsigned i=start; i < mSize; ++i ) {
+			if (util_equals(mVec[(mOffs+i)%mCapa],v)) return i;
+		}
+		return eol;
+	}
     T copyOf(unsigned i) const {
 		if (i >= mSize) throw std::runtime_error("index out fo range");
 		return mVec[(mOffs+i)%mCapa];
@@ -68,9 +80,8 @@ public:
         mSize=d;
     }
     T remove(unsigned i) {
-        T v;
 		if (i >= mSize) throw std::runtime_error("index out fo range");
-        v=mVec[(mOffs+i)%mCapa]; --mSize;
+        T v=mVec[(mOffs+i)%mCapa]; --mSize;
 		if (i < mSize - i) {
         	for (; i > 0; --i) {
 				mVec[(mOffs+i)%mCapa]=mVec[(mOffs+i-1)%mCapa];

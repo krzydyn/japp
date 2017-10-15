@@ -3,6 +3,7 @@
 
 #include <lang/Object.hpp>
 #include <string>
+#include <iostream>
 
 namespace lang {
 
@@ -12,6 +13,20 @@ private:
 	long hash = 0;
 
 public:
+	String(String&& o) noexcept : value(std::move(o.value)) { }
+	String& operator=(String&& o) = default;
+	String& operator=(const String& o) = default;
+	/*String& operator=(String&& o) {
+		std::cout << "operator=(const String&&)" << std::endl;
+	   	value = std::move(o.value);
+   	}
+	String& operator=(const String& o) {
+		std::cout << "operator=(const String&) " << std::endl;
+		std::cout << "    from " << o.value << std::endl;
+	   	value = o.value.c_str();
+		std::cout << "    assigned " << std::endl;
+   	}*/
+
 	String(const std::string& s) : value(s) {}
 
 	String() {}

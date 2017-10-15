@@ -38,7 +38,7 @@ public:
 	virtual ~Object() {}
 	Class getClass() const { return Class(typeid(*this)); }
 	virtual long hashCode() const {return (long)this;}
-	virtual boolean equals(const Object& obj) { return this == &obj; }
+	virtual boolean equals(const Object& obj) const { return this == &obj; }
 	virtual Object& clone() {}
 	virtual String toString() const;
 	virtual void notify() {}

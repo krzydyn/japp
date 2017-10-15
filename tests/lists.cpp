@@ -11,7 +11,7 @@ static void test_ArrayList() {
 		--guard;
 	}
 	System.out.println(String("ArrayList toString = ")+list.toString());
-	System.out.println(String("ArrayList simpleanme = ")+list.getClass().getSimpleName());
+	System.out.println(String("ArrayList simplename = ")+list.getClass().getSimpleName());
 	System.out.println(String("guard=")+guard);
 
 	for (int i=1; i < 10; ++i) {list.enqueue(i);++guard;}
@@ -21,8 +21,24 @@ static void test_ArrayList() {
 	}
 }
 
-
+static void test_ArrayList2() {
+	ArrayList<String> list;
+	list.add(String("aaa"));
+	System.out.println("list.print");
+	list.print();
+}
+/*
+#include <util/HashMap.hpp>
+static void test_Map() {
+	HashMap<int,String> map;
+	map.put(1,"a");
+}
+*/
 int main(int argc, const char *argv[]) {
+	System.out.println("test1");
 	test_ArrayList();
+	System.out.println("test2");
+	test_ArrayList2();
+	//test_Map();
 	return 0;
 }

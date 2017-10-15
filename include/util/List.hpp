@@ -28,10 +28,10 @@ public:
 	virtual T copyOf(unsigned i) const = 0;
 	virtual const T& get(unsigned i) const = 0;
 	virtual T& ref(unsigned i) const = 0;
-	virtual void set(unsigned i, const T v) = 0;
+	virtual void set(unsigned i, const T& v) = 0;
 
-	virtual boolean add(const T& v) {add(size(),v);return true;}
-	virtual void add(unsigned i, const T v) = 0;
+	virtual boolean add(const T& v) {add(eol,v);return true;}
+	virtual void add(unsigned i, const T& v) = 0;
 	virtual boolean removeElem(const T& v) {
 		unsigned i = indexOf(v);
 		if (i < size()) {remove(indexOf(v));return true;}
@@ -48,12 +48,12 @@ public:
 	}
 
 	// stack interface (LIFO)
-	void push(T v) {add(size(),v);}
-	T pop() {return remove(size()-1);}
+	virtual void push(const T& v) final {add(eol,v);}
+	virtual T pop() final {return remove(size()-1);}
 
 	// queue interface (FIFO)
-	void enqueue(T v) {add(size(),v);}
-	T dequeue() {return remove(0U);}
+	virtual void enqueue(const T& v) final {add(eol,v);}
+	virtual T dequeue() final {return remove(0U);}
 
 	virtual void print() {
 		for (Iterator<T> i = iterator(); i->hasNext(); ) {
