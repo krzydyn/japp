@@ -8,7 +8,7 @@
 
 namespace lang {
 
-class Math {
+class _Math {
 public:
 	static constexpr double E = 2.7182818284590452354;
 	static constexpr double PI = 3.14159265358979323846;
@@ -38,7 +38,7 @@ public:
 
 	static double pow(double a, double b) { return std::pow(a, b); }
 	static int round(float a) { return (int) std::floor (a + 0.5f); }
-	static long round(double a) { return (long) std::floor(a + 0.5f); }
+	static long round(double a) { return (long) std::floor(a + 0.5); }
 
 	static double random() {}
 
@@ -66,10 +66,10 @@ public:
 
 };
 
+extern _Math Math;
+
 } //namespace lang
 
-inline int mmin(int a, int b) {return a<b?a:b;}
-inline int mmax(int a, int b) {return a>b?a:b;}
 inline unsigned long newton(unsigned n, unsigned k) {
 	if (k > n) return 0;
 	if (k==0 || n==k) return 1;
@@ -143,7 +143,7 @@ inline int init_t8(unsigned char *b) {
     }
     return 1;
 }
-int init2_t8(unsigned char *b) {
+inline int init2_t8(unsigned char *b) {
     b[0]=0;
     for (int i=1; i < 256; ++i) {
         int j=i>>1;

@@ -1,5 +1,5 @@
-SRCS+=$(wildcard $(SOURCE_DIR)/*.c)
-OBJS+=$(patsubst $(SOURCE_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
+SRCS+=$(wildcard $(SOURCE_DIR)/*.cpp)
+OBJS+=$(patsubst $(SOURCE_DIR)/%.cpppp,$(BUILD_DIR)/%.o,$(SRCS))
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)

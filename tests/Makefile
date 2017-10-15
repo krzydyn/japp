@@ -7,6 +7,9 @@ all:build
 include ../common.mk
 
 TEST_TARGETS:=$(BUILD_DIR)/lists $(BUILD_DIR)/threads $(BUILD_DIR)/strings
+LIB_OBJS:=$(LIB_DIR)/src/*.o
+
+LDFLAGS+=$(LIB_OBJS)
 
 #TARGETS+=$(TEST_TARGETS)
 

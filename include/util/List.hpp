@@ -1,8 +1,7 @@
 #ifndef __UTIL_LIST_HPP
 #define __UTIL_LIST_HPP
 
-#include <iostream>
-#include <lang/Types.hpp>
+#include <lang/System.hpp>
 #include <Iterator.hpp>
 
 namespace util {
@@ -20,8 +19,8 @@ public:
 	virtual void clear() = 0;
 
 	virtual unsigned size() const = 0;
-	boolean isEmpty() const {return size()==0;}
-	boolean contains(const T& v) { return indexOf(v) < size(); }
+	virtual boolean isEmpty() const final {return size()==0;}
+	virtual boolean contains(const T& v) const final { return indexOf(v) < size(); }
 
 	virtual Iterator<T> iterator() = 0;
 
@@ -58,9 +57,9 @@ public:
 
 	virtual void print() {
 		for (Iterator<T> i = iterator(); i->hasNext(); ) {
-			std::cout << i->next();
+			System.out.println(i->next());
 		}
-		std::cout << std::endl;
+		System.out.println();
 	}
 };
 

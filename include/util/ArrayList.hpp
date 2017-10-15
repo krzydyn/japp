@@ -7,7 +7,7 @@
 namespace util {
 
 template<class T>
-class ArrayList : public List<T> {
+class ArrayList : public List<T>, public Object {
 class ArrayListIterator;
 
 public:

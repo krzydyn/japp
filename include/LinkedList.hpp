@@ -1,7 +1,7 @@
 #ifndef __LINKLIST_HPP
 #define __LINKLIST_HPP
 
-#include <List.hpp>
+#include <util/List.hpp>
 
 template<class T>
 class DListNode {

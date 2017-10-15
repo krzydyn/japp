@@ -1,50 +1,55 @@
 #ifndef __LANG_EXCEPTIONS_HPP
 #define __LANG_EXCEPTIONS_HPP
 
+#include <lang/String.hpp>
 #include <stdexcept>
-#include <string>
-#include <lang/Types.hpp>
 
 namespace lang {
 
 class Throwable : public std::runtime_error {
 public:
-	Throwable(std::string msg="") : std::runtime_error(msg) {}
+	Throwable() : std::runtime_error("") {}
+	Throwable(const String& msg) : std::runtime_error(msg.intern()) {}
 };
 
 class Error : public Throwable {
 public:
-	Error(std::string msg="") : Throwable(msg) {}
+	Error() : Throwable() {}
+	Error(const String& msg) : Throwable(msg) {}
 };
 
 class Exception : public Throwable {
 public:
-	Exception(std::string msg="") : Throwable(msg) {}
+	Exception() : Throwable() {}
+	Exception(const String& msg) : Throwable(msg) {}
 };
 
 class OutOfMemoryError : public Error {
 public:
-	OutOfMemoryError(std::string msg="") : Error(msg) {}
+	OutOfMemoryError() : Error() {}
+	OutOfMemoryError(const String& msg) : Error(msg) {}
 };
 
 class ArithmeticException : public Exception {
 public:
-	ArithmeticException(std::string msg="") : Exception(msg) {}
+	ArithmeticException() : Exception() {}
+	ArithmeticException(const String& msg) : Exception(msg) {}
 };
 class NullPointerException : public Exception {
 public:
-	NullPointerException(std::string msg="") : Exception(msg) {}
+	NullPointerException() : Exception() {}
+	NullPointerException(const String& msg) : Exception(msg) {}
 };
 
 class UnsupportedOperationException : public Exception {
 public:
-	UnsupportedOperationException(std::string msg="") : Exception(msg) {}
+	UnsupportedOperationException(const String& msg) : Exception(msg) {}
 };
 
 class IndexOutOfBoundsException : public Exception {
 public:
-	IndexOutOfBoundsException(std::string msg="") : Exception(msg) {}
-	IndexOutOfBoundsException(int i) : Exception("Index "+std::to_string(i)) {}
+	IndexOutOfBoundsException(const String& msg) : Exception(msg) {}
+	IndexOutOfBoundsException(int i) : Exception(String("Index ")+i) {}
 };
 
 } //namespace lang
