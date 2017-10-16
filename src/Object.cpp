@@ -33,7 +33,8 @@ String Class::getSimpleName() const {
 	if (simpleName.isEmpty()) { // top level class
 		simpleName = getName();
 		return simpleName.substring(simpleName.lastIndexOf(":")+1); // strip the package name
-	}	
+	}
+	return simpleName;
 }
 String Class::getCanonicalName() const { return getName(); }
 

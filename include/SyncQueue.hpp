@@ -11,7 +11,7 @@ public:
 	SyncQueueException() : std::runtime_error("The SyncQueue has been stopped.") {}
 };
 
-template<typename T>
+template<class T>
 class SyncQueue {
 private:
 	std::queue<T> queue;

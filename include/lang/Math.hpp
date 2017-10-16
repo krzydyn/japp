@@ -40,7 +40,7 @@ public:
 	static int round(float a) { return (int) std::floor (a + 0.5f); }
 	static long round(double a) { return (long) std::floor(a + 0.5); }
 
-	static double random() {}
+	static double random() {return 0;}
 
 	static int addExact(int x, int y) {
 		int r = x + y;
@@ -149,6 +149,7 @@ inline int init2_t8(unsigned char *b) {
         int j=i>>1;
         b[i]=b[i-j];
     }
+	return 0;
 }
 inline unsigned bitCount_t8(unsigned i) {
     static unsigned char bits[256];

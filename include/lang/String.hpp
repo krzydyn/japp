@@ -44,7 +44,7 @@ public:
 	String operator+(const String& s) const {
 		return value+s.value;
 	}
-	template<typename T>
+	template<class T>
 	String operator+(const T& v) const {
 		return value+std::to_string(v);
 	}

@@ -12,7 +12,7 @@ export LIB_DIR:=$(TOP_DIR)/build
 export INC_DIR:=$(TOP_DIR)/include
 export BUILD_DIR:=$(TOP_DIR)/build
 
-export CC=g++
+export CC=clang++
 export CFLAGS+=-g2 -I$(INC_DIR)
 export CPPFLAGS+=-g2 -std=c++11 -I$(INC_DIR)
 

@@ -3,14 +3,16 @@
 
 #include <util/List.hpp>
 #include <lang/Math.hpp>
-#include <cstring>
 
 namespace util {
 
 boolean util_equals(int a, int b) { return a == b; }
 boolean util_equals(const Object& a, const Object& b) { return a.equals(b); }
 template<class T>
-boolean util_equals(const T& a, const T& b) { return std::memcmp(&a,&b,sizeof(a)) == 0; }
+boolean util_equals(const T& a, const T& b) { return (void*)&a == (void*)&b; }
+
+//#include <cstring>
+//boolean util_equals(const T& a, const T& b) { return std::memcmp((void*)&a,(void*)&b,sizeof(a)) == 0; }
 
 template<class T>
 class ArrayList : public Object, public List<T> {
@@ -42,12 +44,13 @@ public:
 		mVec[(mOffs+i)%mCapa] = v;
 	}
 
-	//TODO this is implemented in List, but g++ compilation error is raised (why?)
-    boolean add(const T& v) {add(eol,v);return true;}
+	//in C++ methods of the same name from base class are hidden
+	// - so tell explicitly not to hide by "using"
+	using List<T>::add;
 
     void add(unsigned i,const T& v) {
         if (mSize>=mCapa) ensureCapa(mSize+1);
-        if (i == eol) { mVec[(mOffs+mSize)%mCapa]=v; ++mSize; return ; }
+        if (i == END_OF_LIST) { mVec[(mOffs+mSize)%mCapa]=v; ++mSize; return ; }
 		if (i > mSize) throw std::runtime_error("index out fo range");
         unsigned j=i;
 		if (i < mSize - i) {
@@ -63,7 +66,7 @@ public:
 		for (unsigned i=start; i < mSize; ++i ) {
 			if (util_equals(mVec[(mOffs+i)%mCapa],v)) return i;
 		}
-		return eol;
+		return END_OF_LIST;
 	}
     T copyOf(unsigned i) const {
 		if (i >= mSize) throw std::runtime_error("index out fo range");
@@ -72,7 +75,7 @@ public:
     void remove(List<T>& set) {
         unsigned d=0;
         for (unsigned i=0; i<mSize; ++i) {
-            if (set.indexOf(mVec[(mOffs+i)%mCapa])==eol) {
+            if (set.indexOf(mVec[(mOffs+i)%mCapa])==END_OF_LIST) {
                 if (d!=i) mVec[(mOffs+d)%mCapa]=mVec[(mOffs+i)%mCapa];
                 ++d;
             }

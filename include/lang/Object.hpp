@@ -5,7 +5,6 @@
 
 #define boolean bool
 #define null 0
-#define eol ((unsigned)-1)
 
 using jint=long;
 using jlong=long long;
@@ -22,13 +21,13 @@ public:
 	Class(const std::type_info& t) : type(t) {}
 
 	String getName() const;
-	boolean isInstance(const Object& obj) const {}
-	boolean isAssignableFrom(const Class& cls) const {}
-	boolean isInterface() const {}
-	boolean isArray() const {}
-	boolean isPrimitive() const {}
-	boolean isAnnotation() const {}
-	boolean isSynthetic() const {}
+	boolean isInstance(const Object& obj) const {return false;}
+	boolean isAssignableFrom(const Class& cls) const {return false;}
+	boolean isInterface() const {return false;}
+	boolean isArray() const {return false;}
+	boolean isPrimitive() const {return false;}
+	boolean isAnnotation() const {return false;}
+	boolean isSynthetic() const {return false;}
 	String getSimpleName() const;
 	String getCanonicalName() const;
 };
@@ -39,7 +38,7 @@ public:
 	Class getClass() const { return Class(typeid(*this)); }
 	virtual long hashCode() const {return (long)this;}
 	virtual boolean equals(const Object& obj) const { return this == &obj; }
-	virtual Object& clone() {}
+	virtual Object& clone() {return *this;}
 	virtual String toString() const;
 	virtual void notify() {}
 	virtual void wait(long timeout) final {}
@@ -55,17 +54,17 @@ public:
 	static String toHexString(int v);
 };
 
-}
-using namespace lang;
-
-template<typename Base, typename T>
+//usage if: (instanceOf<Integer>(objPtr)) {...}
+template<class Base, class T>
 inline bool instanceOf(const T *ptr) {
 	return dynamic_cast<const Base*>(ptr) != nullptr;
 }
-//usage if: (instanceOf<Base>(objPtr)) {...}
-template<typename Base, typename T>
+template<class Base, class T>
 inline bool instanceOf(const T& ptr) {
 	return dynamic_cast<const Base*>(&ptr) != nullptr;
 }
+
+}
+using namespace lang;
 
 #endif

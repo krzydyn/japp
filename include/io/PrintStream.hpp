@@ -8,9 +8,23 @@ namespace io {
 
 class PrintStream {
 private:
-	std::ostream& out;
+	//use pointer to impl. assign oparation while std::ostream assign is protected
+	std::ostream* out;
 public:
-	PrintStream(std::ostream& s) : out(s) {}
+	//copy constructor
+	PrintStream(const PrintStream& other) : out(other.out) {}
+	//move constructor
+	PrintStream(PrintStream&& other) { out=other.out; other.out=null; }
+	//copy assigment
+	PrintStream& operator=(const PrintStream& other) {out=other.out; return *this;}
+	//move assigment
+	PrintStream& operator=(PrintStream&& other) {
+		if (this != &other) {out=other.out; other.out=null;}
+		return *this;
+	}
+	virtual ~PrintStream() {}
+
+	PrintStream(std::ostream& s) : out(&s) {}
 
 	void println() const {
 		std::cout << std::endl;

@@ -24,6 +24,7 @@ static void test_ArrayList() {
 static void test_ArrayList2() {
 	ArrayList<String> list;
 	list.add(String("aaa"));
+	list.add(String("bbb"));
 	System.out.println("list.print");
 	list.print();
 }
