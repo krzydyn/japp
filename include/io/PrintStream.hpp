@@ -44,7 +44,7 @@ public:
 	}
 
 	void print(void *s) const {
-		std::cout << "PTR:" << std::to_string((unsigned long)s);
+		std::cout << "PTR:" << Integer::toHexString((unsigned long)s).intern();
 	}
 	void println(void *s) const {
 		std::cout << "PTR:" << std::to_string((unsigned long)s) << std::endl;

@@ -1,8 +1,9 @@
 #ifndef __LANG_MATH_HPP
 #define __LANG_MATH_HPP
 
-#include <lang/Exceptions.hpp>
+#include <lang/Exception.hpp>
 #include <cmath>
+#include <random>
 #undef min
 #undef max
 
@@ -40,7 +41,10 @@ public:
 	static int round(float a) { return (int) std::floor (a + 0.5f); }
 	static long round(double a) { return (long) std::floor(a + 0.5); }
 
-	static double random() {return 0;}
+	static double random() {
+		std::uniform_real_distribution<double> uniform_dist(0.0, 1.0);
+		return uniform_dist(randomEngine);
+	}
 
 	static int addExact(int x, int y) {
 		int r = x + y;
@@ -64,6 +68,8 @@ public:
 		return a < b ? b : a;
 	}
 
+private:
+	static std::default_random_engine randomEngine;
 };
 
 extern _Math Math;

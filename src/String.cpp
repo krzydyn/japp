@@ -1,5 +1,5 @@
-#include <lang/Exceptions.hpp>
 #include <lang/System.hpp>
+#include <lang/Exception.hpp>
 
 namespace lang {
 

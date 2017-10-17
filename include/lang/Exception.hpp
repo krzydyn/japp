@@ -6,10 +6,20 @@
 
 namespace lang {
 
-class Throwable : public std::runtime_error {
+class Throwable : public Object {
 public:
-	Throwable() : std::runtime_error("") {}
-	Throwable(const String& msg) : std::runtime_error(msg.intern()) {}
+	Throwable() {}
+	Throwable(const String& msg) : detailMessage(msg) {}
+	virtual String getMessage() const {return detailMessage;}
+	virtual String getLocalizedMessage() const {return getMessage();}
+	String toString() const {
+		String s = getClass().getName();
+		String message = getLocalizedMessage();
+		return (message != null) ? (s + ": " + message) : s;
+	}
+private:
+	String detailMessage;
+	Throwable *cause;
 };
 
 class Error : public Throwable {
@@ -40,9 +50,14 @@ public:
 	NullPointerException() : Exception() {}
 	NullPointerException(const String& msg) : Exception(msg) {}
 };
-
+class CloneNotSupportedException : public Exception {
+public:
+	CloneNotSupportedException() : Exception() {}
+	CloneNotSupportedException(const String& msg) : Exception(msg) {}
+};
 class UnsupportedOperationException : public Exception {
 public:
+	UnsupportedOperationException() : Exception() {}
 	UnsupportedOperationException(const String& msg) : Exception(msg) {}
 };
 

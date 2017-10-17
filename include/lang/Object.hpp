@@ -14,11 +14,15 @@ namespace lang {
 class String;
 class Object;
 
+class ObjectInfo {
+	
+};
 class Class {
+friend class Object;
 private:
 	const std::type_info& type;
+	Class(const std::type_info& t, const ObjectInfo&) : type(t) {}
 public:
-	Class(const std::type_info& t) : type(t) {}
 
 	String getName() const;
 	boolean isInstance(const Object& obj) const {return false;}
@@ -35,23 +39,27 @@ public:
 class Object {
 public:
 	virtual ~Object() {}
-	Class getClass() const { return Class(typeid(*this)); }
+	virtual const Class getClass() const;
 	virtual long hashCode() const {return (long)this;}
 	virtual boolean equals(const Object& obj) const { return this == &obj; }
-	virtual Object& clone() {return *this;}
+	virtual Object& clone() const;
 	virtual String toString() const;
 	virtual void notify() {}
 	virtual void wait(long timeout) final {}
 	virtual void wait(long timeout, int nanos) final {}
 	virtual void wait() final { wait(0); }
 
+	virtual boolean operator==(const Object& obj) final { return equals(obj); }
+	virtual boolean operator!=(const Object& obj) final { return !equals(obj); }
+	virtual boolean operator==(const void *ptr) { return ptr == this; }
+	virtual boolean operator!=(const void *ptr) { return ptr != this; }
 protected:
 	virtual void finalize() {}
 };
 
 class Integer : public Object {
 public:
-	static String toHexString(int v);
+	static String toHexString(long v);
 };
 
 //usage if: (instanceOf<Integer>(objPtr)) {...}

@@ -3,31 +3,19 @@
 
 #include <lang/Object.hpp>
 #include <string>
-#include <iostream>
 
 namespace lang {
 
-class String : public Object {
+class String final : public Object {
 private:
 	std::string value;
 	long hash = 0;
 
 public:
-	String(String&& o) noexcept : value(std::move(o.value)) { }
+	String(String&& o) : value(std::move(o.value)) { }
+	String(const std::string& s) : value(s) {}
 	String& operator=(String&& o) = default;
 	String& operator=(const String& o) = default;
-	/*String& operator=(String&& o) {
-		std::cout << "operator=(const String&&)" << std::endl;
-	   	value = std::move(o.value);
-   	}
-	String& operator=(const String& o) {
-		std::cout << "operator=(const String&) " << std::endl;
-		std::cout << "    from " << o.value << std::endl;
-	   	value = o.value.c_str();
-		std::cout << "    assigned " << std::endl;
-   	}*/
-
-	String(const std::string& s) : value(s) {}
 
 	String() {}
 	String(const String& s) : value(s.value) {}
@@ -38,6 +26,8 @@ public:
 	int length() { return value.length(); }
 	boolean isEmpty() { return value.length() == 0; }
 
+	virtual boolean operator==(const void *ptr) { return equals((const char *)ptr); }
+	virtual boolean operator!=(const void *ptr) { return !equals((const char *)ptr); }
 	String operator+(const char *s) const {
 		return value+s;
 	}
@@ -49,6 +39,9 @@ public:
 		return value+std::to_string(v);
 	}
 
+	boolean equals(const char *str) {
+		return str==null ? value == "" : value == str;
+	}
 	boolean equals(const Object& anObject) {
 		if (this == &anObject) return true;
 		return value == ((const String&)anObject).value;

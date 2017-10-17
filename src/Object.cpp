@@ -7,17 +7,17 @@
 #include <memory>
 #include <cxxabi.h>
 namespace {
-std::string demangle( const char* mangled_name ) {
-	std::size_t len = 0 ;
-	int status = 0 ;
+std::string demangle(const char* mangled_name) {
+	std::size_t len = 0;
+	int status = 0;
 	std::unique_ptr< char, decltype(&std::free) > ptr(
-		__cxxabiv1::__cxa_demangle( mangled_name, nullptr, &len, &status ), &std::free ) ;
-	return ptr.get() ;
+		__cxxabiv1::__cxa_demangle( mangled_name, nullptr, &len, &status ), &std::free );
+	return ptr.get();
 }
 }
 #else
 namespace {
-std::string demangle( const char* name ) { return name ; }
+std::string demangle(const char* name) { return name; }
 }
 #endif // _GNUG_
 
@@ -39,13 +39,18 @@ String Class::getSimpleName() const {
 String Class::getCanonicalName() const { return getName(); }
 
 
+static ObjectInfo info;
+const Class Object::getClass() const { return Class(typeid(*this),info); }
+Object& Object::clone() const {
+	throw CloneNotSupportedException();
+}
 String Object::toString() const {
 	return getClass().getName() + "@" + Integer::toHexString(hashCode());
 }
 
-String Integer::toHexString(int v) {
+String Integer::toHexString(long v) {
 	std::stringstream stream;
-	stream << std::hex << v;
+	stream << std::hex << (unsigned long)v;
 	return stream.str();
 }
 

@@ -1,8 +1,8 @@
 #ifndef __ITERATOR_HPP
 #define __ITERATOR_HPP
 
+#include <lang/Exception.hpp>
 #include <memory>
-#include <lang/Exceptions.hpp>
 
 template<class T>
 class IteratorBase {
