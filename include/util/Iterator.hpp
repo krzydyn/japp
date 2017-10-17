@@ -1,8 +1,10 @@
-#ifndef __ITERATOR_HPP
-#define __ITERATOR_HPP
+#ifndef __UTIL_ITERATOR_HPP
+#define __UTIL_ITERATOR_HPP
 
 #include <lang/Exception.hpp>
 #include <memory>
+
+namespace util {
 
 template<class T>
 class IteratorBase {
@@ -20,5 +22,7 @@ using Iterator = std::shared_ptr<IteratorBase<T>>;
 
 template<class T, class... Args>
 std::shared_ptr<T> makeIterator(Args&&... args) { return std::make_shared<T>(args...); }
+
+} //namespace util
 
 #endif

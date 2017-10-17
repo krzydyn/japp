@@ -67,6 +67,12 @@ public:
 	IndexOutOfBoundsException(int i) : Exception(String("Index ")+i) {}
 };
 
+class IllegalThreadStateException : public Exception {
+public:
+	IllegalThreadStateException() : Exception() {}
+	IllegalThreadStateException(const String& msg) : Exception(msg) {}
+};
+
 } //namespace lang
 
 #endif

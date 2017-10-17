@@ -2,7 +2,7 @@
 #define __UTIL_LIST_HPP
 
 #include <lang/System.hpp>
-#include <Iterator.hpp>
+#include <util/Iterator.hpp>
 
 #define END_OF_LIST ((unsigned)-1)
 

@@ -24,7 +24,7 @@ public:
 	void start() {}
 
 	void run() {
-		if (target != null) target.run();
+		if (&target != null) target.run();
 	}
 	void interrupt() {}
 	boolean isInterrupted() {return isInterrupted(false);}

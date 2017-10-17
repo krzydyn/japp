@@ -2,11 +2,11 @@
 #define __IO_PRINTSTREAM_HPP
 
 #include <lang/String.hpp>
-#include <iostream>
+#include <io/OutputStream.hpp>
 
 namespace io {
 
-class PrintStream {
+class PrintStream : public OutputStream {
 private:
 	//use pointer to impl. assign oparation while std::ostream assign is protected
 	std::ostream* out;

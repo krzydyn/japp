@@ -1,5 +1,7 @@
 #include <lang/System.hpp>
+#include <lang/Runtime.hpp>
 #include <io/FileInputStream.hpp>
+#include <io/File.hpp>
 #include <chrono>
 #include <cstdlib>
 
@@ -24,6 +26,12 @@ String _System::getenv(const String& name) {
 	return v;
 }
 
+void _System::exit(int code) { Runtime::getRuntime().exit(code); }
+void _System::gc() { Runtime::getRuntime().gc(); }
 const _System System;
 
 } //namespace lang
+
+namespace io {
+const String File::separator = "/";
+}

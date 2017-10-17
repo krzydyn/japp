@@ -2,7 +2,6 @@
 #define __LANG_SYSTEM_HPP
 
 #include <lang/Object.hpp>
-#include <lang/Runtime.hpp>
 #include <io/InputStream.hpp>
 #include <io/PrintStream.hpp>
 #include <cstdlib>
@@ -32,8 +31,8 @@ public:
 	/**
 	 * Terminates the currently running excutable by initiating its shutdown sequence.
 	 */
-	static void exit(int code) { Runtime::getRuntime().exit(code); }
-	static void gc() { Runtime::getRuntime().gc(); }
+	static void exit(int code);
+	static void gc();
 };
 
 extern const _System System;
