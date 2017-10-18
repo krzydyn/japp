@@ -23,7 +23,10 @@ static void test_ArrayList() {
 
 static void test_ArrayList2() {
 	ArrayList<String> list;
+
+	System.out.println("add aaa");
 	list.add(String("aaa"));
+	System.out.println("add bbb");
 	list.add(String("bbb"));
 	System.out.println("list.print");
 	list.print();

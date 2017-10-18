@@ -28,6 +28,9 @@ public:
 		char c=(char)b;
 		out->write(&c,sizeof(char));
 	}
+	void write(void *b, int off, int len) {
+		out->write((char*)b+off,len);
+	}
 	void close() {}
 };
 

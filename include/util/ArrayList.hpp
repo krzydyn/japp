@@ -3,16 +3,18 @@
 
 #include <util/List.hpp>
 #include <lang/Math.hpp>
+#include <iostream>
 
 namespace util {
 
-boolean util_equals(int a, int b) { return a == b; }
-boolean util_equals(const Object& a, const Object& b) { return a.equals(b); }
+inline std::string tostr(const String& s) { return s.intern(); }
 template<class T>
-boolean util_equals(const T& a, const T& b) { return (void*)&a == (void*)&b; }
+inline std::string tostr(const T v) { return ""; }
 
-//#include <cstring>
-//boolean util_equals(const T& a, const T& b) { return std::memcmp((void*)&a,(void*)&b,sizeof(a)) == 0; }
+inline boolean util_equals(int a, int b) { return a == b; }
+inline boolean util_equals(const Object& a, const Object& b) { return a.equals(b); }
+template<class T>
+inline boolean util_equals(const T& a, const T& b) { return (void*)&a == (void*)&b; }
 
 template<class T>
 class ArrayList : public Object, public List<T> {
@@ -49,8 +51,13 @@ public:
 	using List<T>::add;
 
     void add(unsigned i,const T& v) {
+		std::cout << "adding " << tostr(v) << std::endl;
         if (mSize>=mCapa) ensureCapa(mSize+1);
-        if (i == END_OF_LIST) { mVec[(mOffs+mSize)%mCapa]=v; ++mSize; return ; }
+        if (i == END_OF_LIST) {
+		   	mVec[(mOffs+mSize)%mCapa]=v; ++mSize;
+			std::cout << "added " << tostr(v) << std::endl;
+		   	return ;
+	   	}
 		if (i > mSize) throw std::runtime_error("index out fo range");
         unsigned j=i;
 		if (i < mSize - i) {
@@ -61,6 +68,7 @@ public:
 			for (i=mSize; i > j; --i) mVec[(mOffs+i)%mCapa]=mVec[(mOffs+i-1)%mCapa];
 		}
         mVec[(mOffs+j)%mCapa]=v; ++mSize;
+		std::cout << "added " << tostr(v) << std::endl;
     }
     unsigned indexOf(const T& v,unsigned start=0) const {
 		for (unsigned i=start; i < mSize; ++i ) {
@@ -149,7 +157,6 @@ private:
         if (mCapa>=ns) return ;
         if (ns<8) ns=8;
         else ns=hiBit(ns)<<1;
-		std::cerr << "ensure capa = " << ns << std::endl;
         T *v = (T*)new unsigned char[ns*sizeof(T)];
 		if (!v) {
         	throw std::runtime_error("Out of memory");
@@ -160,6 +167,7 @@ private:
         }
 		mOffs=0;
         mVec=v; mCapa=ns;
+		std::cerr << "capa = " << mCapa << std::endl;
     }
 
 	class ArrayListIterator : public IteratorBase<T> {

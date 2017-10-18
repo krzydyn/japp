@@ -13,7 +13,7 @@ public:
     const K& getKey() const {return key;}
     const V& getVal() const {return val;}
     void setVal(const V& v) {val=v;}
-    V& getRef() const {return val;}
+    V& getRef() {return val;}
 private:
     K key;
     V val;
@@ -86,14 +86,14 @@ public:
         const ArrayList<MapEntry<K,V>>& l=map[hc];
         for (unsigned i=0; i<l.size(); ++i) {
             if (l.ref(i).getKey() == k) {
-                return l.ref(i).getVal();
+                return l.ref(i).getRef();
             }
         }
         return undef;
 	}
     V remove(const K& k) {
         unsigned hc=hashCode(k)%mapsize;
-        const ArrayList<MapEntry<K,V>>& l=map[hc];
+        ArrayList<MapEntry<K,V>>& l=map[hc];
         for (unsigned i=0; i<l.size(); ++i) {
             if (l.ref(i).getKey() == k) {
 				--elems;

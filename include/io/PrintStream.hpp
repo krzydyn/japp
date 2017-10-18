@@ -3,6 +3,7 @@
 
 #include <lang/String.hpp>
 #include <io/OutputStream.hpp>
+#include <cstring>
 
 namespace io {
 
@@ -28,34 +29,34 @@ public:
 		out.write('\n');
 	}
 	void print(const char *s) const {
-		std::cout << s;
+		out.write(s,0,std::strlen(s));
 	}
 	void println(const char *s) const {
-		std::cout << s << std::endl;
+		out.write(s,0,std::strlen(s));
+		out.write('\n');
 	}
 
 	void print(int s) const {
-		std::cout << s;
 	}
 	void println(int s) const {
-		std::cout << s << std::endl;
 	}
 
 	void print(void *s) const {
-		std::cout << "PTR:" << Integer::toHexString((unsigned long)s).intern();
+		print(Integer::toHexString((unsigned long)s));
 	}
 	void println(void *s) const {
-		std::cout << "PTR:" << Integer::toHexString((unsigned long)s).intern() << std::endl;
+		println(Integer::toHexString((unsigned long)s));
 	}
 
 	void print(const String& s) const {
-		std::cout << s.intern();
+		out.write(s.intern().c_str(),s.length());
 	}
 	void println(const String& s) const {
-		std::cout << s.intern() << std::endl;
+		print(s);
+		println();
 	}
 	void println(const Object& o) const {
-		std::cout << o.toString().intern() << std::endl;
+		println(o.toString());
 	}
 
 	template <class T>

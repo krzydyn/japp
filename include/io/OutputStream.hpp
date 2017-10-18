@@ -10,10 +10,10 @@ namespace io {
 class OutputStream : public Object, public Closeable {
 public:
 	virtual void write(int b) = 0;
-	virtual void write(void *b, int len) {
+	virtual void write(const void *b, int len) {
 		write(b, 0, len);
 	}
-	virtual void write(void *b, int off, int len) {
+	virtual void write(const void *b, int off, int len) {
 		if (b == null) throw NullPointerException();
 		if ((off < 0) || (len < 0) || ((off + len) < 0))
 			throw IndexOutOfBoundsException();

@@ -38,7 +38,11 @@ void _System::gc() { Runtime::getRuntime().gc(); }
 const _System System;
 
 Process& ProcessBuilder::start() {
+	Process *p = null;
+	return *p;
 }
+
+Runtime Runtime::currentRuntime;
 
 } //namespace lang
 
