@@ -1,18 +1,25 @@
+#include <lang/Process.hpp>
 #include <lang/System.hpp>
 #include <lang/Runtime.hpp>
-#include <io/FileInputStream.hpp>
 #include <io/File.hpp>
+#include <io/FileInputStream.hpp>
+#include <io/FileOutputStream.hpp>
 #include <chrono>
 #include <cstdlib>
 
 using namespace std::chrono;
 
 namespace lang {
-static io::FileInputStream std_in(std::cin);
-static io::PrintStream std_out(std::cout);
-static io::PrintStream std_err(std::cerr);
+void Shutdown::exit(int status) {
+	std::exit(status);
+}
+static io::FileInputStream std_fin(std::cin);
+static io::FileOutputStream std_fout(std::cout);
+static io::FileOutputStream std_ferr(std::cerr);
+static io::PrintStream std_out(std_fout);
+static io::PrintStream std_err(std_ferr);
 
-io::InputStream& _System::in = std_in;
+io::InputStream& _System::in = std_fin;
 io::PrintStream& _System::out = std_out;
 io::PrintStream& _System::err = std_err;
 
@@ -29,6 +36,9 @@ String _System::getenv(const String& name) {
 void _System::exit(int code) { Runtime::getRuntime().exit(code); }
 void _System::gc() { Runtime::getRuntime().gc(); }
 const _System System;
+
+Process& ProcessBuilder::start() {
+}
 
 } //namespace lang
 

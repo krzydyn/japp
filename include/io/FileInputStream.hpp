@@ -1,6 +1,7 @@
 #ifndef __IO_FILEINPUTSTREAM_HPP
 #define __IO_FILEINPUTSTREAM_HPP
 
+#include <io/InputStream.hpp>
 #include <iostream>
 
 namespace io {

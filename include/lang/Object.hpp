@@ -11,6 +11,23 @@ using jlong=long long;
 
 namespace lang {
 
+
+template<class T>
+class Array {
+private:
+	T *a;
+public:
+	const int length;
+	Array(int l) : length(l) { a = new T[l]; }
+	~Array() { delete a; }
+	T& operator[](int i) {
+		return a[i];
+	}
+	const T& operator[](int i) const { 
+		return a[i];
+	}
+};
+
 class String;
 class Object;
 
@@ -41,6 +58,7 @@ public:
 	virtual ~Object() {}
 	virtual const Class getClass() const;
 	virtual long hashCode() const {return (long)this;}
+	virtual long hashCode() {return ((const Object*)this)->hashCode();}
 	virtual boolean equals(const Object& obj) const { return this == &obj; }
 	virtual Object& clone() const;
 	virtual String toString() const;

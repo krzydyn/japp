@@ -7,27 +7,25 @@
 namespace io {
 
 class PrintStream : public OutputStream {
-private:
-	//use pointer to impl. assign oparation while std::ostream assign is protected
-	std::ostream* out;
+protected:
+	 OutputStream& out;
 public:
 	//copy constructor
-	PrintStream(const PrintStream& other) : out(other.out) {}
+	PrintStream(const PrintStream& other) = delete;
 	//move constructor
-	PrintStream(PrintStream&& other) { out=other.out; other.out=null; }
+	PrintStream(PrintStream&& other) = delete;
 	//copy assigment
 	PrintStream& operator=(const PrintStream& other) {out=other.out; return *this;}
 	//move assigment
-	PrintStream& operator=(PrintStream&& other) {
-		if (this != &other) {out=other.out; other.out=null;}
-		return *this;
-	}
+	PrintStream& operator=(PrintStream&& other) = delete;
+
+	PrintStream(OutputStream& o) : out(o) {}
 	virtual ~PrintStream() {}
 
-	PrintStream(std::ostream& s) : out(&s) {}
+	void write(int b) {out.write(b);}
 
 	void println() const {
-		std::cout << std::endl;
+		out.write('\n');
 	}
 	void print(const char *s) const {
 		std::cout << s;
@@ -47,7 +45,7 @@ public:
 		std::cout << "PTR:" << Integer::toHexString((unsigned long)s).intern();
 	}
 	void println(void *s) const {
-		std::cout << "PTR:" << std::to_string((unsigned long)s) << std::endl;
+		std::cout << "PTR:" << Integer::toHexString((unsigned long)s).intern() << std::endl;
 	}
 
 	void print(const String& s) const {
@@ -60,6 +58,10 @@ public:
 		std::cout << o.toString().intern() << std::endl;
 	}
 
+	template <class T>
+	void print(const T& s) const {
+		print((void*)(&s));
+	}
 	template <class T>
 	void println(const T& s) const {
 		println((void*)(&s));

@@ -19,6 +19,11 @@ namespace lang {
 class TimeUnit {
 };
 
+class ProcessEnvironment final {
+public:
+	static const int MIN_NAME_LENGTH=1;
+};
+
 class Process : public Object {
 public:
 	virtual OutputStream& getOutputStream() = 0;
@@ -26,6 +31,7 @@ public:
 	virtual InputStream& getErrorStream() = 0;
 	virtual int waitFor() = 0;
 	boolean waitFor(long timeout, TimeUnit unit) {
+		return false;
 	}
 	virtual int exitValue() = 0;
 	virtual void destroy() = 0;
@@ -47,18 +53,26 @@ class ProcessBuilder : public Object {
 private:
 	List<String>& cmd;
 	File dir;
+	HashMap<String,String> env;
 public:
 	ProcessBuilder(List<String>& command) : cmd(command),dir(".") {}
 	List<String>& command() { return cmd; }
-	Map<String,String>& environment() {}
+	Map<String,String>& environment() {return env;}
 	const File& directory() { return dir; }
-	ProcessBuilder& directory(const File& dir) {
+	ProcessBuilder& directory(File& dir) {
 		this->dir= dir;
 		return *this;
 	}
-	Process& start() {
-		return *((Process*)null);
+	ProcessBuilder& environment(List<String> *envp) {
+		if (envp == null) return *this;
+		for (Iterator<String> i=envp->iterator(); i->hasNext(); ) {
+			String envstring = i->next();
+			int eqlsign = envstring.indexOf('=', ProcessEnvironment::MIN_NAME_LENGTH);
+			if (eqlsign != -1) env.put(envstring.substring(0,eqlsign), envstring.substring(eqlsign+1));
+		}
+		return *this;
 	}
+	Process& start();
 };
 
 } //namespace lang

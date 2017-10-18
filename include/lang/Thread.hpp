@@ -15,39 +15,39 @@ private:
 	String  name;
 	int     priority;
 	boolean daemon = false;
-	Runnable& target;
+	Runnable* target;
 public:
-	Thread() : target(*((Runnable*)null)) {}
-	Thread(Runnable& target) : target(target) {}
-	Thread(const String& name) : target(*((Runnable*)null)){}
-	Thread(Runnable& target, const String& name) : target(target) {}
+	Thread() : target(null) {}
+	Thread(Runnable& target) : target(&target) {}
+	Thread(const String& name) : target(null){}
+	Thread(Runnable& target, const String& name) : target(&target) {}
 	void start() {}
 
 	void run() {
-		if (&target != null) target.run();
+		if (target != null) target->run();
 	}
 	void interrupt() {}
 	boolean isInterrupted() {return isInterrupted(false);}
-	boolean isInterrupted(boolean ClearInterrupted) {}
-	boolean isAlive() {}
+	boolean isInterrupted(boolean ClearInterrupted) {return false;}
+	boolean isAlive() {return false;}
 	void setPriority(int newPriority) {}
-	int getPriority() {}
-	void setName(String name) {}
-	String getName() {}
+	int getPriority() {return 0;}
+	void setName(String name) {this->name=name;}
+	String getName() {return name;}
 	void join(long millis) {}
 	void join(long millis, int nanos) {join(millis);}
 	void setDaemon(boolean on) {daemon = on;}
 	boolean isDaemon() { return daemon; }
 	void checkAccess() {}
-	String toString() {}
+	String toString() {return getClass().getName()+":"+getName();}
 	//StackTraceElement[] getStackTrace() { }
-	long getId() {}
+	long getId() {return 0;}
 
 	static Thread& currentThread();
 	static void yield();
 	static void sleep(long millis);
 	static void sleep(long millis, int nanos);
-	static boolean interrupted() {}
+	static boolean interrupted() {return false;}
 	static void dumpStack() {}
 };
 
