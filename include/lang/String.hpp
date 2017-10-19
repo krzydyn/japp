@@ -11,36 +11,25 @@ class String final : public Object {
 private:
 	std::string value;
 	long hash = 0;
-
+	static void assign(String *d, const String *s);
+	static void move(String *d, const String *s);
+	static void assign(String *d, const char *s);
 public:
-	String(String&& o) {
-		std::cout << "constr=&& " << o.value << std::endl;
-		value = o.value;
-	}
-	String(const String& o) {
-		std::cout << "constr=& " << o.value << std::endl;
-		value = o.value;
-	}
-	String& operator=(String&& o) {
-		std::cout << "op=&& " << o.value << std::endl;
-		value = o.value;
-		hash = o.hash;
-	}
-	String& operator=(const String& o) {
-		std::cout << "op=& " << o.value << std::endl;
-		value = o.value;
-		hash = o.hash;
-	}
+	String(String&& o) { move(this,&o); }
+	String(const String& o) { assign(this,&o); }
+	String& operator=(String&& o) { move(this,&o); }
+	String& operator=(const String& o) { assign(this,&o); }
+	String(const std::string& v) { value = v; }
 
 	String() {}
-	String(const std::string& s) : value(s) {
-	}
-	String(const char *s);
+	String(const char *s) { assign(this,s); }
 	String(const String& s, int offset, int count);
+	String(const char *s, int offset, int count);
 	const std::string& intern() const { return value; }
 
 	int length() const { return value.length(); }
 	boolean isEmpty() const { return value.length() == 0; }
+	char charAt(int index);
 
 	virtual boolean operator==(const Object& s) const { return equals(s); }
 	virtual boolean operator!=(const Object& s) const { return !equals(s); }

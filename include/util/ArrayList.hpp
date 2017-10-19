@@ -51,11 +51,9 @@ public:
 	using List<T>::add;
 
     void add(unsigned i,const T& v) {
-		std::cout << "adding " << tostr(v) << std::endl;
         if (mSize>=mCapa) ensureCapa(mSize+1);
         if (i == END_OF_LIST) {
 		   	mVec[(mOffs+mSize)%mCapa]=v; ++mSize;
-			std::cout << "added " << tostr(v) << std::endl;
 		   	return ;
 	   	}
 		if (i > mSize) throw std::runtime_error("index out fo range");
@@ -68,7 +66,6 @@ public:
 			for (i=mSize; i > j; --i) mVec[(mOffs+i)%mCapa]=mVec[(mOffs+i-1)%mCapa];
 		}
         mVec[(mOffs+j)%mCapa]=v; ++mSize;
-		std::cout << "added " << tostr(v) << std::endl;
     }
     unsigned indexOf(const T& v,unsigned start=0) const {
 		for (unsigned i=start; i < mSize; ++i ) {

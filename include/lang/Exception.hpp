@@ -1,8 +1,8 @@
-#ifndef __LANG_EXCEPTIONS_HPP
-#define __LANG_EXCEPTIONS_HPP
+#ifndef __LANG_EXCEPTION_HPP
+#define __LANG_EXCEPTION_HPP
 
 #include <lang/String.hpp>
-#include <stdexcept>
+//#include <stdexcept>
 
 namespace lang {
 
@@ -10,8 +10,8 @@ class Throwable : public Object {
 public:
 	Throwable() {}
 	Throwable(const String& msg) : detailMessage(msg) {}
-	virtual String getMessage() const {return detailMessage;}
-	virtual String getLocalizedMessage() const {return getMessage();}
+	virtual const String& getMessage() const {return detailMessage;}
+	virtual const String& getLocalizedMessage() const {return getMessage();}
 	String toString() const {
 		String s = getClass().getName();
 		String message = getLocalizedMessage();
