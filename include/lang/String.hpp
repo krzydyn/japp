@@ -13,18 +13,22 @@ private:
 	long hash = 0;
 	static void assign(String *d, const String *s);
 	static void move(String *d, const String *s);
-	static void assign(String *d, const char *s);
+	//static void assign(String *d, const char *s);
 public:
 	String(String&& o) { move(this,&o); }
 	String(const String& o) { assign(this,&o); }
 	String& operator=(String&& o) { move(this,&o); }
 	String& operator=(const String& o) { assign(this,&o); }
+
 	String(const std::string& v) { value = v; }
+	String(const char *v) { value = v; }
+	template<class T>
+	String(T v) { value = std::to_string(v); }
 
 	String() {}
-	String(const char *s) { assign(this,s); }
 	String(const String& s, int offset, int count);
 	String(const char *s, int offset, int count);
+
 	const std::string& intern() const { return value; }
 
 	int length() const { return value.length(); }
@@ -102,13 +106,37 @@ public:
 	String substring(int beginIndex, int endIndex) { return value.substr(beginIndex,endIndex-beginIndex); }
 
 	static String valueOf(const Object& obj) { return obj.toString(); }
-
-	//friend String operator+(String s, const int& v) const {
-	//	return String(s.value+v).c_str());
-	//}
 };
 
-}
+inline String toString(const String& s) {return s;}
+template<class T>
+inline String toString(T v) {return String(v);}
 
+class StringBuilder : public Object {
+public:
+	StringBuilder& append(char v) {
+		return *this;
+	}
+};
+/*
+#include <sstream>
+class StringBuilder : public Object {
+private:
+	std::stringstream value;
+public:
+	String toString() { return String(value.str()); }
+
+	StringBuilder& append(const char *str) {
+		value << str;
+		return *this;
+	}
+	StringBuilder& append(const String& str) {
+		value << str.intern();
+		return *this;
+	}
+};
+*/
+
+}
 
 #endif

@@ -8,15 +8,20 @@ namespace util {
 template<class K,class V>
 class MapEntry {
 public:
-    MapEntry(const MapEntry &me) : key(me.key), val(me.val) {}
-    MapEntry(const K &key, const V &val) : key(key), val(val) {}
+	MapEntry(MapEntry&& o) { key = std::move(o.key); value = std::move(o.value); }
+    MapEntry(const MapEntry &me) : key(me.key), value(me.value) {}
+	MapEntry& operator=(MapEntry&& o) { key = std::move(o.key); value = std::move(o.value); }
+	MapEntry& operator=(const MapEntry& o) { key = o.key; value = o.value; }
+
+    MapEntry(const K &key, const V &val) : key(key), value(value) {}
     const K& getKey() const {return key;}
-    const V& getVal() const {return val;}
-    void setVal(const V& v) {val=v;}
-    V& getRef() {return val;}
+    const V& getValue() const {return value;}
+    void setVal(const V& v) {value=v;}
+    V& getRef() {return value;}
+	String toString() { return key + "=" + value; }
 private:
     K key;
-    V val;
+    V value;
 };
 
 template<class K,class V>
@@ -34,15 +39,15 @@ public:
 	virtual void clear() = 0;
 };
 
-long hashCode(long x) {return x;}
-long hashCode(const Object& x) {return x.hashCode();}
+inline long hashCode(long x) {return x;}
+inline long hashCode(const Object& x) {return x.hashCode();}
 template<class T>
-long hashCode(const T& x) {return (long)(&x);}
+inline long hashCode(const T& x) {return (long)(&x);}
 
 template<class K,class V>
-class HashMap : public Map<K,V> {
+class HashMap : public Object, public Map<K,V> {
 private:
-	V undef;
+	V& null_obj = *((V*)null);
 public:
     HashMap() {init(10);}
     HashMap(unsigned s) {init(s);}
@@ -58,59 +63,67 @@ public:
 	}
 
     const V& get(const K& k) const {
-        unsigned hc=hashCode(k)%mapsize;
+        unsigned hc = util::hashCode(k)%mapsize;
         const ArrayList<MapEntry<K,V> >& l=map[hc];
         for (unsigned i=0; i<l.size(); ++i) {
             if (l.ref(i).getKey() == k) {
-                return l.ref(i).getVal();
+                return l.ref(i).getValue();
             }
         }
-        return undef;
+        return null_obj;
     }
 
     void put(const K& k, const V& v) {
-        unsigned hc=hashCode(k)%mapsize;
+        unsigned hc = util::hashCode(k)%mapsize;
         ArrayList<MapEntry<K,V>>& l=map[hc];
-        //printf("put %u %u hc=%u sz[hc]=%u\n",k,v,hc,l.size());
+        printf("put hc=%u sz[hc]=%u\n",hc,l.size());
         for (unsigned i=0; i<l.size(); ++i) {
             if (l.ref(i).getKey() == k) {
                 l.ref(i).setVal(v);
                 return ;
             }
         }
-		const MapEntry<K,V> me(k,v);
+		MapEntry<K,V> me(k,v);
+		printf("add entry\n");
         l.add(me); ++elems;
+        printf("put done\n");
     }
 	V& ref(const K& k) {
-        unsigned hc=hashCode(k)%mapsize;
+        unsigned hc = util::hashCode(k)%mapsize;
         const ArrayList<MapEntry<K,V>>& l=map[hc];
         for (unsigned i=0; i<l.size(); ++i) {
             if (l.ref(i).getKey() == k) {
                 return l.ref(i).getRef();
             }
         }
-        return undef;
+        return null_obj;
 	}
     V remove(const K& k) {
-        unsigned hc=hashCode(k)%mapsize;
+        unsigned hc= util::hashCode(k)%mapsize;
         ArrayList<MapEntry<K,V>>& l=map[hc];
         for (unsigned i=0; i<l.size(); ++i) {
             if (l.ref(i).getKey() == k) {
 				--elems;
-				return l.remove(i).getVal();
+				return l.remove(i).getValue();
             }
         }
-        return undef;
-    }
-    const MapEntry<K,V>& entry(unsigned i) const {
-        for (int hc=0; hc<mapsize; ++hc) {
-            ArrayList<MapEntry<K,V>>& l=map[hc];
-            if (i < l.size()) { return l.ref(i); }
-            i-=l.size();
-        }
-        //throw exc.
+        return null_obj;
     }
 	void clear() {
+		elems=0;
+	}
+
+	String toString() const {
+		if (! elems) return "{}";
+		StringBuilder sb;
+		sb.append('{');
+		for (int i=0; ; ++i) {
+            const MapEntry<K,V>& e = entry(i);
+			if (&e == null) break;
+			const K& key = e.getKey();
+			const V& value = e.getValue();
+		}
+		return sb.append('}').toString();
 	}
 private:
     void init(unsigned s) {
@@ -118,6 +131,14 @@ private:
         mapsize=s;
     }
     void rehash(unsigned ns) {
+    }
+    const MapEntry<K,V>& entry(unsigned i) const {
+        for (int hc=0; hc<mapsize; ++hc) {
+            ArrayList<MapEntry<K,V>>& l=map[hc];
+            if (i < l.size()) { return l.ref(i); }
+            i-=l.size();
+        }
+        return *((MapEntry<K,V>*)null);
     }
     ArrayList<MapEntry<K,V>> *map;
     unsigned mapsize;

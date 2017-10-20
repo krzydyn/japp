@@ -29,18 +29,19 @@ static void test_ArrayList2() {
 	System.out.println("list.print");
 	list.print();
 }
-/*
+
 #include <util/HashMap.hpp>
-static void test_Map() {
+static void test_HashMap() {
 	HashMap<int,String> map;
-	map.put(1,"a");
+	map.put(1,"a1");
+	map.put(2,"b2");
 }
-*/
+
 int main(int argc, const char *argv[]) {
 	System.out.println("test1");
 	test_ArrayList();
 	System.out.println("test2");
 	test_ArrayList2();
-	//test_Map();
+	test_HashMap();
 	return 0;
 }

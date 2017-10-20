@@ -11,7 +11,6 @@ using jlong=long long;
 
 namespace lang {
 
-
 template<class T>
 class Array {
 private:

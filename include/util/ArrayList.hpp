@@ -53,7 +53,10 @@ public:
     void add(unsigned i,const T& v) {
         if (mSize>=mCapa) ensureCapa(mSize+1);
         if (i == END_OF_LIST) {
-		   	mVec[(mOffs+mSize)%mCapa]=v; ++mSize;
+			printf("copy %s into mvec[%d]\n", typeid(v).name(), (mOffs+mSize)%mCapa);
+			//mVec[(mOffs+mSize)%mCapa]=v;
+			memcpy(mVec + ((mOffs+mSize)%mCapa), &v, sizeof(v));
+			++mSize;
 		   	return ;
 	   	}
 		if (i > mSize) throw std::runtime_error("index out fo range");
@@ -65,6 +68,7 @@ public:
 		else {
 			for (i=mSize; i > j; --i) mVec[(mOffs+i)%mCapa]=mVec[(mOffs+i-1)%mCapa];
 		}
+		printf("copy into mvec\n");
         mVec[(mOffs+j)%mCapa]=v; ++mSize;
     }
     unsigned indexOf(const T& v,unsigned start=0) const {
