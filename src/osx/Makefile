@@ -1,5 +1,11 @@
 test: test.c
-	g++ -framework Carbon $^ -o $@
+	gcc -framework Carbon $^ -o $@
+
+test1: test.m
+	gcc -framework Cocoa -objective-c $^ -o $@
+
+testgl: testgl.c
+	gcc -o $@ $^ -framework OpenGL -framework GLUT
 
 
 list-frameworks:

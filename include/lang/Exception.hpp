@@ -2,7 +2,6 @@
 #define __LANG_EXCEPTION_HPP
 
 #include <lang/String.hpp>
-//#include <stdexcept>
 
 namespace lang {
 

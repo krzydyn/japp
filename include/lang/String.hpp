@@ -4,6 +4,7 @@
 #include <lang/Object.hpp>
 #include <string>
 #include <iostream>
+#include <sstream>
 
 namespace lang {
 
@@ -13,7 +14,7 @@ private:
 	long hash = 0;
 	static void assign(String *d, const String *s);
 	static void move(String *d, const String *s);
-	//static void assign(String *d, const char *s);
+	static void assign(String *d, const char *s);
 public:
 	String(String&& o) { move(this,&o); }
 	String(const String& o) { assign(this,&o); }
@@ -21,7 +22,8 @@ public:
 	String& operator=(const String& o) { assign(this,&o); }
 
 	String(const std::string& v) { value = v; }
-	String(const char *v) { value = v; }
+	String(const char *v) { assign(this, v); }
+	explicit String(const std::nullptr_t&) { assign(this, (const char *)0); }
 	template<class T>
 	String(T v) { value = std::to_string(v); }
 
@@ -105,7 +107,11 @@ public:
 	String substring(int beginIndex) const { return value.substr(beginIndex); }
 	String substring(int beginIndex, int endIndex) { return value.substr(beginIndex,endIndex-beginIndex); }
 
+	static String valueOf(int n) { return String(std::to_string(n)); }
+	static String valueOf(unsigned n) { return String(std::to_string(n)); }
 	static String valueOf(const Object& obj) { return obj.toString(); }
+	template<class T>
+	static String valueOf(const T& t) { return String(typeid(t).name()) + "@" + Integer::toHexString((long)&t); }
 };
 
 inline String toString(const String& s) {return s;}
@@ -113,19 +119,13 @@ template<class T>
 inline String toString(T v) {return String(v);}
 
 class StringBuilder : public Object {
-public:
-	StringBuilder& append(char v) {
-		return *this;
-	}
-};
-/*
-#include <sstream>
-class StringBuilder : public Object {
 private:
 	std::stringstream value;
 public:
-	String toString() { return String(value.str()); }
-
+	StringBuilder& append(char v) {
+		value << v;
+		return *this;
+	}
 	StringBuilder& append(const char *str) {
 		value << str;
 		return *this;
@@ -134,8 +134,15 @@ public:
 		value << str.intern();
 		return *this;
 	}
+	template<class T>
+	StringBuilder& append(const T& t) {
+		value << typeid(t).name() << "@" << Integer::toHexString((long)&t).intern();
+		return *this;
+	}
+	String toString() const {
+		return String(value.str());
+	}
 };
-*/
 
 }
 

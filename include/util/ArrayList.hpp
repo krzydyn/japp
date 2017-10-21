@@ -3,6 +3,7 @@
 
 #include <util/List.hpp>
 #include <lang/Math.hpp>
+#include <lang/Exception.hpp>
 #include <iostream>
 
 namespace util {
@@ -17,7 +18,7 @@ template<class T>
 inline boolean util_equals(const T& a, const T& b) { return (void*)&a == (void*)&b; }
 
 template<class T>
-class ArrayList : public Object, public List<T> {
+class ArrayList : public AbstractList<T> {
 class ArrayListIterator;
 
 public:
@@ -25,7 +26,7 @@ public:
         mVec=null;mOffs=mSize=0;mCapa=0;
         if (initCapa) ensureCapa(initCapa);
     } 
-    ~ArrayList() { if (mVec) delete [] (unsigned char*)mVec; } 
+    ~ArrayList() { if (mVec) delete [] mVec; } 
 
 	Iterator<T> iterator() {
 		return makeIterator<ArrayListIterator>(*this);
@@ -37,7 +38,7 @@ public:
 		if (i >= mSize) throw std::runtime_error("index out fo range");
 		return mVec[(mOffs+i)%mCapa];
 	}
-    T& ref(unsigned i) const {
+    T& get(unsigned i) {
 		if (i >= mSize) throw std::runtime_error("index out fo range");
 		return mVec[(mOffs+i)%mCapa];
 	}
@@ -49,13 +50,14 @@ public:
 	//in C++ methods of the same name from base class are hidden
 	// - so tell explicitly not to hide by "using"
 	using List<T>::add;
+	using List<T>::remove;
 
     void add(unsigned i,const T& v) {
         if (mSize>=mCapa) ensureCapa(mSize+1);
         if (i == END_OF_LIST) {
 			printf("copy %s into mvec[%d]\n", typeid(v).name(), (mOffs+mSize)%mCapa);
-			//mVec[(mOffs+mSize)%mCapa]=v;
-			memcpy(mVec + ((mOffs+mSize)%mCapa), &v, sizeof(v));
+			mVec[(mOffs+mSize)%mCapa]=v;
+			//memcpy(mVec + ((mOffs+mSize)%mCapa), &v, sizeof(v));
 			++mSize;
 		   	return ;
 	   	}
@@ -77,21 +79,21 @@ public:
 		}
 		return END_OF_LIST;
 	}
-    T copyOf(unsigned i) const {
-		if (i >= mSize) throw std::runtime_error("index out fo range");
-		return mVec[(mOffs+i)%mCapa];
+    unsigned lastIndexOf(const T& v,unsigned start=0) const {
+		return END_OF_LIST;
 	}
-    void remove(List<T>& set) {
+    void removeAll(const Collection<T>& c) {
         unsigned d=0;
         for (unsigned i=0; i<mSize; ++i) {
-            if (set.indexOf(mVec[(mOffs+i)%mCapa])==END_OF_LIST) {
+			//copy elements not existing on c
+            if (!c.contains(mVec[(mOffs+i)%mCapa])) {
                 if (d!=i) mVec[(mOffs+d)%mCapa]=mVec[(mOffs+i)%mCapa];
                 ++d;
             }
         }
         mSize=d;
     }
-    T remove(unsigned i) {
+    T removeAt(unsigned i) {
 		if (i >= mSize) throw std::runtime_error("index out fo range");
         T v=mVec[(mOffs+i)%mCapa]; --mSize;
 		if (i < mSize - i) {
@@ -154,22 +156,20 @@ public:
 private:
     T *mVec;
     unsigned mOffs,mSize, mCapa;
-    void ensureCapa(unsigned ns) {
-        if (mCapa>=ns) return ;
-        if (ns<8) ns=8;
-        else ns=hiBit(ns)<<1;
-        T *v = (T*)new unsigned char[ns*sizeof(T)];
-		if (!v) {
-        	throw std::runtime_error("Out of memory");
+    void ensureCapa(unsigned ns){
+		if (mCapa>=ns) return ;
+		if (ns<8) ns=8;
+		else ns=hiBit(ns)<<1;
+		T *v = new T[ns];
+		if (!v) throw OutOfMemoryError();
+		if (mVec) {
+			for (int i=0; i < mSize; ++i) v[i]=mVec[(mOffs+i)%mCapa];
+			delete [] mVec;
 		}
-        if (mVec) {
-            for (int i=0; i < mSize; ++i) v[i]=mVec[(mOffs+i)%mCapa];
-            delete [] (unsigned char*)mVec;
-        }
 		mOffs=0;
-        mVec=v; mCapa=ns;
+		mVec=v; mCapa=ns;
 		std::cerr << "capa = " << mCapa << std::endl;
-    }
+	}
 
 	class ArrayListIterator : public IteratorBase<T> {
 	private:
@@ -183,7 +183,7 @@ private:
 		void remove() {
 			if (mNext > 0) {
 				--mNext;
-				mList.remove(mNext);
+				mList.removeAt(mNext);
 			}
 		}
 	};

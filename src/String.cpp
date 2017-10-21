@@ -15,14 +15,13 @@ void String::move(String *d, const String *s) {
 	d->value = std::move(s->value);
 	d->hash = s->hash;
 }
-/*
 void String::assign(String *d, const char *s) {
 	if (s == null || d == null) throw NullPointerException();
 	std::cout << "assign_cstr '" << s << "'" << std::endl;
 	d->value = s;
 	d->hash = 0;
 }
-*/
+
 String::String(const String& s, int offset, int count) {
 	if (&s == null || this == null) throw NullPointerException();
 	if (offset < 0 || count < 0 || s.value.size() - count < offset) {
@@ -35,7 +34,7 @@ String::String(const char *s, int offset, int count) {
 	if (offset < 0 || count < 0 || strlen(s) - count < offset) {
 		throw IndexOutOfBoundsException(offset);
 	}
-	value = std::string(s).substr(offset, count);
+	value = std::string(s, offset, count);
 }
 
 char String::charAt(int index) {

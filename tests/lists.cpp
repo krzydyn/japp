@@ -26,8 +26,8 @@ static void test_ArrayList2() {
 
 	list.add(String("aaa"));
 	list.add(String("bbb"));
-	System.out.println("list.print");
-	list.print();
+	System.out.println("list.toString");
+	System.out.println(list.toString());
 }
 
 #include <util/HashMap.hpp>
@@ -42,6 +42,7 @@ int main(int argc, const char *argv[]) {
 	test_ArrayList();
 	System.out.println("test2");
 	test_ArrayList2();
+	System.out.println("test HashMap");
 	test_HashMap();
 	return 0;
 }

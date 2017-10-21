@@ -13,6 +13,7 @@ public:
 	MapEntry& operator=(MapEntry&& o) { key = std::move(o.key); value = std::move(o.value); }
 	MapEntry& operator=(const MapEntry& o) { key = o.key; value = o.value; }
 
+    MapEntry() {}
     MapEntry(const K &key, const V &val) : key(key), value(value) {}
     const K& getKey() const {return key;}
     const V& getValue() const {return value;}
@@ -33,8 +34,8 @@ public:
 	virtual boolean containsKey(const K& key) const = 0;
 	virtual boolean containsValue(const V& value) const = 0;
 	virtual const V& get(const K& key) const = 0;
+	virtual V& get(const K& key) = 0;
 	virtual void put(const K& key, const V& value) = 0;
-	virtual V& ref(const K& key) = 0;
 	virtual V remove(const K& key) = 0;
 	virtual void clear() = 0;
 };
@@ -66,20 +67,30 @@ public:
         unsigned hc = util::hashCode(k)%mapsize;
         const ArrayList<MapEntry<K,V> >& l=map[hc];
         for (unsigned i=0; i<l.size(); ++i) {
-            if (l.ref(i).getKey() == k) {
-                return l.ref(i).getValue();
+            if (l.get(i).getKey() == k) {
+                return l.get(i).getValue();
             }
         }
         return null_obj;
     }
+	V& get(const K& k) {
+        unsigned hc = util::hashCode(k)%mapsize;
+        ArrayList<MapEntry<K,V>>& l=map[hc];
+        for (unsigned i=0; i<l.size(); ++i) {
+            if (l.get(i).getKey() == k) {
+                return l.get(i).getRef();
+            }
+        }
+        return null_obj;
+	}
 
     void put(const K& k, const V& v) {
         unsigned hc = util::hashCode(k)%mapsize;
         ArrayList<MapEntry<K,V>>& l=map[hc];
         printf("put hc=%u sz[hc]=%u\n",hc,l.size());
         for (unsigned i=0; i<l.size(); ++i) {
-            if (l.ref(i).getKey() == k) {
-                l.ref(i).setVal(v);
+            if (l.get(i).getKey() == k) {
+                l.get(i).setVal(v);
                 return ;
             }
         }
@@ -88,23 +99,13 @@ public:
         l.add(me); ++elems;
         printf("put done\n");
     }
-	V& ref(const K& k) {
-        unsigned hc = util::hashCode(k)%mapsize;
-        const ArrayList<MapEntry<K,V>>& l=map[hc];
-        for (unsigned i=0; i<l.size(); ++i) {
-            if (l.ref(i).getKey() == k) {
-                return l.ref(i).getRef();
-            }
-        }
-        return null_obj;
-	}
     V remove(const K& k) {
         unsigned hc= util::hashCode(k)%mapsize;
         ArrayList<MapEntry<K,V>>& l=map[hc];
         for (unsigned i=0; i<l.size(); ++i) {
-            if (l.ref(i).getKey() == k) {
+            if (l.get(i).getKey() == k) {
 				--elems;
-				return l.remove(i).getValue();
+				return l.removeAt(i).getValue();
             }
         }
         return null_obj;
@@ -135,7 +136,7 @@ private:
     const MapEntry<K,V>& entry(unsigned i) const {
         for (int hc=0; hc<mapsize; ++hc) {
             ArrayList<MapEntry<K,V>>& l=map[hc];
-            if (i < l.size()) { return l.ref(i); }
+            if (i < l.size()) { return l.get(i); }
             i-=l.size();
         }
         return *((MapEntry<K,V>*)null);

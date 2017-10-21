@@ -26,6 +26,7 @@ String getSimpleBinaryName() { return ""; }
 }
 
 namespace lang {
+Class::Class(const Object& o) : type(typeid(o)) {}
 
 String Class::getName() const { return demangle(type.name()); }
 String Class::getSimpleName() const {
@@ -38,9 +39,6 @@ String Class::getSimpleName() const {
 }
 String Class::getCanonicalName() const { return getName(); }
 
-
-static ObjectInfo info;
-const Class Object::getClass() const { return Class(typeid(*this),info); }
 Object& Object::clone() const {
 	throw CloneNotSupportedException();
 }
