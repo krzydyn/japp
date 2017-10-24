@@ -7,6 +7,9 @@ test1: test.m
 testgl: testgl.c
 	gcc -o $@ $^ -framework OpenGL -framework GLUT
 
+testq: testquartz.c
+	gcc -o $@ $^ -framework ApplicationServices
+
 
 list-frameworks:
 	ls /System/Library/Frameworks

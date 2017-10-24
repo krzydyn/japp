@@ -1,14 +1,36 @@
 #ifndef __LANG_EXCEPTION_HPP
 #define __LANG_EXCEPTION_HPP
 
-#include <lang/Thread.hpp>
+#include <lang/String.hpp>
 
 namespace lang {
+class StackTraceElement {
+private:
+	String methodName;
+	String fileName;
+	int    lineNumber;
+public:
+	StackTraceElement(StackTraceElement&& o) { methodName = std::move(methodName); }
+	StackTraceElement(const StackTraceElement& o) = delete;
+	StackTraceElement& operator=(StackTraceElement&& o) { methodName = std::move(methodName); }
+	StackTraceElement& operator=(const StackTraceElement& o) = delete;
+	~StackTraceElement() {}
+
+	StackTraceElement(){}
+	StackTraceElement(const String& methodName, const String& fileName, int lineNumber) :
+   		methodName(methodName), fileName(fileName), lineNumber(lineNumber) {
+	}
+
+	const String&  getMethodName() { return methodName; }
+   	const String& getFileName() { return fileName; }
+	int getLineNumber() { return lineNumber; }
+};
 
 class Throwable : public Object {
 public:
 	Throwable() {}
 	Throwable(const String& msg) : detailMessage(msg) {}
+	~Throwable() { delete stackTrace; }
 	virtual const String& getMessage() const {return detailMessage;}
 	virtual const String& getLocalizedMessage() const {return getMessage();}
 	String toString() const {
@@ -17,12 +39,14 @@ public:
 		return (message != null) ? (s + ": " + message) : s;
 	}
 	Throwable& fillInStackTrace() {
+		captureStack(50);
 		return *this;
 	}
 private:
 	String detailMessage;
-	//List<> stackTrace;
+	Array<StackTraceElement> *stackTrace;
 	Throwable *cause;
+	void captureStack(int depth);
 };
 
 class Error : public Throwable {

@@ -2,6 +2,7 @@
 #define __LANG_OBJECT_HPP
 
 #include <typeinfo>
+#include <string>
 
 #define boolean bool
 #define null nullptr
@@ -21,6 +22,7 @@ class Class {
 private:
 	const std::type_info& type;
 	Class(const Object& o);
+	static std::string nameOf(const std::type_info& type);
 
 public:
 	String getName() const;
@@ -33,6 +35,9 @@ public:
 	virtual boolean isPrimitive() const {return false;}
 	virtual boolean isAnnotation() const {return false;}
 	virtual boolean isSynthetic() const {return false;}
+
+	template<class T>
+	static std::string nameOf(const T& o) { return nameOf(typeid(o)); }
 };
 
 class Object {
@@ -64,7 +69,7 @@ private:
 public:
 	const int length;
 	Array(int l) : length(l) { a = new T[l]; }
-	~Array() { delete a; }
+	~Array() { if (a) delete a; }
 	T& operator[](int i) { return a[i]; }
 	const T& operator[](int i) const { return a[i]; }
 };

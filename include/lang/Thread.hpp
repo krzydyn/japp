@@ -2,13 +2,9 @@
 #define __LANG_THREAD_HPP
 
 #include <lang/String.hpp>
+#include <lang/Exception.hpp>
 
 namespace lang {
-
-class StackTraceElement {
-	
-};
-
 
 class Runnable {
 public:

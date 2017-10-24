@@ -111,7 +111,7 @@ public:
 	static String valueOf(unsigned n) { return String(std::to_string(n)); }
 	static String valueOf(const Object& obj) { return obj.toString(); }
 	template<class T>
-	static String valueOf(const T& t) { return String(typeid(t).name()) + "@" + Integer::toHexString((long)&t); }
+	static String valueOf(const T& t) { return Class::nameOf(t) + "@" + Integer::toHexString((long)&t); }
 };
 
 inline String toString(const String& s) {return s;}
@@ -136,7 +136,7 @@ public:
 	}
 	template<class T>
 	StringBuilder& append(const T& t) {
-		value << typeid(t).name() << "@" << Integer::toHexString((long)&t).intern();
+		value << Class::nameOf(t) << "@" << Integer::toHexString((long)&t).intern();
 		return *this;
 	}
 	String toString() const {

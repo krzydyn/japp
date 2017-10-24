@@ -55,7 +55,7 @@ public:
     void add(unsigned i,const T& v) {
         if (mSize>=mCapa) ensureCapa(mSize+1);
         if (i == END_OF_LIST) {
-			printf("copy %s into mvec[%d]\n", typeid(v).name(), (mOffs+mSize)%mCapa);
+			printf("copy %s into mvec[%d]\n", Class::nameOf(v).c_str(), (mOffs+mSize)%mCapa);
 			mVec[(mOffs+mSize)%mCapa]=v;
 			//memcpy(mVec + ((mOffs+mSize)%mCapa), &v, sizeof(v));
 			++mSize;

@@ -1,8 +1,5 @@
-#include <iostream>
 #include <Carbon/Carbon.h>
-#include <HIToolbox.h>
 
-using namespace std;
 /*
 int main()
 {

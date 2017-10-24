@@ -3,6 +3,8 @@
 
 #include <util/List.hpp>
 
+namespace util {
+
 template<class T>
 class LinkedListNode {
 	LinkedListNode<T> *mNext, *mPrev;
@@ -29,7 +31,7 @@ public:
 };
 
 template<class T>
-class LinkedList : public Object, public List {
+class LinkedList : public AbstractList<T> {
 	LinkedListNode<T> head;
 	unsigned mSize;
 public:
@@ -56,8 +58,8 @@ public:
 			n=next;
 		}
 	}
-	void addFirst(const &T v) {prepend(v);}
-	void addLast(const &T v) {append(v);}
+	void addFirst(const T& v) {prepend(v);}
+	void addLast(const T& v) {append(v);}
 	LinkedListNode<T> *first() { LinkedListNode<T> *n=head.next(); return n==&head ? null : n;}
 	LinkedListNode<T> *last() { LinkedListNode<T> *n=head.prev(); return n==&head ? null : n;}
 	T removeFirst() {
@@ -79,5 +81,7 @@ public:
 		return v;
 	}
 };
+
+} //namespace util
 
 #endif
