@@ -5,6 +5,11 @@
 
 namespace lang {
 
+class StackTraceElement {
+	
+};
+
+
 class Runnable {
 public:
 	virtual void run() = 0;
@@ -40,7 +45,7 @@ public:
 	boolean isDaemon() { return daemon; }
 	void checkAccess() {}
 	String toString() {return getClass().getName()+":"+getName();}
-	//StackTraceElement[] getStackTrace() { }
+	Array<StackTraceElement> getStackTrace() { }
 	long getId() {return 0;}
 
 	static Thread& currentThread();

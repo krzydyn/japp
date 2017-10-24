@@ -1,7 +1,7 @@
 #ifndef __LANG_EXCEPTION_HPP
 #define __LANG_EXCEPTION_HPP
 
-#include <lang/String.hpp>
+#include <lang/Thread.hpp>
 
 namespace lang {
 
@@ -16,8 +16,12 @@ public:
 		String message = getLocalizedMessage();
 		return (message != null) ? (s + ": " + message) : s;
 	}
+	Throwable& fillInStackTrace() {
+		return *this;
+	}
 private:
 	String detailMessage;
+	//List<> stackTrace;
 	Throwable *cause;
 };
 
