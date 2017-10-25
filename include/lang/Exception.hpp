@@ -2,18 +2,44 @@
 #define __LANG_EXCEPTION_HPP
 
 #include <lang/String.hpp>
+#include <cstring>
 
 namespace lang {
+template<class T>
+class Array {
+private:
+	T *a;
+public:
+	Array<T>& operator=(const Array<T>&o) {
+		const_cast<int&>(length) = o.length;
+		a = new T[length];
+		for (int i=0; i < length; ++i) a[i] = o.a[i];
+	}
+	/*Array<T>& operator=(Array<T>&& o) {
+		const_cast<int&>(length) = o.length;
+		a = o.a;
+		o.a = nullptr;
+		return *this;
+	}*/
+
+	const int length;
+	Array() : length(0) { a = null; }
+	Array(int l) : length(l) { a = new T[l]; }
+	~Array() { delete [] a; }
+	T& operator[](int i) { return a[i]; }
+	const T& operator[](int i) const { return a[i]; }
+};
+
 class StackTraceElement {
 private:
 	String methodName;
 	String fileName;
 	int    lineNumber;
 public:
-	StackTraceElement(StackTraceElement&& o) { methodName = std::move(methodName); }
-	StackTraceElement(const StackTraceElement& o) = delete;
-	StackTraceElement& operator=(StackTraceElement&& o) { methodName = std::move(methodName); }
-	StackTraceElement& operator=(const StackTraceElement& o) = delete;
+	StackTraceElement(StackTraceElement&& o) { methodName = std::move(o.methodName); }
+	StackTraceElement(const StackTraceElement& o) { methodName = o.methodName; }
+	StackTraceElement& operator=(StackTraceElement&& o) { methodName = std::move(o.methodName); }
+	StackTraceElement& operator=(const StackTraceElement& o) { methodName = o.methodName; }
 	~StackTraceElement() {}
 
 	StackTraceElement(){}
@@ -28,9 +54,9 @@ public:
 
 class Throwable : public Object {
 public:
-	Throwable() {}
-	Throwable(const String& msg) : detailMessage(msg) {}
-	~Throwable() { delete stackTrace; }
+	Throwable() : stackTrace() {}
+	Throwable(const String& msg) : detailMessage(msg), stackTrace() {}
+	~Throwable() {}
 	virtual const String& getMessage() const {return detailMessage;}
 	virtual const String& getLocalizedMessage() const {return getMessage();}
 	String toString() const {
@@ -44,7 +70,7 @@ public:
 	}
 private:
 	String detailMessage;
-	Array<StackTraceElement> *stackTrace;
+	Array<StackTraceElement> stackTrace;
 	Throwable *cause;
 	void captureStack(int depth);
 };

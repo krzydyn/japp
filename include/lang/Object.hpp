@@ -3,6 +3,7 @@
 
 #include <typeinfo>
 #include <string>
+#include <iostream>
 
 #define boolean bool
 #define null nullptr
@@ -16,6 +17,17 @@ namespace lang {
 
 class String;
 class Object;
+
+class CallTrace {
+	const char *func;
+	const char *file;
+	int ln;
+public:
+	CallTrace(const char *func, const char *file, int ln);
+	~CallTrace();
+};
+
+#define TRACE CallTrace trace_##__FUNCTION__(__FUNCTION__, __FILE__, __LINE__)
 
 class Class {
 	friend class Object;
@@ -37,7 +49,7 @@ public:
 	virtual boolean isSynthetic() const {return false;}
 
 	template<class T>
-	static std::string nameOf(const T& o) { return nameOf(typeid(o)); }
+	static std::string nameOf(const T& o) {return nameOf(typeid(o)); }
 };
 
 class Object {
@@ -60,18 +72,6 @@ public:
 	virtual boolean operator!=(const void *ptr) { return ptr != this; }
 protected:
 	virtual void finalize() {}
-};
-
-template<class T>
-class Array : extends Object {
-private:
-	T *a;
-public:
-	const int length;
-	Array(int l) : length(l) { a = new T[l]; }
-	~Array() { if (a) delete a; }
-	T& operator[](int i) { return a[i]; }
-	const T& operator[](int i) const { return a[i]; }
 };
 
 class Integer : extends Object {

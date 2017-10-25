@@ -5,19 +5,19 @@ namespace lang {
 
 void String::assign(String *d, const String *s) {
 	if (s == null || d == null) throw NullPointerException();
-	std::cout << "assign '" << s->value << "'" << std::endl;
+	//std::cout << "assign '" << s->value << "'" << std::endl;
 	d->value = s->value;
 	d->hash = s->hash;
 }
 void String::move(String *d, const String *s) {
 	if (s == null || d == null) throw NullPointerException();
-	std::cout << "move '" << s->value << "'" << std::endl;
+	//std::cout << "move '" << s->value << "'" << std::endl;
 	d->value = std::move(s->value);
 	d->hash = s->hash;
 }
 void String::assign(String *d, const char *s) {
 	if (s == null || d == null) throw NullPointerException();
-	std::cout << "assign_cstr '" << s << "'" << std::endl;
+	//std::cout << "assign_cstr '" << s << "'" << std::endl;
 	d->value = s;
 	d->hash = 0;
 }

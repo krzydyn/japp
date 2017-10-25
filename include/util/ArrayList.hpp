@@ -26,7 +26,7 @@ public:
         mVec=null;mOffs=mSize=0;mCapa=0;
         if (initCapa) ensureCapa(initCapa);
     } 
-    ~ArrayList() { if (mVec) delete [] mVec; } 
+    ~ArrayList() { delete [] mVec; } 
 
 	Iterator<T> iterator() {
 		return makeIterator<ArrayListIterator>(*this);
