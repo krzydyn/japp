@@ -1,3 +1,4 @@
+#include <lang/Math.hpp>
 #include <lang/Process.hpp>
 #include <lang/System.hpp>
 #include <lang/Runtime.hpp>
@@ -10,32 +11,35 @@
 using namespace std::chrono;
 
 namespace lang {
+const The_System System;
+const The_Math Math;
+
 void Shutdown::exit(int status) {
 	std::exit(status);
 }
+
 static io::FileInputStream std_fin(std::cin);
 static io::FileOutputStream std_fout(std::cout);
 static io::FileOutputStream std_ferr(std::cerr);
 static io::PrintStream std_out(std_fout);
 static io::PrintStream std_err(std_ferr);
 
-io::InputStream& _System::in = std_fin;
-io::PrintStream& _System::out = std_out;
-io::PrintStream& _System::err = std_err;
+io::InputStream& The_System::in = std_fin;
+io::PrintStream& The_System::out = std_out;
+io::PrintStream& The_System::err = std_err;
 
-jlong _System::currentTimeMillis() {
+jlong The_System::currentTimeMillis() {
 	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }
 
-String _System::getenv(const String& name) {
+String The_System::getenv(const String& name) {
 	const char *v = std::getenv(name.intern().c_str());
 	if (v == null) return String();
 	return v;
 }
 
-void _System::exit(int code) { Runtime::getRuntime().exit(code); }
-void _System::gc() { Runtime::getRuntime().gc(); }
-const _System System;
+void The_System::exit(int code) { Runtime::getRuntime().exit(code); }
+void The_System::gc() { Runtime::getRuntime().gc(); }
 
 Process& ProcessBuilder::start() {
 	Process *p = null;
@@ -43,7 +47,6 @@ Process& ProcessBuilder::start() {
 }
 
 Runtime Runtime::currentRuntime;
-
 
 } //namespace lang
 

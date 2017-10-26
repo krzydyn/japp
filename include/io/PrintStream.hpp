@@ -28,46 +28,40 @@ public:
 	void println() const {
 		out.write('\n');
 	}
+
 	void print(const char *s) const {
 		out.write(s,0,std::strlen(s));
 	}
-	void println(const char *s) const {
-		out.write(s,0,std::strlen(s));
-		out.write('\n');
+	void print(unsigned long s) const {
+		print(Integer::toHexString(s));
 	}
+	void print(int s) const {print((unsigned long)s);}
 
-	void print(int s) const {
-	}
-	void println(int s) const {
-	}
-
-	void print(void *s) const {
-		print(Integer::toHexString((unsigned long)s));
-	}
-	void println(void *s) const {
-		println(Integer::toHexString((unsigned long)s));
-	}
-
-	void print(const String& s) const {
+	void print(const String& s) const {TRACE;
 		out.write(s.intern().c_str(),s.length());
 	}
-	void println(const String& s) const {
-		print(s);
-		println();
+	void print(const Object* o) const {TRACE;
+		print(o->toString());
 	}
-	void println(const Object& o) const {
-		println(o.toString());
+	void print(const Object& o) const {TRACE;
+		print(o.toString());
 	}
 
 	template <class T>
 	void print(const T& s) const {
-		print((void*)(&s));
-	}
-	template <class T>
-	void println(const T& s) const {
-		println((void*)(&s));
+		if (instanceOf<const Object>(s)) {
+			print(s.toString());
+		}
+		else {
+			const Object *ptr = (const Object *)&s;
+			print((unsigned long)ptr);
+		}
 	}
 
+	template <class T>
+	void println(T s) const {
+		print(s); println();
+	}
 };
 
 } //namespace io

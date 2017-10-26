@@ -4,6 +4,8 @@
 #include <lang/String.hpp>
 #include <cstring>
 
+namespace io { class PrintStream; }
+
 namespace lang {
 template<class T>
 class Array {
@@ -11,9 +13,12 @@ private:
 	T *a;
 public:
 	Array<T>& operator=(const Array<T>&o) {
+		if (this == &o) return *this;
+		delete [] a;
 		const_cast<int&>(length) = o.length;
 		a = new T[length];
 		for (int i=0; i < length; ++i) a[i] = o.a[i];
+		return *this;
 	}
 	/*Array<T>& operator=(Array<T>&& o) {
 		const_cast<int&>(length) = o.length;
@@ -36,10 +41,26 @@ private:
 	String fileName;
 	int    lineNumber;
 public:
-	StackTraceElement(StackTraceElement&& o) { methodName = std::move(o.methodName); }
-	StackTraceElement(const StackTraceElement& o) { methodName = o.methodName; }
-	StackTraceElement& operator=(StackTraceElement&& o) { methodName = std::move(o.methodName); }
-	StackTraceElement& operator=(const StackTraceElement& o) { methodName = o.methodName; }
+	StackTraceElement(StackTraceElement&& o) {
+		methodName = std::move(o.methodName);
+		fileName = std::move(o.fileName);
+		lineNumber = o.lineNumber; o.lineNumber=0;
+	}
+	StackTraceElement(const StackTraceElement& o) {
+		methodName = o.methodName;
+		fileName = o.fileName;
+		lineNumber = o.lineNumber;
+	}
+	StackTraceElement& operator=(StackTraceElement&& o) {
+		methodName = std::move(o.methodName);
+		fileName = std::move(o.fileName);
+		lineNumber = o.lineNumber; o.lineNumber=0;
+	}
+	StackTraceElement& operator=(const StackTraceElement& o) {
+		methodName = o.methodName;
+		fileName = o.fileName;
+		lineNumber = o.lineNumber;
+	}
 	~StackTraceElement() {}
 
 	StackTraceElement(){}
@@ -50,6 +71,9 @@ public:
 	const String&  getMethodName() { return methodName; }
    	const String& getFileName() { return fileName; }
 	int getLineNumber() { return lineNumber; }
+	String toString() {
+		return methodName+ "(" +fileName + ":" + lineNumber + ")";
+	}
 };
 
 class Throwable : public Object {
@@ -65,14 +89,18 @@ public:
 		return (message != null) ? (s + ": " + message) : s;
 	}
 	Throwable& fillInStackTrace() {
-		captureStack(50);
+		//captureStack(50);
+		captureStack2();
 		return *this;
 	}
+	void printStackTrace();
+	void printStackTrace(const io::PrintStream& s);
 private:
 	String detailMessage;
 	Array<StackTraceElement> stackTrace;
 	Throwable *cause;
 	void captureStack(int depth);
+	void captureStack2();
 };
 
 class Error : public Throwable {

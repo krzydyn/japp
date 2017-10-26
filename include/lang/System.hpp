@@ -8,22 +8,22 @@
 
 namespace lang {
 
-class _System final {
+class The_System final {
 public:
-	_System(){}
-	_System(const _System& other) = delete;
-	_System(_System&& other) = delete;
-	_System& operator=(const _System& other) = delete;
-	_System& operator=(_System&& other) = delete;
-	//~_System() = delete;
+	The_System(){}
+	The_System(const The_System& other) = delete;
+	The_System(The_System&& other) = delete;
+	The_System& operator=(const The_System& other) = delete;
+	The_System& operator=(The_System&& other) = delete;
+	//~The_System() = delete;
 
 	static io::PrintStream& err;
 	static io::PrintStream& out;
 	static io::InputStream& in;
 
-	static void setIn(io::InputStream& s) { _System::in=s; }
-	static void setOut(io::PrintStream& s) { _System::out=s; }
-	static void setErr(io::PrintStream& s) { _System::err=s; }
+	static void setIn(io::InputStream& s) {The_System::in=s; }
+	static void setOut(io::PrintStream& s) {The_System::out=s; }
+	static void setErr(io::PrintStream& s) {The_System::err=s; }
 
 	static jlong currentTimeMillis();
 	static String getenv(const String& name);
@@ -35,7 +35,7 @@ public:
 	static void gc();
 };
 
-extern const _System System;
+extern const The_System System;
 
 } //namespace lang
 

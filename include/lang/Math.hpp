@@ -9,7 +9,7 @@
 
 namespace lang {
 
-class _Math {
+class The_Math {
 public:
 	static constexpr double E = 2.7182818284590452354;
 	static constexpr double PI = 3.14159265358979323846;
@@ -72,7 +72,7 @@ private:
 	static std::default_random_engine randomEngine;
 };
 
-extern _Math Math;
+extern const The_Math Math;
 
 } //namespace lang
 

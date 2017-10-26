@@ -13,21 +13,26 @@
 using jint=long;
 using jlong=long long;
 
+#define PP_CAT(a, b) PP_CAT_I(a, b)
+#define PP_CAT_I(a, b) a ## b
+#define UNIQUE_NAME(base) PP_CAT(base, __LINE__)
+
 namespace lang {
 
 class String;
 class Object;
 
 class CallTrace {
+public:
 	const char *func;
 	const char *file;
-	int ln;
-public:
-	CallTrace(const char *func, const char *file, int ln);
+	unsigned line;
+	CallTrace(const char *func, const char *file,unsigned line):func(func),file(file),line(line){}
+	void r();
 	~CallTrace();
 };
 
-#define TRACE CallTrace trace_##__FUNCTION__(__FUNCTION__, __FILE__, __LINE__)
+#define TRACE CallTrace UNIQUE_NAME(the_calltrace)(__FUNCTION__, __FILE__,__LINE__);UNIQUE_NAME(the_calltrace).r()
 
 class Class {
 	friend class Object;
@@ -49,27 +54,27 @@ public:
 	virtual boolean isSynthetic() const {return false;}
 
 	template<class T>
-	static std::string nameOf(const T& o) {return nameOf(typeid(o)); }
+	static std::string nameOf(const T& o) {TRACE;return nameOf(typeid(o)); }
 };
 
 class Object {
 public:
 	virtual ~Object() {}
-	virtual const Class getClass() const { return Class(*this); }
+	virtual const Class getClass() const {return Class(*this);}
 	virtual long hashCode() const {return (long)this;}
 	virtual long hashCode() {return ((const Object*)this)->hashCode();}
-	virtual boolean equals(const Object& obj) const { return this == &obj; }
+	virtual boolean equals(const Object& obj) const {return this == &obj;}
 	virtual Object& clone() const;
 	virtual String toString() const;
 	virtual void notify() {}
 	virtual void wait(long timeout) final {}
 	virtual void wait(long timeout, int nanos) final {}
-	virtual void wait() final { wait(0); }
+	virtual void wait() final {wait(0); }
 
-	virtual boolean operator==(const Object& obj) final { return equals(obj); }
-	virtual boolean operator!=(const Object& obj) final { return !equals(obj); }
-	virtual boolean operator==(const void *ptr) { return ptr == this; }
-	virtual boolean operator!=(const void *ptr) { return ptr != this; }
+	virtual boolean operator==(const Object& obj) final {return equals(obj); }
+	virtual boolean operator!=(const Object& obj) final {return !equals(obj); }
+	virtual boolean operator==(const void *ptr) {return ptr == this; }
+	virtual boolean operator!=(const void *ptr) {return ptr != this; }
 protected:
 	virtual void finalize() {}
 };

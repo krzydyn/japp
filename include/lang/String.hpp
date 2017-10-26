@@ -16,9 +16,9 @@ private:
 	static void move(String *d, const String *s);
 	static void assign(String *d, const char *s);
 public:
-	String(String&& o) { move(this,&o); }
-	String(const String& o) { assign(this,&o); }
-	String& operator=(String&& o) { move(this,&o); }
+	String(String&& o) {move(this,&o);}
+	String(const String& o) {assign(this,&o); }
+	String& operator=(String&& o) {move(this,&o); }
 	String& operator=(const String& o) { assign(this,&o); }
 
 	String(const std::string& v) { value = v; }
@@ -96,13 +96,10 @@ public:
 		return h;
 	}
 
-	int indexOf(int ch) const { return value.find((char)ch, 0); }
-	int indexOf(int ch, int fromIndex) const { return value.find((char)ch, fromIndex); }
-	int indexOf(const String& str) const { return value.find(str.value, 0); }
-	int indexOf(const String& str, int fromIndex) const { return value.find(str.value, fromIndex); }
+	int indexOf(int ch, int fromIndex=0) const { return value.find((char)ch, fromIndex); }
+	int indexOf(const String& str, int fromIndex=0) const { return value.find(str.value, fromIndex); }
 
-	int lastIndexOf(const String& str) const { return value.rfind(str.value); }
-	int lastIndexOf(const String& str, int fromIndex) const { return value.rfind(str.value, fromIndex); }
+	int lastIndexOf(const String& str, int fromIndex=0) const { return value.rfind(str.value, fromIndex); }
 
 	String substring(int beginIndex) const { return value.substr(beginIndex); }
 	String substring(int beginIndex, int endIndex) { return value.substr(beginIndex,endIndex-beginIndex); }
