@@ -43,12 +43,9 @@ public:
 	void print(const Object* o) const {TRACE;
 		print(o->toString());
 	}
-	void print(const Object& o) const {TRACE;
-		print(o.toString());
-	}
 
 	template <class T>
-	void print(const T& s) const {
+	void print(const T& s) const {TRACE;
 		if (instanceOf<const Object>(s)) {
 			print(s.toString());
 		}
@@ -59,7 +56,7 @@ public:
 	}
 
 	template <class T>
-	void println(T s) const {
+	void println(const T& s) const {TRACE;
 		print(s); println();
 	}
 };

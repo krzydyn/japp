@@ -17,7 +17,7 @@ int main(int argc, const char *argv[]) {
 	try {
 		test_String();
 	} catch(const lang::Exception& e) {
-		System.err.println(e.toString());
+		e.printStackTrace();
 	}
 	return 0;
 }

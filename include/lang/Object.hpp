@@ -34,6 +34,10 @@ public:
 
 #define TRACE CallTrace UNIQUE_NAME(the_calltrace)(__FUNCTION__, __FILE__,__LINE__);UNIQUE_NAME(the_calltrace).r()
 
+#ifndef TRACE
+#define TRACE
+#endif
+
 class Class {
 	friend class Object;
 private:
@@ -87,11 +91,11 @@ public:
 //usage if: (instanceOf<Integer>(objPtr)) {...}
 template<class Base, class T>
 inline bool instanceOf(const T *ptr) {
-	return dynamic_cast<const Base*>(ptr) != nullptr;
+	return dynamic_cast<const Base*>(ptr) != null;
 }
 template<class Base, class T>
 inline bool instanceOf(const T& ptr) {
-	return dynamic_cast<const Base*>(&ptr) != nullptr;
+	return dynamic_cast<const Base*>(&ptr) != null;
 }
 
 }

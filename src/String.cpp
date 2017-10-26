@@ -22,14 +22,14 @@ void String::assign(String *d, const char *s) {
 	d->hash = 0;
 }
 
-String::String(const String& s, int offset, int count) {
+String::String(const String& s, int offset, int count) {TRACE;
 	if (&s == null || this == null) throw NullPointerException();
 	if (offset < 0 || count < 0 || s.value.size() - count < offset) {
 		throw IndexOutOfBoundsException(offset);
 	}
 	value = s.value.substr(offset, count);
 }
-String::String(const char *s, int offset, int count) {
+String::String(const char *s, int offset, int count) {TRACE;
 	if (s == null || this == null) throw NullPointerException();
 	if (offset < 0 || count < 0 || strlen(s) - count < offset) {
 		throw IndexOutOfBoundsException(offset);
@@ -37,7 +37,7 @@ String::String(const char *s, int offset, int count) {
 	value = std::string(s, offset, count);
 }
 
-char String::charAt(int index) {
+char String::charAt(int index) {TRACE;
 	if ((index < 0) || (index >= value.length())) {
 		throw IndexOutOfBoundsException(index);
 	}

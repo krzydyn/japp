@@ -10,6 +10,13 @@
 
 using namespace std::chrono;
 
+namespace {
+io::FileInputStream std_fin(std::cin);
+io::FileOutputStream std_fout(std::cout);
+io::FileOutputStream std_ferr(std::cerr);
+io::PrintStream std_out(std_fout);
+io::PrintStream std_err(std_ferr);
+}
 namespace lang {
 const The_System System;
 const The_Math Math;
@@ -17,12 +24,6 @@ const The_Math Math;
 void Shutdown::exit(int status) {
 	std::exit(status);
 }
-
-static io::FileInputStream std_fin(std::cin);
-static io::FileOutputStream std_fout(std::cout);
-static io::FileOutputStream std_ferr(std::cerr);
-static io::PrintStream std_out(std_fout);
-static io::PrintStream std_err(std_ferr);
 
 io::InputStream& The_System::in = std_fin;
 io::PrintStream& The_System::out = std_out;

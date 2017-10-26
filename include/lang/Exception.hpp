@@ -23,7 +23,7 @@ public:
 	/*Array<T>& operator=(Array<T>&& o) {
 		const_cast<int&>(length) = o.length;
 		a = o.a;
-		o.a = nullptr;
+		o.a = null;
 		return *this;
 	}*/
 
@@ -68,19 +68,21 @@ public:
    		methodName(methodName), fileName(fileName), lineNumber(lineNumber) {
 	}
 
-	const String&  getMethodName() { return methodName; }
-   	const String& getFileName() { return fileName; }
-	int getLineNumber() { return lineNumber; }
-	String toString() {
-		return methodName+ "(" +fileName + ":" + lineNumber + ")";
+	const String&  getMethodName() const { return methodName; }
+   	const String& getFileName() const { return fileName; }
+	int getLineNumber() const { return lineNumber; }
+	String toString() const {
+		if (fileName.length() || lineNumber) return methodName + "(" +fileName + ":" + lineNumber + ")";
+		return methodName;
 	}
 };
 
 class Throwable : public Object {
 public:
-	Throwable() : stackTrace() {}
-	Throwable(const String& msg) : detailMessage(msg), stackTrace() {}
 	~Throwable() {}
+
+	Throwable() : stackTrace() {fillInStackTrace();}
+	Throwable(const String& msg) : detailMessage(msg) {fillInStackTrace();}
 	virtual const String& getMessage() const {return detailMessage;}
 	virtual const String& getLocalizedMessage() const {return getMessage();}
 	String toString() const {
@@ -89,12 +91,12 @@ public:
 		return (message != null) ? (s + ": " + message) : s;
 	}
 	Throwable& fillInStackTrace() {
-		//captureStack(50);
-		captureStack2();
+		captureStack(50);
+		//captureStack2();
 		return *this;
 	}
-	void printStackTrace();
-	void printStackTrace(const io::PrintStream& s);
+	void printStackTrace() const;
+	void printStackTrace(const io::PrintStream& s) const;
 private:
 	String detailMessage;
 	Array<StackTraceElement> stackTrace;

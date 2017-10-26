@@ -8,10 +8,6 @@
 
 namespace util {
 
-inline std::string tostr(const String& s) { return s.intern(); }
-template<class T>
-inline std::string tostr(const T v) { return ""; }
-
 inline boolean util_equals(int a, int b) { return a == b; }
 inline boolean util_equals(const Object& a, const Object& b) { return a.equals(b); }
 template<class T>
@@ -35,19 +31,19 @@ public:
     unsigned size() const {return mSize;}
     void shrink(unsigned s) {if (s < mSize) mSize=s;}
     const T& get(unsigned i) const {
-		if (i >= mSize) throw std::runtime_error("index out fo range");
+		if (i >= mSize) throw IndexOutOfBoundsException(i);
 		return mVec[(mOffs+i)%mCapa];
 	}
     T& get(unsigned i) {
-		if (i >= mSize) throw std::runtime_error("index out fo range");
+		if (i >= mSize) throw IndexOutOfBoundsException(i);
 		return mVec[(mOffs+i)%mCapa];
 	}
 	void set(unsigned i, const T& v) {
-		if (i >= mSize) throw std::runtime_error("index out fo range");
+		if (i >= mSize) throw IndexOutOfBoundsException(i);
 		mVec[(mOffs+i)%mCapa] = v;
 	}
 
-	//in C++ methods of the same name from base class are hidden
+	//in C++ methods of the same name from base class are hidden by default
 	// - so tell explicitly not to hide by "using"
 	using List<T>::add;
 	using List<T>::remove;
@@ -61,7 +57,7 @@ public:
 			++mSize;
 		   	return ;
 	   	}
-		if (i > mSize) throw std::runtime_error("index out fo range");
+		if (i > mSize) throw IndexOutOfBoundsException(i);
         unsigned j=i;
 		if (i < mSize - i) {
 			mOffs = (mOffs + mCapa - 1)%mCapa;
@@ -94,7 +90,7 @@ public:
         mSize=d;
     }
     T removeAt(unsigned i) {
-		if (i >= mSize) throw std::runtime_error("index out fo range");
+		if (i >= mSize) throw IndexOutOfBoundsException(i);
         T v=mVec[(mOffs+i)%mCapa]; --mSize;
 		if (i < mSize - i) {
         	for (; i > 0; --i) {
@@ -163,12 +159,12 @@ private:
 		T *v = new T[ns];
 		if (!v) throw OutOfMemoryError();
 		if (mVec) {
-			for (int i=0; i < mSize; ++i) v[i]=mVec[(mOffs+i)%mCapa];
+			for (int i=0; i < mSize; ++i) v[i]=std::move(mVec[(mOffs+i)%mCapa]);
 			delete [] mVec;
 		}
 		mOffs=0;
 		mVec=v; mCapa=ns;
-		std::cerr << "capa = " << mCapa << std::endl;
+		//std::cerr << "capa = " << mCapa << std::endl;
 	}
 
 	class ArrayListIterator : public IteratorBase<T> {

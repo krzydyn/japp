@@ -12,10 +12,13 @@ export LIB_DIR:=$(TOP_DIR)/build
 export INC_DIR:=$(TOP_DIR)/include
 export BUILD_DIR:=$(TOP_DIR)/build
 
+DEBUG=-g
+#DEBUG=-O3
+
 export CC=g++
-export CFLAGS+=-g -I$(INC_DIR)
-export CPPFLAGS+=-g -rdynamic -std=c++11 -I$(INC_DIR)
-export LDFLAGS+=-g -rdynamic
+export CFLAGS:=$(DEBUG) -I$(INC_DIR)
+export CPPFLAGS:=$(DEBUG) -fPIC -std=c++11 -I$(INC_DIR)
+export LDFLAGS:=$(DEBUG) -fPIC
 
 SUBDIRS:=src tests
 

@@ -16,16 +16,16 @@ private:
 	static void move(String *d, const String *s);
 	static void assign(String *d, const char *s);
 public:
-	String(String&& o) {move(this,&o);}
-	String(const String& o) {assign(this,&o); }
-	String& operator=(String&& o) {move(this,&o); }
-	String& operator=(const String& o) { assign(this,&o); }
+	String(String&& o) {TRACE;move(this,&o);}
+	String(const String& o) {TRACE;assign(this,&o); }
+	String& operator=(String&& o) {TRACE;move(this,&o); }
+	String& operator=(const String& o) {TRACE; assign(this,&o); }
 
-	String(const std::string& v) { value = v; }
-	String(const char *v) { assign(this, v); }
-	explicit String(const std::nullptr_t&) { assign(this, (const char *)0); }
+	String(const std::string& v) {TRACE; value = v; }
+	String(const char *v) {TRACE; assign(this, v); }
+	explicit String(const std::nullptr_t&) {TRACE; assign(this, (const char *)0); }
 	template<class T>
-	String(T v) { value = std::to_string(v); }
+	String(T v) {TRACE; value = std::to_string(v); }
 
 	String() {}
 	String(const String& s, int offset, int count);
@@ -37,31 +37,31 @@ public:
 	boolean isEmpty() const { return value.length() == 0; }
 	char charAt(int index);
 
-	virtual boolean operator==(const Object& s) const { return equals(s); }
-	virtual boolean operator!=(const Object& s) const { return !equals(s); }
-	virtual boolean operator==(const void *ptr) const { return equals((const char *)ptr); }
-	virtual boolean operator!=(const void *ptr) const { return !equals((const char *)ptr); }
+	virtual boolean operator==(const Object& s) const {TRACE; return equals(s); }
+	virtual boolean operator!=(const Object& s) const {TRACE; return !equals(s); }
+	virtual boolean operator==(const void *ptr) const {TRACE; return equals((const char *)ptr); }
+	virtual boolean operator!=(const void *ptr) const {TRACE; return !equals((const char *)ptr); }
 
-	String operator+(const char *s) const {
+	String operator+(const char *s) const {TRACE;
 		return value+s;
 	}
-	String operator+(const String& s) const {
+	String operator+(const String& s) const {TRACE;
 		return value+s.value;
 	}
 	template<class T>
-	String operator+(const T& v) const {
+	String operator+(const T& v) const {TRACE;
 		return value+std::to_string(v);
 	}
 
-	boolean equals(const char *str) const {
+	boolean equals(const char *str) const {TRACE;
 		return str==null ? value == "" : value == str;
 	}
-	boolean equals(const Object& anObject) const {
+	boolean equals(const Object& anObject) const {TRACE;
 		if (this == &anObject) return true;
 		return value == ((const String&)anObject).value;
 	}
 
-	boolean startsWith(const String& prefix, int toffset) const {
+	boolean startsWith(const String& prefix, int toffset) const {TRACE;
 		int pc = prefix.value.length();
 		if ((toffset < 0) || (toffset > value.length() - pc)) {
 			return false;
@@ -71,14 +71,14 @@ public:
 		}
 		return true;
 	}
-	boolean startsWith(const String& prefix) const {
+	boolean startsWith(const String& prefix) const {TRACE;
 		return startsWith(prefix, 0);
 	}
-	boolean endsWith(const String& suffix) const {
+	boolean endsWith(const String& suffix) const {TRACE;
 		return startsWith(suffix, value.length() - suffix.value.length());
 	}
 
-	long hashCode() const {
+	long hashCode() const {TRACE;
 		long h = hash;
 		if (h == 0 && value.length() > 0) {
 			for (int i = 0; i < value.length(); i++) {
@@ -87,7 +87,7 @@ public:
 		}
 		return h;
 	}
-	long hashCode() {
+	long hashCode() {TRACE;
 		long h = hash;
 		if (h == 0 && value.length() > 0) {
 			h = ((const Object *)this)->hashCode();
@@ -96,10 +96,10 @@ public:
 		return h;
 	}
 
-	int indexOf(int ch, int fromIndex=0) const { return value.find((char)ch, fromIndex); }
-	int indexOf(const String& str, int fromIndex=0) const { return value.find(str.value, fromIndex); }
+	int indexOf(int ch, int fromIndex=0) const {TRACE; return value.find((char)ch, fromIndex); }
+	int indexOf(const String& str, int fromIndex=0) const {TRACE; return value.find(str.value, fromIndex); }
 
-	int lastIndexOf(const String& str, int fromIndex=0) const { return value.rfind(str.value, fromIndex); }
+	int lastIndexOf(const String& str, int fromIndex=0) const {TRACE; return value.rfind(str.value, fromIndex); }
 
 	String substring(int beginIndex) const { return value.substr(beginIndex); }
 	String substring(int beginIndex, int endIndex) { return value.substr(beginIndex,endIndex-beginIndex); }
