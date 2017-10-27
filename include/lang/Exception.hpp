@@ -83,10 +83,13 @@ class Throwable : public Object {
 public:
 	~Throwable() {}
 
-	Throwable() : stackTrace() {fillInStackTrace();}
-	Throwable(const String& msg) : detailMessage(msg) {fillInStackTrace();}
+	Throwable() : cause(this) {fillInStackTrace();}
+	Throwable(const String& msg) : detailMessage(msg), cause(this) {fillInStackTrace();}
+	Throwable(const String& msg, Throwable *c) : detailMessage(msg), cause(c) {fillInStackTrace();}
+
 	virtual const String& getMessage() const {return detailMessage;}
 	virtual const String& getLocalizedMessage() const {return getMessage();}
+	Throwable& initCause(Throwable *c);
 	String toString() const {
 		String s = getClass().getName();
 		String message = getLocalizedMessage();
@@ -118,6 +121,7 @@ class Exception : public Throwable {
 public:
 	Exception() : Throwable() {}
 	Exception(const String& msg) : Throwable(msg) {}
+	Exception(const String& msg, Throwable *c) : Throwable(msg, c) {}
 };
 
 class OutOfMemoryError : public Error {
@@ -164,7 +168,24 @@ class IllegalArgumentException : public Exception {
 public:
 	IllegalArgumentException() : Exception() {}
 	IllegalArgumentException(const String& msg) : Exception(msg) {}
+	IllegalArgumentException(const String& msg, Throwable *c) : Exception(msg, c) {}
 };
+
+class IllegalStateException : public Exception {
+public:
+	IllegalStateException() : Exception() {}
+	IllegalStateException(const String& msg) : Exception(msg) {}
+	IllegalStateException(const String& msg, Throwable *c) : Exception(msg, c) {}
+};
+
+inline Throwable& Throwable::initCause(Throwable *cause) {
+	if (this->cause != this)
+		throw IllegalStateException("Can't overwrite cause with a null", this);
+	if (cause == this)
+		throw IllegalArgumentException("Self-causation not permitted", this);
+	this->cause = cause;
+	return *this;
+}
 
 } //namespace lang
 
