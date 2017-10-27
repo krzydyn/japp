@@ -66,8 +66,8 @@ StackTraceElement parseStackEntry(const std::string& s) {
 #elif __linux__
 // ./build/threads(mangled_name+0x62) [0x409382]
 StackTraceElement parseStackEntry(const std::string& s) {
-	int posOp = s.find('(');
-	int posCl = s.find(')',posOp);
+	unsigned posOp = s.find('(');
+	unsigned posCl = s.find(')',posOp);
 	if (posOp != std::string::npos && posCl != std::string::npos) {
 		posOp+=1;
 		if (posOp < posCl && s.find('+') != std::string::npos) {
@@ -91,9 +91,8 @@ StackTraceElement parseStackEntry(const std::string& s) {
 namespace lang {
 
 void CallTrace::r() {
-	int i = traceSize();
 	tracePush(this);
-	//std::printf("added bt[%d]: f='%s' @ (%s:%u)\n",i,func,file,line);
+	//std::printf("added bt[%d]: f='%s' @ (%s:%u)\n",traceSize()-1,func,file,line);
 }
 CallTrace::~CallTrace() {
 	CallTrace *c = tracePop();

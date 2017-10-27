@@ -46,7 +46,7 @@ public:
 	}
 	virtual boolean add(const T& v) = 0;
 	virtual boolean remove(const T& v) = 0;
-	virtual boolean containsAll(const Collection<T>& c) {}
+	virtual boolean containsAll(const Collection<T>& c) {return false;}
 	virtual void addAll(Collection<T>& c) {
 		for (Iterator<T> i = c.iterator(); i->hasNext(); ) {
 			add(i->next());
@@ -94,7 +94,7 @@ public:
 		return false;
 	}
 
-	virtual boolean addAll(int index, const Collection<T>& c) {}
+	virtual boolean addAll(int index, const Collection<T>& c) {return false;}
 
 	// stack interface (LIFO)
 	virtual void push(const T& v) final {add(END_OF_LIST,v);}

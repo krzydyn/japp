@@ -18,8 +18,8 @@ private:
 public:
 	String(String&& o) {TRACE;move(this,&o);}
 	String(const String& o) {TRACE;assign(this,&o); }
-	String& operator=(String&& o) {TRACE;move(this,&o); }
-	String& operator=(const String& o) {TRACE; assign(this,&o); }
+	String& operator=(String&& o) {TRACE;move(this,&o);return*this;}
+	String& operator=(const String& o) {TRACE; assign(this,&o);return*this;}
 
 	String(const std::string& v) {TRACE; value = v; }
 	String(const char *v) {TRACE; assign(this, v); }
@@ -45,6 +45,9 @@ public:
 	String operator+(const char *s) const {TRACE;
 		return value+s;
 	}
+	String operator+(const std::string& s) const {TRACE;
+		return value+s;
+	}
 	String operator+(const String& s) const {TRACE;
 		return value+s.value;
 	}
@@ -63,7 +66,7 @@ public:
 
 	boolean startsWith(const String& prefix, int toffset) const {TRACE;
 		int pc = prefix.value.length();
-		if ((toffset < 0) || (toffset > value.length() - pc)) {
+		if ((toffset < 0) || (toffset > length() - pc)) {
 			return false;
 		}
 		for (int po = 0; --pc >= 0; ++toffset,++po) {
@@ -81,7 +84,7 @@ public:
 	long hashCode() const {TRACE;
 		long h = hash;
 		if (h == 0 && value.length() > 0) {
-			for (int i = 0; i < value.length(); i++) {
+			for (int i = 0; i < length(); i++) {
 				h = 31 * h + value[i];
 			}
 		}
@@ -108,7 +111,7 @@ public:
 	static String valueOf(unsigned n) { return String(std::to_string(n)); }
 	static String valueOf(const Object& obj) { return obj.toString(); }
 	template<class T>
-	static String valueOf(const T& t) { return Class::nameOf(t) + "@" + Integer::toHexString((long)&t); }
+	static String valueOf(const T& t) { return Class::nameOf(t) + "@" + Integer::toHexString((long)&t).intern(); }
 };
 
 inline String toString(const String& s) {return s;}

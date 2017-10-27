@@ -55,11 +55,13 @@ public:
 		methodName = std::move(o.methodName);
 		fileName = std::move(o.fileName);
 		lineNumber = o.lineNumber; o.lineNumber=0;
+		return *this;
 	}
 	StackTraceElement& operator=(const StackTraceElement& o) {
 		methodName = o.methodName;
 		fileName = o.fileName;
 		lineNumber = o.lineNumber;
+		return *this;
 	}
 	~StackTraceElement() {}
 
@@ -90,13 +92,14 @@ public:
 		String message = getLocalizedMessage();
 		return (message != null) ? (s + ": " + message) : s;
 	}
+	void printStackTrace() const;
+	void printStackTrace(const io::PrintStream& s) const;
 	Throwable& fillInStackTrace() {
 		captureStack(50);
 		//captureStack2();
 		return *this;
 	}
-	void printStackTrace() const;
-	void printStackTrace(const io::PrintStream& s) const;
+	const Array<StackTraceElement>& getStackTrace() const { return stackTrace; }
 private:
 	String detailMessage;
 	Array<StackTraceElement> stackTrace;

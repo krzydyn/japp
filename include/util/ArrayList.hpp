@@ -159,7 +159,7 @@ private:
 		T *v = new T[ns];
 		if (!v) throw OutOfMemoryError();
 		if (mVec) {
-			for (int i=0; i < mSize; ++i) v[i]=std::move(mVec[(mOffs+i)%mCapa]);
+			for (unsigned i=0; i < mSize; ++i) v[i]=std::move(mVec[(mOffs+i)%mCapa]);
 			delete [] mVec;
 		}
 		mOffs=0;

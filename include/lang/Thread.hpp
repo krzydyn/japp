@@ -41,7 +41,9 @@ public:
 	boolean isDaemon() { return daemon; }
 	void checkAccess() {}
 	String toString() {return getClass().getName()+":"+getName();}
-	Array<StackTraceElement> getStackTrace() { }
+	Array<StackTraceElement> getStackTrace() {
+		return Throwable().getStackTrace();
+	}
 	long getId() {return 0;}
 
 	static Thread& currentThread();
@@ -49,7 +51,9 @@ public:
 	static void sleep(long millis);
 	static void sleep(long millis, int nanos);
 	static boolean interrupted() {return false;}
-	static void dumpStack() {}
+	static void dumpStack() {
+		return Throwable().printStackTrace();
+	}
 };
 
 } //namespace lang

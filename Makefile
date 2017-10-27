@@ -1,4 +1,4 @@
-.PHONY: all clean install
+.PHONY: all build clean install
 
 TRM_RED:=$(shell printf "\033[0;31m")
 TRM_GRE:=$(shell printf "\033[0;32m")
@@ -20,12 +20,13 @@ BUILD_DIRS:=$(SUBDIRS:%=build-%)
 CLEAN_DIRS:=$(SUBDIRS:%=clean-%)
 .PHONY: $(BUILD_DIRS) $(CLEAN_DIRS)
 
-#all:
+all:build
+
 rebuild:
 	make clean
 	make all
 
-all: $(BUILD_DIRS)
+build: $(BUILD_DIRS)
 clean: $(CLEAN_DIRS)
 	@rm -rf $(BUILD_DIR)
 
@@ -41,5 +42,7 @@ $(CLEAN_DIRS):
 # special cases
 build-tests: build-src
 
+.PHONY: run run-tests
+run: run-tests
 run-tests:
-	@$(MAKE) -s -C $(@:run-%=%) BUILD_DIR=$(BUILD_DIR)/$(@:run-%=%) SOURCE_DIR=$(CURDIR)/$(@:run-%=%) run
+	$(MAKE) PREFIX=$(@:run-%=%) -f $(@:run-%=%)/Makefile run

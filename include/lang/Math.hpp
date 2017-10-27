@@ -83,7 +83,7 @@ inline unsigned long newton(unsigned n, unsigned k) {
     
     unsigned long x=n,px;
 	unsigned d=2;
-    for (int i=1; i < k; ++i) {
+    for (unsigned i=1; i < k; ++i) {
 		px=x;
         x*=n-i;
 		if (x < px) return 0;
@@ -140,14 +140,15 @@ inline unsigned bitCount_O1(unsigned i) {
     while (i) { i &= i-1; ++cnt; }
     return cnt;
 }
-inline int init_t8(unsigned char *b) {
-    b[0]=0;
+inline unsigned char *init_t8() {
+    static unsigned char bits[256];
+    bits[0]=0;
     for (int i=1; i < 256; ) {
         int i0=i; i<<=1;
         for (int j=0; j < i; ++j)
-            b[i0+j]=b[j]+1;
+            bits[i0+j]=bits[j]+1;
     }
-    return 1;
+    return bits;
 }
 inline int init2_t8(unsigned char *b) {
     b[0]=0;
@@ -158,8 +159,7 @@ inline int init2_t8(unsigned char *b) {
 	return 0;
 }
 inline unsigned bitCount_t8(unsigned i) {
-    static unsigned char bits[256];
-    static unsigned done=init_t8(bits);
+    static unsigned char *bits=init_t8();
     unsigned cnt=bits[i&0xff];
     i>>=8; cnt+=bits[i&0xff];
     i>>=8; cnt+=bits[i&0xff];

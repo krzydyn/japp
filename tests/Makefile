@@ -8,13 +8,14 @@ BUILD_DIR?=$(TOP_DIR)/build
 SOURCE_DIR?=$(PREFIX)
 INC_DIR?=../include
 JRELIB?=../src/build/jre.a
-DEBUG?="-g"
+DEBUG?=-g
 
 HOST_OS:=$(shell uname -s)
 GCC_VERSION:=$(shell gcc --version | awk '/^gcc/ {print $$4}')
 
 CC:=g++
 CPPFLAGS:=$(DEBUG) -I$(INC_DIR) -fPIC -std=c++11
+CPPFLAGS+=-Wall -Werror
 ifeq ($(HOST_OS),Linux)
 LDFLAGS:=-rdynamic
 endif
@@ -40,9 +41,11 @@ RUN_TESTS:=$(TARGETS:$(BUILD_DIR)/%=run-%)
 create-$(BUILD_DIR):
 	@mkdir -p $(BUILD_DIR)
 
+.PHONY: $(RUN_TESTS)
 $(RUN_TESTS):
 	@printf "$(TRM_WHI)Runnig $(@:run-%=%)...$(TRM_END)\n"
 	@$(BUILD_DIR)/$(@:run-%=%)
 	@printf "\r$(TRM_WHI)Test $(@:run-%=%) $(TRM_GRE)[OK]$(TRM_END)\n"
 
-run: build $(RUN_TESTS)
+.PHONY: run
+run: $(RUN_TESTS)

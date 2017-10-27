@@ -10,16 +10,16 @@ class MapEntry {
 public:
 	MapEntry(MapEntry&& o) { key = std::move(o.key); value = std::move(o.value); }
     MapEntry(const MapEntry &me) : key(me.key), value(me.value) {}
-	MapEntry& operator=(MapEntry&& o) { key = std::move(o.key); value = std::move(o.value); }
-	MapEntry& operator=(const MapEntry& o) { key = o.key; value = o.value; }
+	MapEntry& operator=(MapEntry&& o) { key = std::move(o.key); value = std::move(o.value); return *this;}
+	MapEntry& operator=(const MapEntry& o) { key = o.key; value = o.value; return *this;}
 
     MapEntry() {}
-    MapEntry(const K &key, const V &val) : key(key), value(value) {}
+    MapEntry(const K &k, const V &v) : key(k), value(v) {}
     const K& getKey() const {return key;}
     const V& getValue() const {return value;}
     void setVal(const V& v) {value=v;}
     V& getRef() {return value;}
-	String toString() { return key + "=" + value; }
+	String toString() const { return String::valueOf(key) + "=" + String::valueOf(value); }
 private:
     K key;
     V value;
@@ -118,23 +118,23 @@ public:
 		if (! elems) return "{}";
 		StringBuilder sb;
 		sb.append('{');
-		for (int i=0; ; ++i) {
+		for (unsigned i=0; i < elems; ++i) {
+			if (i > 0) sb.append(",");
             const MapEntry<K,V>& e = entry(i);
-			if (&e == null) break;
-			const K& key = e.getKey();
-			const V& value = e.getValue();
+			if (&e == null) sb.append("<null>");
+			else sb.append(e.toString());
 		}
 		return sb.append('}').toString();
 	}
 private:
     void init(unsigned s) {
-        map=new ArrayList<MapEntry<K,V> >[s];
+        map=new ArrayList<MapEntry<K,V>>[s];
         mapsize=s;
     }
     void rehash(unsigned ns) {
     }
     const MapEntry<K,V>& entry(unsigned i) const {
-        for (int hc=0; hc<mapsize; ++hc) {
+        for (unsigned hc=0; hc<mapsize; ++hc) {
             ArrayList<MapEntry<K,V>>& l=map[hc];
             if (i < l.size()) { return l.get(i); }
             i-=l.size();
