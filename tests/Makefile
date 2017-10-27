@@ -8,10 +8,16 @@ BUILD_DIR?=$(TOP_DIR)/build
 SOURCE_DIR?=$(PREFIX)
 INC_DIR?=../include
 JRELIB?=../src/build/jre.a
+DEBUG?="-g"
+
+HOST_OS:=$(shell uname -s)
+GCC_VERSION:=$(shell gcc --version | awk '/^gcc/ {print $$4}')
 
 CC:=g++
-CPPFLAGS:=-I$(INC_DIR) -fPIC -std=c++11
-
+CPPFLAGS:=$(DEBUG) -I$(INC_DIR) -fPIC -std=c++11
+ifeq ($(HOST_OS),Linux)
+LDFLAGS:=-rdynamic
+endif
 
 SRCS:=$(wildcard $(SOURCE_DIR)/*.cpp)
 OBJS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
@@ -20,8 +26,8 @@ TARGETS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%,$(SRCS))
 TARGETS: $(JRELIB)
 
 $(BUILD_DIR)/%: $(SOURCE_DIR)/%.cpp
-	@#printf "$(CC) $(CPPFLAGS) $< -o $@ $(JRELIB)\n"
-	$(CC) $(CPPFLAGS) $< -o $@ $(JRELIB)
+	@#printf "$(CC) $(CPPFLAGS) $< $(JRELIB) -o $@\n"
+	$(CC) $(LDFLAGS) $(CPPFLAGS) $< $(JRELIB) -o $@
 
 build: create-$(BUILD_DIR) $(TARGETS)
 

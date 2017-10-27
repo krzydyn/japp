@@ -50,28 +50,33 @@ std::string demangle(const std::string& name) {
 }
 String getSimpleBinaryName() { return ""; }
 #ifdef __APPLE__
-// 0   threads                             0x000000010b84db25 _ZN4lang9Throwable12captureStackEi + 211
+// 0   threads                             0x000000010b84db25 mangled_name + 211
 StackTraceElement parseStackEntry(const std::string& s) {
 	int posOp = s.find("0x");
 	posOp = s.find(' ', posOp);
 	int posCl = s.find('+',posOp);
 	if (posOp != std::string::npos && posCl != std::string::npos) {
 		posOp += 1; posCl -= 1;
-		std::string func = demangle(s.substr(posOp,posCl-posOp));
 		//std::printf("demangling: '%s'\n", s.substr(posOp,posCl-posOp).c_str());
+		std::string func = demangle(s.substr(posOp,posCl-posOp));
 		return StackTraceElement(func + s.substr(posCl),"",0);
 	}
 	return StackTraceElement(s,"",0);
 }
 #elif __linux__
-// ./build/test/threads (mangled_name+0x24) [0x8c50]
+// ./build/threads(mangled_name+0x62) [0x409382]
 StackTraceElement parseStackEntry(const std::string& s) {
 	int posOp = s.find('(');
-	int posCl = s.find('+',posOp);
+	int posCl = s.find(')',posOp);
 	if (posOp != std::string::npos && posCl != std::string::npos) {
-		posOp += 1;
+		posOp+=1;
+		if (posOp < posCl && s.find('+') != std::string::npos) {
+			posCl = s.find('+');
+		}
 		//std::printf("demangling: '%s'\n", s.substr(posOp,posCl-posOp).c_str());
-		return StackTraceElement(s.substr(0,posOp)+demangle(s.substr(posOp,posCl-posOp))+s.substr(posCl),"",0);
+		std::string func = demangle(s.substr(posOp,posCl-posOp));
+		posCl = s.find(')',posOp)+1;
+		return StackTraceElement(func + s.substr(posCl),"",0);
 	}
 	return StackTraceElement(s,"",0);
 }

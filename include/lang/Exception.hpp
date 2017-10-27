@@ -91,8 +91,8 @@ public:
 		return (message != null) ? (s + ": " + message) : s;
 	}
 	Throwable& fillInStackTrace() {
-		//captureStack(50);
-		captureStack2();
+		captureStack(50);
+		//captureStack2();
 		return *this;
 	}
 	void printStackTrace() const;

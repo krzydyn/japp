@@ -6,9 +6,10 @@ TOP_DIR?=.
 BUILD_DIR?=$(TOP_DIR)/build
 SOURCE_DIR?=$(PREFIX)
 INC_DIR?=../include
+DEBUG?="-g"
 
 CC:=g++
-CPPFLAGS:=-I$(INC_DIR) -fPIC -std=c++11
+CPPFLAGS:=$(DEBUG) -I$(INC_DIR) -fPIC -std=c++11
 
 SRCS:=$(wildcard $(SOURCE_DIR)/lang/*.cpp)
 OBJS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
@@ -24,7 +25,7 @@ create-$(BUILD_DIR):
 $(BUILD_DIR)/jre.a: $(OBJS)
 
 $(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp
-	@printf "cpp $(CC) -c $(CPPFLAGS) $< -o $@"
+	@#printf "cpp $(CC) -c $(CPPFLAGS) $< -o $@\n"
 	$(CC) -c $(CPPFLAGS) $< -o $@
 
 $(BUILD_DIR)/%.a:

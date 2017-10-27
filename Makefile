@@ -12,7 +12,6 @@ export BUILD_DIR:=$(TOP_DIR)/build
 export INC_DIR:=include
 export JRELIB:=build/jre.a
 
-export DEBUG=-g
 #export DEBUG=-O3
 
 SUBDIRS:=src tests
@@ -31,10 +30,9 @@ clean: $(CLEAN_DIRS)
 	@rm -rf $(BUILD_DIR)
 
 $(BUILD_DIRS):
-	@SDIR=$(@:build-%=%)
-	@printf "$(TRM_WHI)Building module $SDIR...$(TRM_END)\n"
+	@printf "$(TRM_WHI)Building module $(@:build-%=%)...$(TRM_END)\n"
 	@$(MAKE) PREFIX=$(@:build-%=%) -f $(@:build-%=%)/Makefile build
-	@printf "\r$(TRM_WHI)Building module $(@:build-%=%)...  $(TRM_GRE)[OK]$(TRM_END)\n"
+	@printf "\r$(TRM_WHI)Building module $(@:build-%=%)  $(TRM_GRE)[OK]$(TRM_END)\n"
 
 $(CLEAN_DIRS):
 	@printf "$(TRM_WHI)Clean $(@:clean-%=%)...$(TRM_END)\n"

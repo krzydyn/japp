@@ -2,7 +2,6 @@
 
 static void test_backtrace() { TRACE;
 	Exception e("Sample exception msg");
-	e.fillInStackTrace();
 	e.printStackTrace();
 }
 
