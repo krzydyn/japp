@@ -8,17 +8,12 @@ TRM_WHI:=$(shell printf "\033[1;37m")
 TRM_END:=$(shell printf "\033[0m")
 
 export TOP_DIR:=$(CURDIR)
-export LIB_DIR:=$(TOP_DIR)/build
-export INC_DIR:=$(TOP_DIR)/include
 export BUILD_DIR:=$(TOP_DIR)/build
+export INC_DIR:=include
+export JRELIB:=build/jre.a
 
-DEBUG=-g
-#DEBUG=-O3
-
-export CC=g++
-export CFLAGS:=$(DEBUG) -I$(INC_DIR)
-export CPPFLAGS:=$(DEBUG) -fPIC -std=c++11 -I$(INC_DIR)
-export LDFLAGS:=$(DEBUG) -fPIC
+export DEBUG=-g
+#export DEBUG=-O3
 
 SUBDIRS:=src tests
 
@@ -38,12 +33,12 @@ clean: $(CLEAN_DIRS)
 $(BUILD_DIRS):
 	@SDIR=$(@:build-%=%)
 	@printf "$(TRM_WHI)Building module $SDIR...$(TRM_END)\n"
-	@$(MAKE) -C $(CURDIR)/$(@:build-%=%) BUILD_DIR=$(BUILD_DIR)/$(@:build-%=%) build
+	@$(MAKE) PREFIX=$(@:build-%=%) -f $(@:build-%=%)/Makefile build
 	@printf "\r$(TRM_WHI)Building module $(@:build-%=%)...  $(TRM_GRE)[OK]$(TRM_END)\n"
 
 $(CLEAN_DIRS):
-	@printf "$(TRM_WHI)Clean $(@:build-%=%)...$(TRM_END)\n"
-	@$(MAKE) -s -C $(@:clean-%=%) BUILD_DIR=$(BUILD_DIR)/$(@:clean-%=%) clean
+	@printf "$(TRM_WHI)Clean $(@:clean-%=%)...$(TRM_END)\n"
+	@$(MAKE) -s PREFIX=$(@:clean-%=%) -f $(@:clean-%=%)/Makefile clean
 
 # special cases
 build-tests: build-src

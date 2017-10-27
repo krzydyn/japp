@@ -1,24 +1,38 @@
-SOURCE_DIR?=.
-LIB_DIR?=.
-BUILD_DIR?=./build
-
+.PHONY: all build clean install
 all:build
 
-include ../common.mk
+PREFIX?=.
+TOP_DIR?=.
 
-TEST_TARGETS:=$(BUILD_DIR)/lists $(BUILD_DIR)/threads $(BUILD_DIR)/strings 
+BUILD_DIR?=$(TOP_DIR)/build
+SOURCE_DIR?=$(PREFIX)
+INC_DIR?=../include
+JRELIB?=../src/build/jre.a
 
-LIB_OBJS:=$(LIB_DIR)/src/*.o
+CC:=g++
+CPPFLAGS:=-I$(INC_DIR) -fPIC -std=c++11
 
-#LDFLAGS+=$(LIB_OBJS)
 
-#TARGETS+=$(TEST_TARGETS)
+SRCS:=$(wildcard $(SOURCE_DIR)/*.cpp)
+OBJS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
+TARGETS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%,$(SRCS))
 
-$(BUILD_DIR)/lists $(BUILD_DIR)/threads $(BUILD_DIR)/strings: $(LIB_OBJS)
+TARGETS: $(JRELIB)
 
-build: $(TEST_TARGETS)
+$(BUILD_DIR)/%: $(SOURCE_DIR)/%.cpp
+	@#printf "$(CC) $(CPPFLAGS) $< -o $@ $(JRELIB)\n"
+	$(CC) $(CPPFLAGS) $< -o $@ $(JRELIB)
 
-RUN_TESTS:=$(TEST_TARGETS:$(BUILD_DIR)/%=run-%)
+build: create-$(BUILD_DIR) $(TARGETS)
+
+clean:
+	rm -rf $(BUILD_DIR)
+
+RUN_TESTS:=$(TARGETS:$(BUILD_DIR)/%=run-%)
+
+.PHONY: create-$(BUILD_DIR)
+create-$(BUILD_DIR):
+	@mkdir -p $(BUILD_DIR)
 
 $(RUN_TESTS):
 	@printf "$(TRM_WHI)Runnig $(@:run-%=%)...$(TRM_END)\n"
