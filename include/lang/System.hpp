@@ -4,6 +4,7 @@
 #include <lang/Object.hpp>
 #include <io/InputStream.hpp>
 #include <io/PrintStream.hpp>
+#include <util/Properties.hpp>
 #include <cstdlib>
 
 namespace lang {
@@ -26,13 +27,21 @@ public:
 	static void setErr(io::PrintStream& s) {The_System::err=s; }
 
 	static jlong currentTimeMillis();
-	static String getenv(const String& name);
-	static String lineSeparator() {return "\n";}
+	static const String getenv(const String& name);
+	static const String lineSeparator() {return "\n";}
+
+	static const String& getProperty(const String& key) {return props.getProperty(key);}
+	static const String& getProperty(const String& key, const String& def) {return props.getProperty(key, def);}
+	static const String& setProperty(const String& key, const String& value) {
+		return props.setProperty(key, value);
+	}
 	/**
 	 * Terminates the currently running excutable by initiating its shutdown sequence.
 	 */
 	static void exit(int code);
 	static void gc();
+private:
+	static Properties props;
 };
 
 extern const The_System System;

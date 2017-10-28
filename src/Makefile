@@ -14,6 +14,7 @@ CPPFLAGS:=$(DEBUG) -I$(INC_DIR) -fPIC -std=c++11
 CPPFLAGS+=-Wall -Werror
 
 SRCS:=$(wildcard $(SOURCE_DIR)/lang/*.cpp)
+SRCS+=$(wildcard $(SOURCE_DIR)/io/*.cpp)
 OBJS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
 
 TARGETS:=$(BUILD_DIR)/jre.a $(BUILD_DIR)/jre.so
@@ -22,7 +23,7 @@ build: create-$(BUILD_DIR) $(TARGETS)
 
 .PHONY: create-$(BUILD_DIR)
 create-$(BUILD_DIR):
-	@mkdir -p $(BUILD_DIR)/lang
+	@mkdir -p $(BUILD_DIR)/lang $(BUILD_DIR)/io
 
 $(TARGETS): $(OBJS)
 

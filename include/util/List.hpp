@@ -1,7 +1,7 @@
 #ifndef __UTIL_LIST_HPP
 #define __UTIL_LIST_HPP
 
-#include <lang/System.hpp>
+//#include <lang/System.hpp>
 #include <lang/String.hpp>
 #include <util/Iterator.hpp>
 

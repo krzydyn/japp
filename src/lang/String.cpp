@@ -37,7 +37,7 @@ String::String(const char *s, int offset, int count) {TRACE;
 	value = std::string(s, offset, count);
 }
 
-char String::charAt(int index) {TRACE;
+char String::charAt(int index) const {TRACE;
 	if ((index < 0) || (index >= length())) {
 		throw IndexOutOfBoundsException(index);
 	}

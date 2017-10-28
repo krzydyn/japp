@@ -35,7 +35,7 @@ public:
 
 	int length() const { return value.length(); }
 	boolean isEmpty() const { return value.length() == 0; }
-	char charAt(int index);
+	char charAt(int index) const;
 
 	virtual boolean operator==(const Object& s) const {TRACE; return equals(s); }
 	virtual boolean operator!=(const Object& s) const {TRACE; return !equals(s); }
@@ -105,7 +105,7 @@ public:
 	int lastIndexOf(const String& str, int fromIndex=0) const {TRACE; return value.rfind(str.value, fromIndex); }
 
 	String substring(int beginIndex) const { return value.substr(beginIndex); }
-	String substring(int beginIndex, int endIndex) { return value.substr(beginIndex,endIndex-beginIndex); }
+	String substring(int beginIndex, int endIndex) const { return value.substr(beginIndex,endIndex-beginIndex); }
 
 	static String valueOf(int n) { return String(std::to_string(n)); }
 	static String valueOf(unsigned n) { return String(std::to_string(n)); }
@@ -122,6 +122,9 @@ class StringBuilder : public Object {
 private:
 	std::stringstream value;
 public:
+	StringBuilder() {}
+	StringBuilder(int capacity) {
+	}
 	StringBuilder& append(char v) {
 		value << v;
 		return *this;

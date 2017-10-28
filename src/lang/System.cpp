@@ -25,6 +25,7 @@ void Shutdown::exit(int status) {
 	std::exit(status);
 }
 
+Properties The_System::props;
 io::InputStream& The_System::in = std_fin;
 io::PrintStream& The_System::out = std_out;
 io::PrintStream& The_System::err = std_err;
@@ -33,7 +34,7 @@ jlong The_System::currentTimeMillis() {
 	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }
 
-String The_System::getenv(const String& name) {
+const String The_System::getenv(const String& name) {
 	const char *v = std::getenv(name.intern().c_str());
 	if (v == null) return String();
 	return v;
@@ -50,7 +51,3 @@ Process& ProcessBuilder::start() {
 Runtime Runtime::currentRuntime;
 
 } //namespace lang
-
-namespace io {
-const String File::separator = "/";
-}

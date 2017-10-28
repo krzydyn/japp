@@ -22,6 +22,8 @@ namespace lang {
 class String;
 class Object;
 
+extern Object& nullref;
+
 class CallTrace {
 public:
 	const char *func;
@@ -98,7 +100,8 @@ inline bool instanceOf(const T& ptr) {
 	return dynamic_cast<const Base*>(&ptr) != null;
 }
 
-}
+} //namespace lang
+
 using namespace lang;
 
 #endif

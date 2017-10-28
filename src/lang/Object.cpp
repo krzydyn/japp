@@ -52,9 +52,9 @@ String getSimpleBinaryName() { return ""; }
 #ifdef __APPLE__
 // 0   threads                             0x000000010b84db25 mangled_name + 211
 StackTraceElement parseStackEntry(const std::string& s) {
-	int posOp = s.find("0x");
+	unsigned posOp = s.find("0x");
 	posOp = s.find(' ', posOp);
-	int posCl = s.find('+',posOp);
+	unsigned posCl = s.find('+',posOp);
 	if (posOp != std::string::npos && posCl != std::string::npos) {
 		posOp += 1; posCl -= 1;
 		//std::printf("demangling: '%s'\n", s.substr(posOp,posCl-posOp).c_str());
@@ -86,9 +86,14 @@ StackTraceElement parseStackEntry(const std::string& s) {
 }
 #endif
 
+class NullRef : public Object {
+} nullObject;
+
 }
 
 namespace lang {
+
+Object& nullref = nullObject;
 
 void CallTrace::r() {
 	tracePush(this);

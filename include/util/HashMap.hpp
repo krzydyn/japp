@@ -35,7 +35,7 @@ public:
 	virtual boolean containsValue(const V& value) const = 0;
 	virtual const V& get(const K& key) const = 0;
 	virtual V& get(const K& key) = 0;
-	virtual void put(const K& key, const V& value) = 0;
+	virtual const V& put(const K& key, const V& value) = 0;
 	virtual V remove(const K& key) = 0;
 	virtual void clear() = 0;
 };
@@ -84,20 +84,18 @@ public:
         return null_obj;
 	}
 
-    void put(const K& k, const V& v) {
+    const V& put(const K& k, const V& v) {
         unsigned hc = util::hashCode(k)%mapsize;
         ArrayList<MapEntry<K,V>>& l=map[hc];
-        printf("put hc=%u sz[hc]=%u\n",hc,l.size());
         for (unsigned i=0; i<l.size(); ++i) {
             if (l.get(i).getKey() == k) {
                 l.get(i).setVal(v);
-                return ;
+                return v;
             }
         }
 		MapEntry<K,V> me(k,v);
-		printf("add entry\n");
         l.add(me); ++elems;
-        printf("put done\n");
+		return v;
     }
     V remove(const K& k) {
         unsigned hc= util::hashCode(k)%mapsize;
@@ -145,6 +143,10 @@ private:
     unsigned mapsize;
     unsigned elems;
 };
+
+
+template<class K,class V>
+using Hashtable = HashMap<K,V>;
 
 } // namespace util
 

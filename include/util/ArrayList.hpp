@@ -1,9 +1,9 @@
 #ifndef __UTIL_ARRAYLIST_HPP
 #define __UTIL_ARRAYLIST_HPP
 
-#include <util/List.hpp>
 #include <lang/Math.hpp>
 #include <lang/Exception.hpp>
+#include <util/List.hpp>
 #include <iostream>
 
 namespace util {
