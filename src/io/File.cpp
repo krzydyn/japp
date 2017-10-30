@@ -1,8 +1,12 @@
 #include <lang/System.hpp>
 #include <io/File.hpp>
 
+#define _POSIX_SOURCE
+#define _LARGE_TIME_API 
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <unistd.h>
+#include <utime.h>
 
 namespace io {
 namespace {
@@ -72,6 +76,8 @@ public:
 		int attr = BA_EXISTS;
 		if (st.st_mode&S_IFREG) attr |= BA_REGULAR;
 		if (st.st_mode&S_IFDIR) attr |= BA_DIRECTORY;
+		const String& name = f.getName();
+		if (name.length() > 0 && f.getName().charAt(0) == '.') attr |= BA_HIDDEN;
 		return attr;
 	}
 	virtual boolean checkAccess(const File& f, int access) const {
@@ -82,18 +88,62 @@ public:
 		return ::access(f.getPath().intern().c_str(), amode) == 0;
 	}
 	virtual boolean setPermission(const File& f, int access, boolean enable, boolean owneronly) const {
+		struct stat st;
+		int perm = 0;
+		if (::stat(f.getPath().intern().c_str(), &st) < 0)
+			return 0;
+		if (access&ACCESS_READ) perm |= S_IRUSR|S_IRGRP|S_IROTH;
+		if (access&ACCESS_WRITE) perm |= S_IWUSR|S_IWGRP|S_IWOTH;
+		if (access&ACCESS_EXECUTE) perm |= S_IXUSR|S_IXGRP|S_IXOTH;
+		if (owneronly) perm &= S_IRWXU;
+		if (enable) perm = st.st_mode | perm;
+		else perm = st.st_mode & (~perm);
+		perm &= S_IRWXU | S_IRWXG | S_IRWXO;
+		return chmod(f.getPath().intern().c_str(), perm) == 0;
+	}
+	virtual jlong getLastModifiedTime(const File& f) const {
+		struct stat st;
+		if (::stat(f.getPath().intern().c_str(), &st) < 0)
+			return 0;
+		jlong millis = st.st_mtimespec.tv_sec; millis *= 1000;
+		millis += st.st_mtimespec.tv_nsec / 1000000; // nanosec to millisec
+		return millis;
+	}
+	virtual jlong getLength(const File& f) const {
+		struct stat st;
+		if (::stat(f.getPath().intern().c_str(), &st) < 0)
+			return 0;
+		return st.st_size;
+	}
+	virtual boolean createFileExclusively(const String& pathname) const {
 		return false;
 	}
-	virtual long getLastModifiedTime(const File& f) const {return 0l;}
-	virtual long getLength(const File& f) const {return 0l;}
-	virtual boolean createFileExclusively(const String& pathname) const {return false;}
-	virtual boolean unlink(File f) const {return false;}
-	virtual Array<String> list(const File& f) const {return Array<String>();}
-	virtual boolean rename(const File& f1, const File& f2) const {return false;}
-	virtual boolean setLastModifiedTime(const File& f, long time) const {return false;}
-	virtual boolean setReadOnly(const File& f) const {return false;}
+	virtual boolean unlink(File f) const {
+		return ::unlink(f.getPath().intern().c_str()) == 0;
+	}
+	virtual Array<String> list(const File& f) const {
+		return Array<String>();
+	}
+	virtual boolean createDirectory(File f) const {
+		return ::mkdir(f.getPath().intern().c_str(), 0777) == 0;
+	}
+	virtual boolean rename(const File& f1, const File& f2) const {
+		return ::rename(f1.getPath().intern().c_str(),f2.getPath().intern().c_str());
+	}
+	virtual boolean setLastModifiedTime(const File& f, jlong time) const {
+		//struct timeval times[2]; // if times is null => set date&time to current
+		//utimes(path, times); <- legacy
+		struct utimbuf ubuf;
+		ubuf.modtime = time/1000;
+		ubuf.actime = time/1000;
+		return ::utime(f.getPath().intern().c_str(), &ubuf) == 0;
+	}
+	virtual boolean setReadOnly(const File& f) const {
+		int perm = S_IRUSR|S_IRGRP|S_IROTH;
+		return chmod(f.getPath().intern().c_str(), perm) == 0;
+	}
 	virtual Array<File> listRoots() const {return Array<File>();}
-	virtual long getSpace(const File& f, int t) const {return 0l;}
+	virtual jlong getSpace(const File& f, int t) const {return 0l;}
 	virtual int compare(const File& f1, const File& f2) const {return 0;}
 	virtual int hashCode(const File& f) const {return 0;}
 } unixfs;

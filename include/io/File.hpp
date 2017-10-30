@@ -6,6 +6,13 @@
 
 namespace io {
 
+class IOException : extends Exception {
+public:
+	IOException() : Exception() {}
+	IOException(const String& msg) : Exception(msg) {}
+	IOException(const String& msg, Throwable *c) : Exception(msg, c) {}
+};
+
 class File;
 class FileSystem : public Object {
 private:
@@ -41,14 +48,20 @@ public:
 		ACCESS_EXECUTE = 0x01
 	};
 	virtual boolean checkAccess(const File& f, int access) const = 0;
+	/**
+	 * Set on or off the access permission (to owner only or to all) to the file
+	 * or directory denoted by the given abstract pathname, based on the parameters
+	 * enable, access and oweronly.
+	 */
 	virtual boolean setPermission(const File& f, int access, boolean enable, boolean owneronly) const = 0;
-	virtual long getLastModifiedTime(const File& f) const = 0;
-	virtual long getLength(const File& f) const = 0;
+	virtual jlong getLastModifiedTime(const File& f) const = 0;
+	virtual jlong getLength(const File& f) const = 0;
 	virtual boolean createFileExclusively(const String& pathname) const = 0;
 	virtual boolean unlink(File f) const = 0; //delete=>unlink (delete is C++ is keyword)
 	virtual Array<String> list(const File& f) const = 0;
+	virtual boolean createDirectory(File f) const = 0;
 	virtual boolean rename(const File& f1, const File& f2) const = 0;
-	virtual boolean setLastModifiedTime(const File& f, long time) const = 0;
+	virtual boolean setLastModifiedTime(const File& f, jlong time) const = 0;
 	virtual boolean setReadOnly(const File& f) const = 0;
 	virtual Array<File> listRoots() const = 0;
 
@@ -57,7 +70,7 @@ public:
 		SPACE_FREE   = 1,
 		SPACE_USABLE = 2
 	};
-	virtual long getSpace(const File& f, int t) const = 0;
+	virtual jlong getSpace(const File& f, int t) const = 0;
 	virtual int compare(const File& f1, const File& f2) const = 0;
 	virtual int hashCode(const File& f) const = 0;
 };
@@ -71,10 +84,15 @@ public:
 	static const char pathSeparatorChar = ':';
 	static const String pathSeparator;
 private:
+	class PathStatus {
+		public:
+		enum { INVALID=1, CHECKED };
+	};
 	static const FileSystem& fs;
 
 	String path;
 	int prefixLength;
+	int status = 0;
 
 	File(const String& path, int prefixLength) {
 		this->path = path;
@@ -84,7 +102,13 @@ private:
 		this->path = fs.resolve(parent.path, child);
 		this->prefixLength = parent.prefixLength;
 	}
+	boolean isInvalid() const {
+		if (status == 0)
+			const_cast<int&>(status) = (path.indexOf('\u0000') < 0) ? PathStatus::CHECKED : PathStatus::INVALID;
+		return status == PathStatus::INVALID;
+	}
 	int getPrefixLength() const {return prefixLength;}
+
 public:
 	File(const String& path) {
 		if (&path == null) throw NullPointerException();
@@ -145,6 +169,38 @@ public:
 	File getAbsoluteFile() const {
 		String absPath = getAbsolutePath();
 		return File(absPath, fs.prefixLength(absPath));
+	}
+	String getCanonicalPath() const {
+		if (isInvalid()) throw IOException("Invalid file path");
+		return fs.canonicalize(fs.resolve(*this));
+	}
+	File getCanonicalFile() const {
+		String canonPath = getCanonicalPath();
+		return File(canonPath, fs.prefixLength(canonPath));
+	}
+	boolean canRead() const {
+		if (isInvalid()) return false;
+		return fs.checkAccess(*this, FileSystem::ACCESS_READ);
+	}
+	boolean canWrite() const {
+		if (isInvalid()) return false;
+		return fs.checkAccess(*this, FileSystem::ACCESS_WRITE);
+	}
+	boolean exists() const {
+		if (isInvalid()) return false;
+		return ((fs.getBooleanAttributes(*this) & FileSystem::BA_EXISTS) != 0);
+	}
+	boolean isDirectory() {
+		if (isInvalid()) return false;
+		return ((fs.getBooleanAttributes(*this) & FileSystem::BA_DIRECTORY) != 0);
+	}
+	boolean isFile() {
+		if (isInvalid()) return false;
+		return ((fs.getBooleanAttributes(*this) & FileSystem::BA_REGULAR) != 0);
+	}
+	boolean isHidden() {
+		if (isInvalid()) return false;
+		return ((fs.getBooleanAttributes(*this) & FileSystem::BA_HIDDEN) != 0);
 	}
 };
 
