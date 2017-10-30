@@ -1,4 +1,5 @@
 #include <lang/Object.hpp>
+#include <lang/Class.hpp>
 #include <lang/System.hpp>
 #include <iomanip>
 #include <sstream>
@@ -105,12 +106,18 @@ CallTrace::~CallTrace() {
 	//std::printf("removed bt[%d]: f='%s' @ (%s:%u)\n",traceSize(),c->func,c->file,c->line);
 }
 
+String Throwable::toString() const {
+	String s = getClass().getName();
+	String message = getLocalizedMessage();
+	return (message != null) ? (s + ": " + message) : s;
+}
 void Throwable::captureStack(int depth) { TRACE;
    	void *array[depth];
 	int got = ::backtrace(array, depth);
 	if (got <= 2) return ;
 	//better backtrace_symbols
 	//http://cairo.sourcearchive.com/documentation/1.9.4/backtrace-symbols_8c-source.html
+	//TODO use dladdr to get symbol info struct (without converting to string)
 	char **strings = ::backtrace_symbols(array, got);
 	got -= 2;
 	stackTrace = Array<StackTraceElement>(got);
@@ -156,10 +163,11 @@ String Class::getSimpleName() const {TRACE;
 	return simpleName;
 }
 String Class::getCanonicalName() const {TRACE;return getName();}
-std::string Class::nameOf(const std::type_info& type) {TRACE;
+String Class::getTypeName(const std::type_info& type) {TRACE;
 	return demangle(type.name());
 }
-//String Class::nameOf(const std::type_info& type) { return demangle(type.name()); }
+
+const Class Object::getClass() const {return Class(*this);}
 
 Object& Object::clone() const {TRACE;
 	throw CloneNotSupportedException();

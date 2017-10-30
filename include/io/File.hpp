@@ -2,7 +2,7 @@
 #define __IO_FILE_HPP
 
 #include <lang/Exception.hpp>
-//#include <iostream>
+#include <util/ArrayList.hpp>
 
 namespace io {
 
@@ -75,6 +75,15 @@ public:
 	virtual int hashCode(const File& f) const = 0;
 };
 
+interface FilenameFilter : Interface {
+public:
+	virtual boolean accept(const File& dir, const String& name) const = 0;
+};
+interface FileFilter : Interface {
+public:
+	virtual boolean accept(const File& path) const = 0;
+};
+
 class File : public Object {
 	friend class FileSystem;
 public:
@@ -110,6 +119,8 @@ private:
 	int getPrefixLength() const {return prefixLength;}
 
 public:
+	/* -- Constructors -- */
+	File() {} // need for array list
 	File(const String& path) {
 		if (&path == null) throw NullPointerException();
 		this->path = fs.normalize(path);
@@ -144,6 +155,8 @@ public:
 		this->prefixLength = fs.prefixLength(this->path);
 	}
 	//File(cosnt URI& uri) {}
+
+	/* -- Path-component accessors -- */
 	String getName() const {
 		int index = path.lastIndexOf(separatorChar);
 		if (index < prefixLength) return path.substring(prefixLength);
@@ -164,6 +177,8 @@ public:
 		return File(p, this->prefixLength);
 	}
 	const String& getPath() const { return path; }
+
+	/* -- Path operations -- */
 	boolean isAbsolute() const { return fs.isAbsolute(*this); }
 	String getAbsolutePath() const { return fs.resolve(*this); }
 	File getAbsoluteFile() const {
@@ -178,6 +193,9 @@ public:
 		String canonPath = getCanonicalPath();
 		return File(canonPath, fs.prefixLength(canonPath));
 	}
+	//URI toURI() {}
+
+	/* -- Attribute accessors -- */
 	boolean canRead() const {
 		if (isInvalid()) return false;
 		return fs.checkAccess(*this, FileSystem::ACCESS_READ);
@@ -202,6 +220,105 @@ public:
 		if (isInvalid()) return false;
 		return ((fs.getBooleanAttributes(*this) & FileSystem::BA_HIDDEN) != 0);
 	}
+	jlong lastModified() {
+		if (isInvalid()) return 0L;
+		return fs.getLastModifiedTime(*this);
+    }
+	jlong length() {
+		if (isInvalid()) return 0L;
+		return fs.getLength(*this);
+    }
+
+	/* -- File operations -- */
+	boolean createNewFile() {
+		if (isInvalid()) throw IOException("Invalid file path");
+		return fs.createFileExclusively(path);
+	}
+	boolean unlink() {
+		if (isInvalid()) return false;
+		return fs.unlink(*this);
+	}
+	void deleteOnExit() {
+		if (isInvalid()) return ;
+		//DeleteOnExitHook.add(path);
+	}
+	Array<String> list() {
+		if (isInvalid()) return Array<String>(); //null
+		return fs.list(*this);
+	}
+	Array<String> list(const FilenameFilter& filter) {
+		Array<String> names = list();
+		if (names.length == 0) return names;
+		ArrayList<String> v;
+		for (int i = 0 ; i < names.length ; i++) {
+			if (filter.accept(*this, names[i])) v.add(names[i]);
+		}
+		return v.toArray();
+	}
+	Array<File> listFiles() {
+		Array<String> names = list();
+		if (names.length == 0) return Array<File>();
+		int n = names.length;
+		Array<File> fs(n);
+		for (int i = 0; i < n; i++)
+			fs[i] = File(names[i], *this);
+		return fs;
+	}
+	Array<File> listFiles(const FilenameFilter& filter) {
+		Array<String> names = list();
+		if (names.length == 0) return Array<File>();
+		ArrayList<File> v;
+		for (int i = 0 ; i < names.length ; i++) {
+			if (filter.accept(*this, names[i]))
+				v.add(File(names[i], *this));
+		}
+		return v.toArray();
+	}
+	Array<File> listFiles(const FileFilter& filter) {
+		Array<String> names = list();
+		if (names.length == 0) return Array<File>();
+		ArrayList<File> v;
+		for (int i = 0 ; i < names.length ; i++) {
+			File f(names[i]);
+			if (filter.accept(f))
+				v.add(f);
+		}
+		return v.toArray();
+	}
+	boolean mkdir() {
+		if (isInvalid()) return false;
+		return fs.createDirectory(*this);
+	}
+	boolean mkdirs() {
+		if (exists()) return false;
+		if (mkdir()) return true;
+        try {
+			File canonFile = getCanonicalFile();
+			File parent = canonFile.getParentFile();
+        } catch (const IOException& e) {
+            return false;
+        }
+	}
+	boolean renameTo(const File& dest) {
+		//if (dest == null) throw NullPointerException();
+		if (isInvalid() || dest.isInvalid()) return false;
+		return fs.rename(*this, dest);
+	}
+	boolean setLastModified(long time) {
+		if (isInvalid()) return false;
+		return fs.setLastModifiedTime(*this, time);
+	}
+	boolean setReadOnly() {
+		if (isInvalid()) return false;
+		return fs.setReadOnly(*this);
+	}
+	boolean setWritable(boolean writable, boolean ownerOnly) {
+		if (isInvalid()) return false;
+		fs.setPermission(*this, FileSystem::ACCESS_WRITE, writable, ownerOnly);
+	}
+
+	/* -- Filesystem interface -- */
+	static Array<File> listRoots() { return fs.listRoots(); }
 };
 
 } //namespace io

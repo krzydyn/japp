@@ -1,5 +1,6 @@
-#include <lang/System.hpp>
+#include <lang/Class.hpp>
 #include <lang/Exception.hpp>
+#include <lang/System.hpp>
 
 namespace lang {
 
@@ -44,4 +45,7 @@ char String::charAt(int index) const {TRACE;
 	return value[index];
 }
 
-}
+class String::AutoType {};
+String String::valueOf(const String::AutoType& t) { return Class::nameOf(t) + "@" + Integer::toHexString((long)&t).intern(); }
+
+} //namespace lang

@@ -90,11 +90,7 @@ public:
 	virtual const String& getMessage() const {return detailMessage;}
 	virtual const String& getLocalizedMessage() const {return getMessage();}
 	Throwable& initCause(Throwable *c);
-	String toString() const {
-		String s = getClass().getName();
-		String message = getLocalizedMessage();
-		return (message != null) ? (s + ": " + message) : s;
-	}
+	String toString() const;
 	void printStackTrace() const;
 	void printStackTrace(const io::PrintStream& s) const;
 	Throwable& fillInStackTrace() {

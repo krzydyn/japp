@@ -7,14 +7,17 @@
 namespace util {
 
 template<class T>
-class IteratorBase {
+interface IteratorBase : Interface {
+protected:
+	IteratorBase() {}
 public:
-	virtual ~IteratorBase() {}
 	virtual bool hasNext() = 0;
 	virtual const T& next() = 0;
 	virtual void remove() {
-		throw lang::UnsupportedOperationException("remove");
+		throw UnsupportedOperationException("remove");
 	}
+	//template<class E>
+	//void forEachRemaining(Consumer<E> action) {}
 };
 
 template<class T>

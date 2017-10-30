@@ -1,12 +1,9 @@
 #ifndef __LANG_OBJECT_HPP
 #define __LANG_OBJECT_HPP
 
-#include <typeinfo>
-#include <string>
-#include <iostream>
-
 #define boolean bool
 #define null nullptr
+#define interface class
 #define extends public
 #define implements virtual public
 
@@ -19,8 +16,9 @@ using jlong=long long;
 
 namespace lang {
 
-class String;
+class Class;
 class Object;
+class String;
 
 extern Object& nullref;
 
@@ -40,33 +38,22 @@ public:
 #define TRACE
 #endif
 
-class Class {
-	friend class Object;
-private:
-	const std::type_info& type;
-	Class(const Object& o);
-	static std::string nameOf(const std::type_info& type);
-
-public:
-	String getName() const;
-	String getSimpleName() const;
-	String getCanonicalName() const;
-	virtual boolean isInstance(const Object& obj) const {return false;}
-	virtual boolean isAssignableFrom(const Class& cls) const {return false;}
-	virtual boolean isInterface() const {return false;}
-	virtual boolean isArray() const {return false;}
-	virtual boolean isPrimitive() const {return false;}
-	virtual boolean isAnnotation() const {return false;}
-	virtual boolean isSynthetic() const {return false;}
-
-	template<class T>
-	static std::string nameOf(const T& o) {TRACE;return nameOf(typeid(o)); }
+class Interface {
+protected:
+	Interface(const Interface& other) = delete;
+	Interface(Interface&& other) = delete;
+	Interface& operator=(const Interface& other) = delete;
+	Interface& operator=(Interface&& other) = delete;
+	virtual ~Interface() {}
+	Interface() {}
 };
 
 class Object {
+protected:
+	virtual void finalize() {}
 public:
 	virtual ~Object() {}
-	virtual const Class getClass() const {return Class(*this);}
+	virtual const Class getClass() const;
 	virtual long hashCode() const {return (long)this;}
 	virtual long hashCode() {return ((const Object*)this)->hashCode();}
 	virtual boolean equals(const Object& obj) const {return this == &obj;}
@@ -81,8 +68,6 @@ public:
 	virtual boolean operator!=(const Object& obj) final {return !equals(obj); }
 	virtual boolean operator==(const void *ptr) {return ptr == this; }
 	virtual boolean operator!=(const void *ptr) {return ptr != this; }
-protected:
-	virtual void finalize() {}
 };
 
 class Integer : extends Object {

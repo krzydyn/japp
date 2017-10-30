@@ -1,8 +1,11 @@
 #include <lang/System.hpp>
 #include <io/File.hpp>
 
-#define _POSIX_SOURCE
+#ifndef _POSIX_SOURCE
+#define _POSIX_SOURCE 1
+#endif
 #define _LARGE_TIME_API 
+
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -105,8 +108,13 @@ public:
 		struct stat st;
 		if (::stat(f.getPath().intern().c_str(), &st) < 0)
 			return 0;
+		#ifdef _MACOS_
 		jlong millis = st.st_mtimespec.tv_sec; millis *= 1000;
-		millis += st.st_mtimespec.tv_nsec / 1000000; // nanosec to millisec
+		millis += st.st_mtimespec.tv_nsec / 1000000;
+		#else
+		jlong millis = st.st_mtim.tv_sec; millis *= 1000;
+		millis += st.st_mtim.tv_nsec / 1000000;
+		#endif
 		return millis;
 	}
 	virtual jlong getLength(const File& f) const {

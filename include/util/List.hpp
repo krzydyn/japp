@@ -1,7 +1,6 @@
 #ifndef __UTIL_LIST_HPP
 #define __UTIL_LIST_HPP
 
-//#include <lang/System.hpp>
 #include <lang/String.hpp>
 #include <util/Iterator.hpp>
 
@@ -10,27 +9,15 @@
 namespace util {
 
 template<class T>
-class Iterable {
+interface Iterable : Interface {
 public:
-	Iterable(const Iterable& other) = delete;
-	Iterable(Iterable&& other) = delete;
-	Iterable& operator=(const Iterable& other) = delete;
-	Iterable& operator=(Iterable&& other) = delete;
-	virtual ~Iterable() {}
-
 	Iterable(){}
 	virtual Iterator<T> iterator() = 0;
 };
 
 template<class T>
-class Collection : extends Iterable<T> {
+interface Collection : extends Iterable<T> {
 public:
-	Collection(const Collection& other) = delete;
-	Collection(Collection&& other) = delete;
-	Collection& operator=(const Collection& other) = delete;
-	Collection& operator=(Collection&& other) = delete;
-	virtual ~Collection() {}
-
 	Collection(){}
 	virtual unsigned size() const = 0;
 	virtual boolean isEmpty() const final {return size()==0;}
@@ -38,10 +25,10 @@ public:
 	virtual Iterator<T> iterator() = 0;
 	virtual Array<T> toArray() const {
 		Array<T> a(size());
-		/*unsigned ai=0;
-		for (Iterator<T> i = iterator(); i->hasNext(); ++ai) {
+		unsigned ai=0;
+		for (Iterator<T> i = const_cast<Collection&>(*this).iterator(); i->hasNext(); ++ai) {
 			a[ai] = i->next();
-		}*/
+		}
 		return a;
 	}
 	virtual boolean add(const T& v) = 0;
@@ -66,7 +53,7 @@ public:
 };
 
 template<class T>
-class List : extends Collection<T> {
+interface List : extends Collection<T> {
 public:
 	List(const List& other) = delete;
 	List(List&& other) = delete;

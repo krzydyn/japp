@@ -51,3 +51,16 @@ Process& ProcessBuilder::start() {
 Runtime Runtime::currentRuntime;
 
 } //namespace lang
+
+#ifdef INSTRUMENTATION
+/*
+ * Instrumentation
+ * compile with gcc '-finstrument-functions' flag
+ */
+__attribute__((no_instrument_function))
+void __cyg_profile_func_enter(void *this_fn, void *call_site) {
+}
+__attribute__((no_instrument_function))
+void __cyg_profile_func_exit(void *this_fn, void *call_site) {
+}
+#endif

@@ -3,6 +3,7 @@
 
 #include <lang/Math.hpp>
 #include <lang/Exception.hpp>
+#include <lang/Class.hpp>
 #include <util/List.hpp>
 #include <iostream>
 
@@ -51,7 +52,7 @@ public:
     void add(unsigned i,const T& v) {
         if (mSize>=mCapa) ensureCapa(mSize+1);
         if (i == END_OF_LIST) {
-			printf("copy %s into mvec[%d]\n", Class::nameOf(v).c_str(), (mOffs+mSize)%mCapa);
+			printf("copy %s into mvec[%d]\n", Class::nameOf(v).intern().c_str(), (mOffs+mSize)%mCapa);
 			mVec[(mOffs+mSize)%mCapa]=v;
 			//memcpy(mVec + ((mOffs+mSize)%mCapa), &v, sizeof(v));
 			++mSize;
@@ -173,7 +174,7 @@ private:
     	unsigned mNext;
 
 	public:
-		ArrayListIterator(ArrayList&list) : mList(list), mNext(0) {}
+		ArrayListIterator(ArrayList& list) : mList(list), mNext(0) {}
 		bool hasNext() { return mNext < mList.mSize; }
 		const T& next() { return mList.get(mNext++); }
 		void remove() {
