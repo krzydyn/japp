@@ -6,7 +6,7 @@
 
 namespace lang {
 
-class Class : extends Object {
+class Class final : extends Object {
 	friend class Object;
 private:
 	const std::type_info& type;
@@ -14,16 +14,22 @@ private:
 
 	static String getTypeName(const std::type_info&);
 public:
+	String toString() const {
+		String c = isInterface() ? "interface " : (isPrimitive() ? "" : "class ");
+		return c + getName();
+	}
+	String toGenericString() const {
+	}
 	String getName() const;
 	String getSimpleName() const;
 	String getCanonicalName() const;
-	virtual boolean isInstance(const Object& obj) const {return false;}
-	virtual boolean isAssignableFrom(const Class& cls) const {return false;}
-	virtual boolean isInterface() const {return false;}
-	virtual boolean isArray() const {return false;}
-	virtual boolean isPrimitive() const {return false;}
-	virtual boolean isAnnotation() const {return false;}
-	virtual boolean isSynthetic() const {return false;}
+	boolean isInstance(const Object& obj) const {return false;}
+	boolean isAssignableFrom(const Class& cls) const {return false;}
+	boolean isInterface() const {return false;}
+	boolean isArray() const {return false;}
+	boolean isPrimitive() const {return false;}
+	boolean isAnnotation() const {return false;}
+	boolean isSynthetic() const {return false;}
 
 	template<class T>
 	static String nameOf(const T& o) {TRACE;return getTypeName(typeid(o)); }

@@ -164,6 +164,7 @@ String Class::getSimpleName() const {TRACE;
 }
 String Class::getCanonicalName() const {TRACE;return getName();}
 String Class::getTypeName(const std::type_info& type) {TRACE;
+	Exception e; e.printStackTrace();
 	return demangle(type.name());
 }
 
