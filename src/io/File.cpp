@@ -108,7 +108,7 @@ public:
 		struct stat st;
 		if (::stat(f.getPath().intern().c_str(), &st) < 0)
 			return 0;
-		#ifdef _MACOS_
+		#ifdef __APPLE__
 		jlong millis = st.st_mtimespec.tv_sec; millis *= 1000;
 		millis += st.st_mtimespec.tv_nsec / 1000000;
 		#else

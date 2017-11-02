@@ -18,8 +18,7 @@ public:
 		String c = isInterface() ? "interface " : (isPrimitive() ? "" : "class ");
 		return c + getName();
 	}
-	String toGenericString() const {
-	}
+	String toGenericString() const {return toString();}
 	String getName() const;
 	String getSimpleName() const;
 	String getCanonicalName() const;
