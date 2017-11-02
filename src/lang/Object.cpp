@@ -87,6 +87,32 @@ StackTraceElement parseStackEntry(const std::string& s) {
 }
 #endif
 
+void captureStack(Array<StackTraceElement>& stackTrace) {
+	const int depth = 50;
+	void *array[depth];
+	int got = ::backtrace(array, depth);
+	if (got <= 2) return ;
+	//better backtrace_symbols
+	//http://cairo.sourcearchive.com/documentation/1.9.4/backtrace-symbols_8c-source.html
+	//TODO use dladdr to get symbol info struct (without converting to string)
+	char **strings = ::backtrace_symbols(array, got);
+	got -= 2;
+	stackTrace = Array<StackTraceElement>(got);
+	for (int i = 0; i < got; ++i) {
+		//std::printf("bt[%d]: %s\n", i, strings[i + 2]);
+		stackTrace[i] = parseStackEntry(strings[i + 2]);
+	}
+	::free (strings);
+}
+void captureStack2(Array<StackTraceElement>& stackTrace) {
+	stackTrace = Array<StackTraceElement>(traceSize());
+	for (int i = 0; i < stackTrace.length; ++i) {
+		CallTrace *ct = calltrace[stackTrace.length - i - 1];
+		if (ct == null) continue;
+		//std::printf("bt[%d]: f='%s'  @ '%s:%d'\n", i, ct->func,ct->file,ct->line);
+		stackTrace[i] = StackTraceElement(ct->func,ct->file,ct->line);
+	}
+}
 class NullRef : public Object {
 } nullObject;
 
@@ -111,33 +137,12 @@ String Throwable::toString() const {
 	String message = getLocalizedMessage();
 	return (message != null) ? (s + ": " + message) : s;
 }
-void Throwable::captureStack(int depth) { TRACE;
-   	void *array[depth];
-	int got = ::backtrace(array, depth);
-	if (got <= 2) return ;
-	//better backtrace_symbols
-	//http://cairo.sourcearchive.com/documentation/1.9.4/backtrace-symbols_8c-source.html
-	//TODO use dladdr to get symbol info struct (without converting to string)
-	char **strings = ::backtrace_symbols(array, got);
-	got -= 2;
-	stackTrace = Array<StackTraceElement>(got);
-	for (int i = 0; i < got; ++i) {
-		//std::printf("bt[%d]: %s\n", i, strings[i + 2]);
-		stackTrace[i] = parseStackEntry(strings[i + 2]);
-	}
-	::free (strings);
-}
-void Throwable::captureStack2() {
-	std::cout << "capture2 ..." << std::endl;
-	stackTrace = Array<StackTraceElement>(traceSize());
-	for (int i = stackTrace.length; i > 0; ) {
-		--i;
-		CallTrace *ct = calltrace[i];
-		if (ct == null) continue;
-		//std::printf("bt[%d]: f='%s'  @ '%s:%d'\n", i, ct->func,ct->file,ct->line);
-		stackTrace[i] = StackTraceElement(ct->func,ct->file,ct->line);
-	}
-	std::cout << "capture2 done" << std::endl;
+Throwable& Throwable::fillInStackTrace() {
+	(void)captureStack;
+	(void)captureStack2;
+	captureStack(stackTrace);
+	//captureStack2(stackTrace);
+	return *this;
 }
 void Throwable::printStackTrace() const {TRACE;
 	printStackTrace(System.err);	
@@ -164,11 +169,11 @@ String Class::getSimpleName() const {TRACE;
 }
 String Class::getCanonicalName() const {TRACE;return getName();}
 String Class::getTypeName(const std::type_info& type) {TRACE;
-	Exception e; e.printStackTrace();
+	//Exception e; e.printStackTrace();
 	return demangle(type.name());
 }
 
-const Class Object::getClass() const {return Class(*this);}
+const Class Object::getClass() const {TRACE; return Class(*this);}
 
 Object& Object::clone() const {TRACE;
 	throw CloneNotSupportedException();

@@ -8,7 +8,7 @@ TRM_WHI:=$(shell printf "\033[1;37m")
 TRM_END:=$(shell printf "\033[0m")
 
 export TOP_DIR:=$(CURDIR)
-export BUILD_DIR:=$(TOP_DIR)/build
+export BUILD_DIR:=build
 export INC_DIR:=include
 export JRELIB:=build/jre.a
 

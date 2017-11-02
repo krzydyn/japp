@@ -25,21 +25,21 @@ public:
     } 
     ~ArrayList() { delete [] mVec; } 
 
-	Iterator<T> iterator() {
+	Iterator<T> iterator() { TRACE;
 		return makeIterator<ArrayListIterator>(*this);
 	}
     void clear() { mOffs=mSize=0; }
     unsigned size() const {return mSize;}
     void shrink(unsigned s) {if (s < mSize) mSize=s;}
-    const T& get(unsigned i) const {
+    const T& get(unsigned i) const { TRACE;
 		if (i >= mSize) throw IndexOutOfBoundsException(i);
 		return mVec[(mOffs+i)%mCapa];
 	}
-    T& get(unsigned i) {
+    T& get(unsigned i) { TRACE;
 		if (i >= mSize) throw IndexOutOfBoundsException(i);
 		return mVec[(mOffs+i)%mCapa];
 	}
-	void set(unsigned i, const T& v) {
+	void set(unsigned i, const T& v) { TRACE;
 		if (i >= mSize) throw IndexOutOfBoundsException(i);
 		mVec[(mOffs+i)%mCapa] = v;
 	}
@@ -49,7 +49,7 @@ public:
 	using List<T>::add;
 	using List<T>::remove;
 
-    void add(unsigned i,const T& v) {
+    void add(unsigned i,const T& v) { TRACE;
         if (mSize>=mCapa) ensureCapa(mSize+1);
         if (i == END_OF_LIST) {
 			printf("copy %s into mvec[%d]\n", Class::nameOf(v).intern().c_str(), (mOffs+mSize)%mCapa);
@@ -70,16 +70,16 @@ public:
 		printf("copy into mvec\n");
         mVec[(mOffs+j)%mCapa]=v; ++mSize;
     }
-    unsigned indexOf(const T& v,unsigned start=0) const {
+    unsigned indexOf(const T& v,unsigned start=0) const {TRACE;
 		for (unsigned i=start; i < mSize; ++i ) {
 			if (util_equals(mVec[(mOffs+i)%mCapa],v)) return i;
 		}
 		return END_OF_LIST;
 	}
-    unsigned lastIndexOf(const T& v,unsigned start=0) const {
+    unsigned lastIndexOf(const T& v,unsigned start=0) const {TRACE;
 		return END_OF_LIST;
 	}
-    void removeAll(const Collection<T>& c) {
+    void removeAll(const Collection<T>& c) {TRACE;
         unsigned d=0;
         for (unsigned i=0; i<mSize; ++i) {
 			//copy elements not existing on c
@@ -90,7 +90,7 @@ public:
         }
         mSize=d;
     }
-    T removeAt(unsigned i) {
+    T removeAt(unsigned i) {TRACE;
 		if (i >= mSize) throw IndexOutOfBoundsException(i);
         T v=mVec[(mOffs+i)%mCapa]; --mSize;
 		if (i < mSize - i) {
@@ -153,7 +153,7 @@ public:
 private:
     T *mVec;
     unsigned mOffs,mSize, mCapa;
-    void ensureCapa(unsigned ns){
+    void ensureCapa(unsigned ns){TRACE;
 		if (mCapa>=ns) return ;
 		if (ns<8) ns=8;
 		else ns=hiBit(ns)<<1;
@@ -175,9 +175,9 @@ private:
 
 	public:
 		ArrayListIterator(ArrayList& list) : mList(list), mNext(0) {}
-		bool hasNext() { return mNext < mList.mSize; }
-		const T& next() { return mList.get(mNext++); }
-		void remove() {
+		bool hasNext() {TRACE; return mNext < mList.mSize; }
+		const T& next() {TRACE; return mList.get(mNext++); }
+		void remove() {TRACE;
 			if (mNext > 0) {
 				--mNext;
 				mList.removeAt(mNext);

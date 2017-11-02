@@ -93,18 +93,12 @@ public:
 	String toString() const;
 	void printStackTrace() const;
 	void printStackTrace(const io::PrintStream& s) const;
-	Throwable& fillInStackTrace() {
-		captureStack(50);
-		//captureStack2();
-		return *this;
-	}
+	Throwable& fillInStackTrace();
 	const Array<StackTraceElement>& getStackTrace() const { return stackTrace; }
 private:
 	String detailMessage;
 	Array<StackTraceElement> stackTrace;
 	Throwable *cause;
-	void captureStack(int depth);
-	void captureStack2();
 };
 
 class Error : public Throwable {

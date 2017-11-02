@@ -107,19 +107,19 @@ public:
 
 	int lastIndexOf(const String& str, int fromIndex=0) const {TRACE; return value.rfind(str.value, fromIndex); }
 
-	String substring(int beginIndex) const { return value.substr(beginIndex); }
-	String substring(int beginIndex, int endIndex) const { return value.substr(beginIndex,endIndex-beginIndex); }
+	String substring(int beginIndex) const {TRACE; return value.substr(beginIndex); }
+	String substring(int beginIndex, int endIndex) const {TRACE; return value.substr(beginIndex,endIndex-beginIndex); }
 
-	static String valueOf(int n) { return String(std::to_string(n)); }
-	static String valueOf(unsigned n) { return String(std::to_string(n)); }
-	static String valueOf(const Object& obj) { return obj.toString(); }
+	static String valueOf(int n) {TRACE; return String(std::to_string(n)); }
+	static String valueOf(unsigned n) {TRACE; return String(std::to_string(n)); }
+	static String valueOf(const Object& obj) {TRACE; return obj.toString(); }
 	template<class T>
-	static String valueOf(const T& t) { return valueOf((const AutoType&)t); }
+	static String valueOf(const T& t) {TRACE; return valueOf((const AutoType&)t); }
 };
 
-inline String toString(const String& s) {return s;}
+inline String toString(const String& s) {TRACE;return s;}
 template<class T>
-inline String toString(T v) {return String(v);}
+inline String toString(T v) {TRACE;return String(v);}
 
 class StringBuilder : public Object {
 private:
@@ -128,24 +128,24 @@ public:
 	StringBuilder() {}
 	StringBuilder(int capacity) {
 	}
-	StringBuilder& append(char v) {
+	StringBuilder& append(char v) {TRACE;
 		value << v;
 		return *this;
 	}
-	StringBuilder& append(const char *str) {
+	StringBuilder& append(const char *str) {TRACE;
 		value << str;
 		return *this;
 	}
-	StringBuilder& append(const String& str) {
+	StringBuilder& append(const String& str) {TRACE;
 		value << str.intern();
 		return *this;
 	}
 	template<class T>
-	StringBuilder& append(const T& t) {
+	StringBuilder& append(const T& t) {TRACE;
 		value << String::valueOf(t).intern();
 		return *this;
 	}
-	String toString() const {
+	String toString() const {TRACE;
 		return String(value.str());
 	}
 };
