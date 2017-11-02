@@ -51,13 +51,13 @@ protected:
 class Object {
 protected:
 	virtual void finalize() {}
+	virtual Object& clone() const;
 public:
 	virtual ~Object() {}
 	virtual const Class getClass() const;
 	virtual long hashCode() const {return (long)this;}
 	virtual long hashCode() {return ((const Object*)this)->hashCode();}
 	virtual boolean equals(const Object& obj) const {return this == &obj;}
-	virtual Object& clone() const;
 	virtual String toString() const;
 	virtual void notify() {}
 	virtual void wait(long timeout) final {}

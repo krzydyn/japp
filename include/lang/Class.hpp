@@ -18,6 +18,11 @@ public:
 		String c = isInterface() ? "interface " : (isPrimitive() ? "" : "class ");
 		return c + getName();
 	}
+	/*
+	 * Returns a string describing this {@code Class}, including
+	 * information about modifiers and type parameters.
+	 * @since 1.8
+	 */
 	String toGenericString() const {return toString();}
 	String getName() const;
 	String getSimpleName() const;

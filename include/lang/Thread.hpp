@@ -1,28 +1,37 @@
 #ifndef __LANG_THREAD_HPP
 #define __LANG_THREAD_HPP
 
+#include <lang/Class.hpp>
 #include <lang/String.hpp>
 #include <lang/Exception.hpp>
+#include <thread>
 
 namespace lang {
 
-class Runnable {
+interface Runnable : extends Interface {
 public:
 	virtual void run() = 0;
 };
 
-class Thread : public Object,public Runnable {
+class Thread : extends Object, implements Runnable {
 private:
+	static long threadSeqNumber;
+
 	String  name;
 	int     priority;
 	boolean daemon = false;
 	Runnable* target;
+	long stackSize;
+	long tid;
+	int threadStatus;
+
+	std::thread thread;
 public:
 	Thread() : target(null) {}
 	Thread(Runnable& target) : target(&target) {}
-	Thread(const String& name) : target(null){}
-	Thread(Runnable& target, const String& name) : target(&target) {}
-	void start() {}
+	Thread(const String& name) : name(name), target(null){}
+	Thread(Runnable& target, const String& name) : name(name), target(&target) {}
+	void start();
 
 	void run() {
 		if (target != null) target->run();
@@ -35,24 +44,51 @@ public:
 	int getPriority() {return 0;}
 	void setName(String name) {this->name=name;}
 	String getName() {return name;}
-	void join(long millis) {}
-	void join(long millis, int nanos) {join(millis);}
-	void setDaemon(boolean on) {daemon = on;}
+	void join(long millis) {thread.join();}
+	void join(long millis, int nanos) {
+		if (millis < 0) throw IllegalArgumentException("timeout value is negative");
+		if (nanos < 0 || nanos > 999999) throw IllegalArgumentException("nanosecond timeout value out of range");
+		if (nanos >= 500000 || (nanos != 0 && millis == 0)) ++millis;
+		join(millis);
+	}
+	void setDaemon(boolean on) {
+		checkAccess();
+		if (isAlive()) throw IllegalThreadStateException();
+		daemon = on;
+	}
 	boolean isDaemon() { return daemon; }
 	void checkAccess() {}
 	String toString() {return getClass().getName()+":"+getName();}
 	Array<StackTraceElement> getStackTrace() {
 		return Throwable().getStackTrace();
 	}
-	long getId() {return 0;}
+	long getId() {return tid;}
 
+	enum State {
+		NEW,
+		RUNNABLE,
+		BLOCKED,
+		WAITING,
+		TIMED_WAITING,
+		TERMINATED
+	};
+
+	State getState() { return (State)threadStatus; }
+
+	static int activeCount() {return 0;}
 	static Thread& currentThread();
+	//static Map<Thread, StackTraceElement[]> getAllStackTraces() {}
 	static void yield();
 	static void sleep(long millis);
-	static void sleep(long millis, int nanos);
+	static void sleep(long millis, int nanos) {
+		if (millis < 0) throw IllegalArgumentException("timeout value is negative");
+		if (nanos < 0 || nanos > 999999) throw IllegalArgumentException("nanosecond timeout value out of range");
+		if (nanos >= 500000 || (nanos != 0 && millis == 0)) ++millis;
+		sleep(millis);
+	}
 	static boolean interrupted() {return false;}
 	static void dumpStack() {
-		return Throwable().printStackTrace();
+		Throwable("Stack trace").printStackTrace();
 	}
 };
 
