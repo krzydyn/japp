@@ -19,6 +19,7 @@ CPPFLAGS+=-Wall -Werror
 ifeq ($(HOST_OS),Linux)
 LDFLAGS:=-rdynamic
 endif
+LDFLAGS+=-lpthread
 
 SRCS:=$(wildcard $(SOURCE_DIR)/*.cpp)
 OBJS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
@@ -28,7 +29,7 @@ TARGETS: $(JRELIB)
 
 $(BUILD_DIR)/%: $(SOURCE_DIR)/%.cpp $(JRELIB)
 	@#printf "$(CC) $(CPPFLAGS) $^ -o $@\n"
-	$(CC) $(LDFLAGS) $(CPPFLAGS) $^ -o $@
+	$(CC) $(CPPFLAGS) $^ $(LDFLAGS) -o $@
 
 build: create-$(BUILD_DIR) $(TARGETS)
 

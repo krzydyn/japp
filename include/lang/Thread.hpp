@@ -23,7 +23,7 @@ private:
 	Runnable* target;
 	long stackSize;
 	long tid;
-	int threadStatus;
+	volatile int threadStatus = NEW;
 
 	std::thread thread;
 public:
@@ -31,8 +31,10 @@ public:
 	Thread(Runnable& target) : target(&target) {}
 	Thread(const String& name) : name(name), target(null){}
 	Thread(Runnable& target, const String& name) : name(name), target(&target) {}
-	void start();
+	//TODO suport lamba as target
+	~Thread() { if (threadStatus == RUNNABLE) join(); }
 
+	void start();
 	void run() {
 		if (target != null) target->run();
 	}
@@ -42,9 +44,9 @@ public:
 	boolean isAlive() {return false;}
 	void setPriority(int newPriority) {}
 	int getPriority() {return 0;}
-	void setName(String name) {this->name=name;}
+	void setName(const String& name);
 	String getName() {return name;}
-	void join(long millis) {thread.join();}
+	void join(long millis=0) {thread.join();}
 	void join(long millis, int nanos) {
 		if (millis < 0) throw IllegalArgumentException("timeout value is negative");
 		if (nanos < 0 || nanos > 999999) throw IllegalArgumentException("nanosecond timeout value out of range");
@@ -90,6 +92,9 @@ public:
 	static void dumpStack() {
 		Throwable("Stack trace").printStackTrace();
 	}
+private:
+	void runHelper();
+	void setNativeName(const String& name);
 };
 
 } //namespace lang

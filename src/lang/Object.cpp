@@ -50,9 +50,10 @@ std::string demangle(const std::string& name) {
 #endif
 }
 String getSimpleBinaryName() { return ""; }
+
+StackTraceElement parseStackEntry(const std::string& s) {
 #ifdef __APPLE__
 // 0   threads                             0x000000010b84db25 mangled_name + 211
-StackTraceElement parseStackEntry(const std::string& s) {
 	unsigned posOp = s.find("0x");
 	posOp = s.find(' ', posOp);
 	unsigned posCl = s.find('+',posOp);
@@ -62,11 +63,8 @@ StackTraceElement parseStackEntry(const std::string& s) {
 		std::string func = demangle(s.substr(posOp,posCl-posOp));
 		return StackTraceElement(func + s.substr(posCl),"",0);
 	}
-	return StackTraceElement(s,"",0);
-}
 #elif __linux__
 // ./build/threads(mangled_name+0x62) [0x409382]
-StackTraceElement parseStackEntry(const std::string& s) {
 	unsigned posOp = s.find('(');
 	unsigned posCl = s.find(')',posOp);
 	if (posOp != std::string::npos && posCl != std::string::npos) {
@@ -79,13 +77,9 @@ StackTraceElement parseStackEntry(const std::string& s) {
 		posCl = s.find(')',posOp)+1;
 		return StackTraceElement(func + s.substr(posCl),"",0);
 	}
-	return StackTraceElement(s,"",0);
-}
-#else
-StackTraceElement parseStackEntry(const std::string& s) {
-	return StackTraceElement(s,"",0);
-}
 #endif
+	return StackTraceElement(s,"",0);
+}
 
 void captureStack(Array<StackTraceElement>& stackTrace) {
 	const int depth = 50;
@@ -148,8 +142,6 @@ void Throwable::printStackTrace() const {TRACE;
 	printStackTrace(System.err);	
 }
 void Throwable::printStackTrace(const io::PrintStream& s) const {TRACE;
-	//s.println((const Object&)(*this));
-	//s.println(this->toString());
 	s.println(*this);
 	for (int i=0; i < stackTrace.length; ++i) {
 		s.print("\tat ");
