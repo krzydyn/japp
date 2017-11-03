@@ -21,22 +21,24 @@
 // readelf --debug-dump=decodedline  a.out
 
 namespace {
-#define CALLTRACE_SIZE 2048
-CallTrace *calltrace[CALLTRACE_SIZE];
+#ifdef BACKTRACE
+#define BACKTRACE_SIZE 2048
+CallTrace *calltrace[BACKTRACE_SIZE];
 unsigned calltrace_size = 0;
 void tracePush(CallTrace *c) {
-	if (calltrace_size < CALLTRACE_SIZE)
+	if (calltrace_size < BACKTRACE_SIZE)
 		calltrace[calltrace_size] = c;
 	++calltrace_size;
 }
 CallTrace *tracePop() {
 	if (calltrace_size == 0) return null;
 	--calltrace_size;
-	if (calltrace_size < CALLTRACE_SIZE)
+	if (calltrace_size < BACKTRACE_SIZE)
 		return calltrace[calltrace_size];
 	return null;
 }
 unsigned traceSize() { return calltrace_size; }
+#endif
 
 std::string demangle(const std::string& name) {
 #ifdef __GNUG__ // gnu C++ compiler
@@ -98,6 +100,7 @@ void captureStack(Array<StackTraceElement>& stackTrace) {
 	}
 	::free (strings);
 }
+#ifdef BACKTRACE
 void captureStack2(Array<StackTraceElement>& stackTrace) {
 	stackTrace = Array<StackTraceElement>(traceSize());
 	for (int i = 0; i < stackTrace.length; ++i) {
@@ -107,6 +110,7 @@ void captureStack2(Array<StackTraceElement>& stackTrace) {
 		stackTrace[i] = StackTraceElement(ct->func,ct->file,ct->line);
 	}
 }
+#endif
 class NullRef : public Object {
 } nullObject;
 
@@ -116,15 +120,15 @@ namespace lang {
 
 Object& nullref = nullObject;
 
+#ifdef BACKTRACE
 void CallTrace::r() {
 	tracePush(this);
-	//std::printf("added bt[%d]: f='%s' @ (%s:%u)\n",traceSize()-1,func,file,line);
 }
 CallTrace::~CallTrace() {
 	CallTrace *c = tracePop();
 	if (c != this) std::cerr << "stack mismach" << std::endl;
-	//std::printf("removed bt[%d]: f='%s' @ (%s:%u)\n",traceSize(),c->func,c->file,c->line);
 }
+#endif
 
 String Throwable::toString() const {
 	String s = getClass().getName();
@@ -133,9 +137,11 @@ String Throwable::toString() const {
 }
 Throwable& Throwable::fillInStackTrace() {
 	(void)captureStack;
-	(void)captureStack2;
+#ifdef BACKTRACE
+	captureStack2(stackTrace);
+#else
 	captureStack(stackTrace);
-	//captureStack2(stackTrace);
+#endif
 	return *this;
 }
 void Throwable::printStackTrace() const {TRACE;

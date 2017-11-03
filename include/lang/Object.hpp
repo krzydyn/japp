@@ -32,10 +32,13 @@ public:
 	~CallTrace();
 };
 
-#define TRACE CallTrace UNIQUE_NAME(the_calltrace)(__FUNCTION__, __FILE__,__LINE__);UNIQUE_NAME(the_calltrace).r()
+//#define TRACE CallTrace UNIQUE_NAME(the_calltrace)(__FUNCTION__, __FILE__,__LINE__);UNIQUE_NAME(the_calltrace).r()
 
 #ifndef TRACE
 #define TRACE
+#undef BACKTRACE
+#else
+#define BACKTRACE
 #endif
 
 class Interface {

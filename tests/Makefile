@@ -37,6 +37,7 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 RUN_TESTS:=$(TARGETS:$(BUILD_DIR)/%=run-%)
+ADDR_TESTS:=$(TARGETS:$(BUILD_DIR)/%=addr-%)
 
 .PHONY: create-$(BUILD_DIR)
 create-$(BUILD_DIR):
@@ -50,3 +51,6 @@ $(RUN_TESTS):
 
 .PHONY: run
 run: $(RUN_TESTS)
+
+ADDR_TESTS:
+	addr2line -e $(@:addr-%=%) $(ADDR)
