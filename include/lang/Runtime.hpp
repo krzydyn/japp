@@ -9,10 +9,10 @@
 using namespace util;
 namespace lang {
 
-class Shutdown {
-public:
+class Shutdown final {
+	friend class Runtime;
 	static void exit(int status);
-	static void halt(int status) {}
+	static void halt(int status);
 };
 
 class Runtime : public Object {
@@ -52,7 +52,7 @@ public:
 			.directory(dir)
 			.start();
     }
-	int availableProcessors() { return 0; }
+	int availableProcessors();
 	long freeMemory() {return 0;}
 	long totalMemory() {return 0;}
 	long maxMemory() {return 0;}

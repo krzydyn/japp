@@ -1,6 +1,8 @@
 #ifndef __LANG_OBJECT_HPP
 #define __LANG_OBJECT_HPP
 
+#include <mutex>
+
 #define boolean bool
 #define null nullptr
 #define interface class
@@ -52,11 +54,21 @@ protected:
 };
 
 class Object {
+	friend class Lock;
+private:
+	std::recursive_mutex *mtx=null;
 protected:
 	virtual void finalize() {}
 	virtual Object& clone() const;
 public:
-	virtual ~Object() {}
+	Object(const Object& other) {}
+	Object(Object&& other) {mtx = std::move(other.mtx);}
+	Object& operator=(const Object& other) {return *this;}
+	Object& operator=(Object&& other) {mtx = std::move(other.mtx);return *this;}
+	virtual ~Object() {
+		if (mtx) delete mtx;
+	}
+	Object() {}
 	virtual const Class getClass() const;
 	virtual long hashCode() const {return (long)this;}
 	virtual long hashCode() {return ((const Object*)this)->hashCode();}
@@ -71,6 +83,23 @@ public:
 	virtual boolean operator!=(const Object& obj) final {return !equals(obj); }
 	virtual boolean operator==(const void *ptr) {return ptr == this; }
 	virtual boolean operator!=(const void *ptr) {return ptr != this; }
+};
+
+class Lock {
+	const Object& obj;
+	boolean locked=true;
+public:
+	Lock(const Object& o) : obj(o) {
+		if (obj.mtx == null) {
+			const_cast<Object&>(obj).mtx = new std::recursive_mutex;
+		}
+		obj.mtx->lock();
+	}
+	~Lock() {
+		obj.mtx->unlock();
+	}
+	operator boolean () const { return locked; }
+	void unlock() { locked=false; }
 };
 
 class Integer : extends Object {
@@ -89,6 +118,8 @@ inline bool instanceOf(const T& ptr) {
 }
 
 } //namespace lang
+
+#define synchronized(m) for(Lock lock(m); lock; lock.unlock())
 
 using namespace lang;
 

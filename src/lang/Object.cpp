@@ -175,6 +175,7 @@ const Class Object::getClass() const {TRACE; return Class(*this);}
 
 Object& Object::clone() const {TRACE;
 	throw CloneNotSupportedException();
+	//return nullref;
 }
 String Object::toString() const {TRACE;
 	return getClass().getName() + "@" + Integer::toHexString(hashCode());

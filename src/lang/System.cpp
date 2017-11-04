@@ -1,5 +1,4 @@
 #include <lang/Math.hpp>
-#include <lang/Process.hpp>
 #include <lang/System.hpp>
 #include <lang/Runtime.hpp>
 #include <io/File.hpp>
@@ -17,13 +16,10 @@ io::FileOutputStream std_ferr(std::cerr);
 io::PrintStream std_out(std_fout);
 io::PrintStream std_err(std_ferr);
 }
+
 namespace lang {
 const The_System System;
 const The_Math Math;
-
-void Shutdown::exit(int status) {
-	std::exit(status);
-}
 
 Properties The_System::props;
 io::InputStream& The_System::in = std_fin;
@@ -42,13 +38,6 @@ const String The_System::getenv(const String& name) {
 
 void The_System::exit(int code) { Runtime::getRuntime().exit(code); }
 void The_System::gc() { Runtime::getRuntime().gc(); }
-
-Process& ProcessBuilder::start() {
-	Process *p = null;
-	return *p;
-}
-
-Runtime Runtime::currentRuntime;
 
 } //namespace lang
 

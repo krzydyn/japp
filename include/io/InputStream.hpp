@@ -7,6 +7,8 @@ namespace io {
 
 class InputStream : public Closeable {
 public:
+	InputStream& operator=(const InputStream& other) { return *this; }
+	InputStream& operator=(InputStream&& other) { return *this; }
 };
 
 } //namespace io

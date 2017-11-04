@@ -9,7 +9,7 @@
 
 namespace lang {
 
-class The_System final {
+class The_System final : extends Object {
 public:
 	The_System(){}
 	The_System(const The_System& other) = delete;

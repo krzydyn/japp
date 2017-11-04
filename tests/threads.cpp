@@ -6,7 +6,7 @@ static void test_backtrace() { TRACE;
 }
 
 static void test_thread() {
-	class RunSleep1 : public Runnable {
+	class RunSleep1 : implements Runnable {
 		void run() {
 			System.out.println("Sleeping for 1s");
 			Thread::sleep(1000);
@@ -16,7 +16,7 @@ static void test_thread() {
 	Thread t1(rs1, "threadX");
 	t1.start();
 
-	class RunSleep2 : public Runnable {
+	class RunSleep2 : extends Object, implements Runnable {
 		void run() {
 			System.out.println(Thread::currentThread().getName()+" sleeping for 10s");
 			Thread::sleep(10000);

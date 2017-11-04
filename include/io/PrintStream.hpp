@@ -11,37 +11,69 @@ class PrintStream : public OutputStream {
 protected:
 	 OutputStream& out;
 public:
-	//copy constructor
 	PrintStream(const PrintStream& other) = delete;
-	//move constructor
 	PrintStream(PrintStream&& other) = delete;
-	//copy assigment
-	PrintStream& operator=(const PrintStream& other) {out=other.out; return *this;}
-	//move assigment
-	PrintStream& operator=(PrintStream&& other) = delete;
+	PrintStream& operator=(const PrintStream& other) { out = other.out; return *this; }
+	PrintStream& operator=(PrintStream&& other) { out = std::move(other.out); return *this; }
 
 	PrintStream(OutputStream& o) : out(o) {}
-	virtual ~PrintStream() {}
 
-	void write(int b) {out.write(b);}
-
-	void println() const {
-		out.write('\n');
+	void flush() {
+		synchronized (*this) {
+			out.flush();
+		}
+	}
+	void close() {
+		synchronized (*this) {
+			out.close();
+		}
 	}
 
-	void print(const char *s) const {
-		out.write(s,0,std::strlen(s));
+	void write(int b) {
+		synchronized (*this) {
+			out.write(b);
+		}
 	}
-	void print(unsigned long s) const {
-		print(Integer::toHexString(s));
+	void write(void *buf, int off, int len) {
+		synchronized (*this) {
+			out.write(buf, off, len);
+		}
 	}
-	void print(int s) const {print((unsigned long)s);}
 
+	void print(boolean b) const {TRACE;
+		write(b ? "true" : "false");
+	}
+	void print(char c) const {
+		write(String::valueOf(c));
+	}
+	void print(int i) const {
+		write(String::valueOf(i));
+	}
+
+    void print(long l) const {
+		write(String::valueOf(l));
+	}
+	void print(unsigned long l) const {TRACE;
+		print(Integer::toHexString(l));
+	}
+	void print(float f) const {
+		write(String::valueOf(f));
+	}
+	void print(double d) const {
+		write(String::valueOf(d));
+	}
+
+	void print(const char *s) const {TRACE;
+		if (s == null) {
+			s = "null";
+		}
+		write(s);
+	}
 	void print(const String& s) const {TRACE;
-		out.write(s.intern().c_str(),s.length());
+		write(s);
 	}
-	void print(const Object* o) const {TRACE;
-		print(o->toString());
+	void println() {
+		newLine();
 	}
 
 	template <class T>
@@ -50,14 +82,34 @@ public:
 			print(s.toString());
 		}
 		else {
-			const Object *ptr = (const Object *)&s;
+			const void *ptr = (const void *)&s;
 			print((unsigned long)ptr);
 		}
 	}
 
 	template <class T>
 	void println(const T& s) const {TRACE;
-		print(s); println();
+		synchronized (*this) {
+			print(s);
+		   	newLine();
+		}
+	}
+
+private:
+	void newLine() const {
+		synchronized (*this) {
+			out.write('\n');
+		}
+	}
+	void write(const char *s) const {
+		synchronized (*this) {
+			out.write(s,strlen(s));
+		}
+	}
+	void write(const String& s) const {
+		synchronized (*this) {
+			out.write(s.intern().c_str(),s.length());
+		}
 	}
 };
 

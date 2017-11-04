@@ -15,7 +15,11 @@ void setNativePriority(std::thread& thread, int priority) {
 	pthread_setschedparam(thread.native_handle(), policy, &sch_params);
 }
 void setNativeName(std::thread& thread, const String& name) {
+#ifdef __APPLE__
+	pthread_setname_np(name.intern().c_str());
+#else
 	pthread_setname_np(thread.native_handle(), name.intern().c_str());
+#endif
 }
 }
 
