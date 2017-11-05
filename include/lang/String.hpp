@@ -8,7 +8,20 @@
 
 namespace lang {
 
-class String final : public Object {
+class Locale {
+public:
+	static Locale getDefault();
+};
+
+interface CharSequence : Interface {
+public:
+	virtual int length() const = 0;
+	virtual char charAt(int index) const = 0;
+	//virtual const CharSequence& subSequence(int start, int end) const = 0;
+	virtual String toString() const = 0;
+};
+
+class String final : public Object, implements CharSequence {
 private:
 	class AutoType;
 	std::string value;
@@ -109,6 +122,19 @@ public:
 
 	String substring(int beginIndex) const {TRACE; return value.substr(beginIndex); }
 	String substring(int beginIndex, int endIndex) const {TRACE; return value.substr(beginIndex,endIndex-beginIndex); }
+	/*const CharSequence& subSequence(int beginIndex, int endIndex) const {
+		return substring(beginIndex, endIndex);
+	}*/
+	String toLowerCase(Locale locale) const { return *this; }
+	String toLowerCase() const {
+		return toLowerCase(Locale::getDefault());
+	}
+	String toUpperCase(Locale locale) const { return *this; }
+	String toUpperCase() const { return *this; }
+	String trim() const { return *this; }
+	String toString() const {
+		return *this;
+	}
 
 	static String valueOf(int n) {TRACE; return String(std::to_string(n)); }
 	static String valueOf(unsigned n) {TRACE; return String(std::to_string(n)); }
