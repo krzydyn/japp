@@ -46,3 +46,13 @@ build-tests: build-src
 run: run-tests
 run-tests:
 	$(MAKE) PREFIX=$(@:run-%=%) -f $(@:run-%=%)/Makefile run
+
+
+#instaling binutils on mac:
+#brew install binutils
+#==> Downloading https://ftp.gnu.org/gnu/binutils/binutils-2.29.1.tar.gz
+######################################################################## 100,0%
+#==> ./configure --enable-deterministic-archives --program-prefix=g --prefix=/usr/local/Cellar/binutils/2.29.1 --infodir=/usr/local/Cellar/binutils/2.29.1/share/in
+#==> make
+#==> make install
+# 🍺  /usr/local/Cellar/binutils/2.29.1: 113 files, 152.7MB, built in 6 minutes 34 seconds
