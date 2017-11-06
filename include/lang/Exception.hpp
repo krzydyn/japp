@@ -83,8 +83,8 @@ class Throwable : public Object {
 public:
 	~Throwable() {}
 
-	Throwable() : cause(this) {fillInStackTrace();}
-	Throwable(const String& msg) : detailMessage(msg), cause(this) {fillInStackTrace();}
+	Throwable() {fillInStackTrace();}
+	Throwable(const String& msg) : detailMessage(msg) {fillInStackTrace();}
 	Throwable(const String& msg, Throwable *c) : detailMessage(msg), cause(c) {fillInStackTrace();}
 
 	virtual const String& getMessage() const {return detailMessage;}
@@ -98,7 +98,7 @@ public:
 private:
 	String detailMessage;
 	Array<StackTraceElement> stackTrace;
-	Throwable *cause;
+	Throwable *cause = null;
 };
 
 class Error : public Throwable {

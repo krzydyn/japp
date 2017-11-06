@@ -153,6 +153,10 @@ void Throwable::printStackTrace(const io::PrintStream& s) const {TRACE;
 		s.print("\tat ");
 		s.println(stackTrace[i].toString());
 	}
+	if (cause != null) {
+		s.print("Caused by ");
+		cause->printStackTrace(s);
+	}
 }
 
 Class::Class(const Object& o) : type(typeid(o)) {}

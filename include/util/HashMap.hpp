@@ -40,18 +40,13 @@ public:
 	virtual void clear() = 0;
 };
 
-inline long hash_code(const long v) {return v;}
+inline long hash_code(const long& v) {return v;}
 inline long hash_code(const Object& v) {return v.hashCode();}
 
-inline boolean is_equal(const char& a, const char& b) { return a==b; }
-inline boolean is_equal(const short& a, const short& b) { return a==b; }
-inline boolean is_equal(const int& a, const int& b) { return a==b; }
-inline boolean is_equal(const long& a, const long& b) { return a==b; }
-inline boolean is_equal(const float& a, const float& b) { return a==b; }
-inline boolean is_equal(const double& a, const double& b) { return a==b; }
 inline boolean is_equal(const Object& a, const Object& b) { return a.equals(b); }
-//template<class T>
-//inline boolean is_equal(const T& a, const T& b) {return a==b;}
+//SFINAE to choose above function for Object type
+template<class T, class std::enable_if<!std::is_base_of<Object,T>::value,Object>::type* = nullptr>
+inline boolean is_equal(const T& a, const T& b) {return a==b;}
 
 template<class K,class V>
 class HashMap : extends Object, implements Map<K,V> {
@@ -85,7 +80,6 @@ public:
         unsigned hc = util::hash_code(k)%mapsize;
         ArrayList<MapEntry<K,V>>& l=map[hc];
         for (unsigned i=0; i<l.size(); ++i) {
-            //if (is_equal(((const ArrayList<MapEntry<K,V>>&)l).get(i).getKey(), k)) {
             if (is_equal(l.get(i).getKey(), k)) {
                 return l.get(i).getRef();
             }

@@ -12,7 +12,10 @@ static void test_String() {
 
 	try {
 		String s7(null);
+		throw Exception("expected exception");
 	} catch(const NullPointerException& e) {
+		System.out.println("expected exception received");
+		e.printStackTrace();
 	}
 }
 
