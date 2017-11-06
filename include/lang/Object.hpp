@@ -79,10 +79,13 @@ public:
 	virtual void wait(long timeout, int nanos) final {}
 	virtual void wait() final {wait(0); }
 
-	virtual boolean operator==(const Object& obj) final {return equals(obj); }
-	virtual boolean operator!=(const Object& obj) final {return !equals(obj); }
-	virtual boolean operator==(const void *ptr) {return ptr == this; }
-	virtual boolean operator!=(const void *ptr) {return ptr != this; }
+	boolean operator==(const std::nullptr_t&) const {return this == null; }
+	boolean operator!=(const std::nullptr_t&) const {return this != null; }
+
+	//virtual boolean operator==(const Object& obj) const final {return equals(obj); }
+	//virtual boolean operator!=(const Object& obj) const final {return !equals(obj); }
+	//virtual boolean operator==(const void *ptr) const {return ptr == this; }
+	//virtual boolean operator!=(const void *ptr) const {return ptr != this; }
 };
 
 class Lock {

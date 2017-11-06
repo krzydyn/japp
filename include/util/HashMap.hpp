@@ -40,13 +40,21 @@ public:
 	virtual void clear() = 0;
 };
 
-inline long hashCode(long x) {return x;}
-inline long hashCode(const Object& x) {return x.hashCode();}
-template<class T>
-inline long hashCode(const T& x) {return (long)(&x);}
+inline long hash_code(const long v) {return v;}
+inline long hash_code(const Object& v) {return v.hashCode();}
+
+inline boolean is_equal(const char& a, const char& b) { return a==b; }
+inline boolean is_equal(const short& a, const short& b) { return a==b; }
+inline boolean is_equal(const int& a, const int& b) { return a==b; }
+inline boolean is_equal(const long& a, const long& b) { return a==b; }
+inline boolean is_equal(const float& a, const float& b) { return a==b; }
+inline boolean is_equal(const double& a, const double& b) { return a==b; }
+inline boolean is_equal(const Object& a, const Object& b) { return a.equals(b); }
+//template<class T>
+//inline boolean is_equal(const T& a, const T& b) {return a==b;}
 
 template<class K,class V>
-class HashMap : public Object, public Map<K,V> {
+class HashMap : extends Object, implements Map<K,V> {
 private:
 	V& null_obj = *((V*)null);
 public:
@@ -64,20 +72,21 @@ public:
 	}
 
     const V& get(const K& k) const {
-        unsigned hc = util::hashCode(k)%mapsize;
+        unsigned hc = util::hash_code(k)%mapsize;
         const ArrayList<MapEntry<K,V> >& l=map[hc];
         for (unsigned i=0; i<l.size(); ++i) {
-            if (l.get(i).getKey() == k) {
+            if (is_equal(l.get(i).getKey(), k)) {
                 return l.get(i).getValue();
             }
         }
         return null_obj;
     }
 	V& get(const K& k) {
-        unsigned hc = util::hashCode(k)%mapsize;
+        unsigned hc = util::hash_code(k)%mapsize;
         ArrayList<MapEntry<K,V>>& l=map[hc];
         for (unsigned i=0; i<l.size(); ++i) {
-            if (l.get(i).getKey() == k) {
+            //if (is_equal(((const ArrayList<MapEntry<K,V>>&)l).get(i).getKey(), k)) {
+            if (is_equal(l.get(i).getKey(), k)) {
                 return l.get(i).getRef();
             }
         }
@@ -85,10 +94,10 @@ public:
 	}
 
     const V& put(const K& k, const V& v) {
-        unsigned hc = util::hashCode(k)%mapsize;
+        unsigned hc = hash_code(k)%mapsize;
         ArrayList<MapEntry<K,V>>& l=map[hc];
         for (unsigned i=0; i<l.size(); ++i) {
-            if (l.get(i).getKey() == k) {
+            if (is_equal(l.get(i).getKey(), k)) {
                 l.get(i).setVal(v);
                 return v;
             }
@@ -98,10 +107,10 @@ public:
 		return v;
     }
     V remove(const K& k) {
-        unsigned hc= util::hashCode(k)%mapsize;
+        unsigned hc = hash_code(k)%mapsize;
         ArrayList<MapEntry<K,V>>& l=map[hc];
         for (unsigned i=0; i<l.size(); ++i) {
-            if (l.get(i).getKey() == k) {
+            if (is_equal(l.get(i).getKey(), k)) {
 				--elems;
 				return l.removeAt(i).getValue();
             }
@@ -113,7 +122,7 @@ public:
 	}
 
 	String toString() const {
-		if (! elems) return "{}";
+		if (!elems) return "{}";
 		StringBuilder sb;
 		sb.append('{');
 		for (unsigned i=0; i < elems; ++i) {

@@ -8,6 +8,7 @@
 
 namespace lang {
 
+//TODO
 class Locale {
 public:
 	static Locale getDefault();
@@ -36,12 +37,10 @@ public:
 	String(const String& o) {TRACE;assign(this,&o); }
 	String& operator=(String&& o) {TRACE;move(this,&o);return*this;}
 	String& operator=(const String& o) {TRACE; assign(this,&o);return*this;}
-
 	String(const std::string& v) {TRACE; value = v; }
+
 	String(const char *v) {TRACE; assign(this, v); }
 	explicit String(const std::nullptr_t&) {TRACE; assign(this, (const char *)0); }
-	template<class T>
-	String(T v) {TRACE; value = std::to_string(v); }
 
 	String() {}
 	String(const String& s, int offset, int count);
@@ -52,11 +51,6 @@ public:
 	int length() const { return value.length(); }
 	boolean isEmpty() const { return value.length() == 0; }
 	char charAt(int index) const;
-
-	virtual boolean operator==(const Object& s) const {TRACE; return equals(s); }
-	virtual boolean operator!=(const Object& s) const {TRACE; return !equals(s); }
-	virtual boolean operator==(const void *ptr) const {TRACE; return equals((const char *)ptr); }
-	virtual boolean operator!=(const void *ptr) const {TRACE; return !equals((const char *)ptr); }
 
 	String operator+(const char *s) const {TRACE;
 		return value+s;
@@ -71,12 +65,20 @@ public:
 	String operator+(const T& v) const {TRACE;
 		return value+std::to_string(v);
 	}
-
+/*
+	boolean operator==(const Object& anObject) const {
+		return equals(anObject);
+	}
+	boolean operator==(const std::nullptr_t&) const {
+		return false;
+	}
+*/
 	boolean equals(const char *str) const {TRACE;
 		return str==null ? value == "" : value == str;
 	}
 	boolean equals(const Object& anObject) const {TRACE;
 		if (this == &anObject) return true;
+		if (!instanceOf<String>(anObject)) return false;
 		return value == ((const String&)anObject).value;
 	}
 
@@ -118,13 +120,48 @@ public:
 	int indexOf(int ch, int fromIndex=0) const {TRACE; return value.find((char)ch, fromIndex); }
 	int indexOf(const String& str, int fromIndex=0) const {TRACE; return value.find(str.value, fromIndex); }
 
-	int lastIndexOf(const String& str, int fromIndex=0) const {TRACE; return value.rfind(str.value, fromIndex); }
+	int lastIndexOf(int ch, int fromIndex=-1) const {TRACE;
+	   return value.rfind((char)ch, fromIndex < 0 ? std::string::npos : fromIndex);
+	}
+	int lastIndexOf(const String& str, int fromIndex=-1) const {TRACE;
+		return value.rfind(str.value, fromIndex < 0 ? std::string::npos : fromIndex);
+	}
 
 	String substring(int beginIndex) const {TRACE; return value.substr(beginIndex); }
 	String substring(int beginIndex, int endIndex) const {TRACE; return value.substr(beginIndex,endIndex-beginIndex); }
 	/*const CharSequence& subSequence(int beginIndex, int endIndex) const {
 		return substring(beginIndex, endIndex);
 	}*/
+	String concat(String str) { return *this + str; }
+	String replace(char oldChar, char newChar) {
+		if (oldChar != newChar) {
+			int len = value.length();
+			int i = -1;
+			const std::string& val = value;
+			while (++i < len) {
+				if (val[i] == oldChar) {
+					break;
+				}
+			}
+			if (i < len) {
+				std::string buf(len, ' ');
+				for (int j = 0; j < i; j++) {
+					buf[j] = val[j];
+				}
+				while (i < len) {
+					char c = val[i];
+					buf[i] = (c == oldChar) ? newChar : c;
+					i++;
+				}
+				return String(buf);
+			}
+		}
+		return String(*this);
+	}
+	boolean matches(String regex) {
+		//TODO return Pattern.matches(regex, this);
+		return false;
+	}
 	String toLowerCase(Locale locale) const { return *this; }
 	String toLowerCase() const {
 		return toLowerCase(Locale::getDefault());
