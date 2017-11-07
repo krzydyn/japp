@@ -26,7 +26,7 @@ int main(void)
                            BlackPixel(display, s), WhitePixel(display, s));
  
     /* select kind of events we are interested in */
-    XSelectInput(display, window, ExposureMask | KeyPressMask);
+    XSelectInput(display, window, 0x3ffff);
  
     /* map (show) the window */
     XMapWindow(display, window);
@@ -43,9 +43,40 @@ int main(void)
             XDrawString(display, window, DefaultGC(display, s), 50, 50, msg, strlen(msg));
         }
         /* exit on key press */
-        if (event.type == KeyPress)
+		switch (event.type) {
+		case KeyPress:
+			printf("KeyPress: key=%d, mask=%x\n", event.xkey.keycode, event.xkey.state);
+			break;
+		case KeyRelease:
+			printf("KeyPress: key=%d, mask=%x\n", event.xkey.keycode, event.xkey.state);
+			break;
+		case MotionNotify:
+			printf("MotionNotify\n");
+			break;
+		case ButtonPress:
+			printf("ButtonPress\n");
+			break;
+		case ButtonRelease:
+			printf("ButtonRelease\n");
+			break;
+		case Expose:
+			printf("Expose\n");
+			break;
+		case FocusIn:
+			printf("FocusIn\n");
+			break;
+		case FocusOut:
+			printf("FocusOut\n");
+			break;
+		default:
+			printf("event type = %d(0x%x)\n", event.type, event.type);
+			break;
+		}
+
+        if (event.type == KeyPress && event.xkey.keycode == 53) {
+			printf("KeyPress: key=%d, mask=%x\n", event.xkey.keycode, event.xkey.state);
             break;
-		printf("event type = %x\n", event.type);
+		}
     }
  
     /* close connection to server */

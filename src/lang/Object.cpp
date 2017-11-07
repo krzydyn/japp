@@ -41,6 +41,7 @@ unsigned traceSize() { return calltrace_size; }
 #endif
 
 std::string demangle(const std::string& name) {
+	if (name.empty()) return "?";
 #ifdef __GNUG__ // gnu C++ compiler
 	std::size_t len = 0;
 	int status = 0;
@@ -57,27 +58,43 @@ StackTraceElement parseStackEntry(const std::string& s) {
 #ifdef __APPLE__
 // 0   threads                             0x000000010b84db25 mangled_name + 211
 	unsigned posOp = s.find("0x");
-	posOp = s.find(' ', posOp);
-	unsigned posCl = s.find('+',posOp);
-	if (posOp != std::string::npos && posCl != std::string::npos) {
-		posOp += 1; posCl -= 1;
+	unsigned posCl = s.find(" +",posOp);
+	if (posCl != std::string::npos) {
+		std::string addr;
+		std::string offs;
+		if (posOp != std::string::npos) {
+			int i = posOp;
+			addr = " [" + s.substr(i, s.find(' ', i)-i) + "]";
+		}
+		if (posCl != std::string::npos) {
+			offs = s.substr(posCl);
+		}
+		posOp = s.find(' ', posOp)+1;
+
 		//std::printf("demangling: '%s'\n", s.substr(posOp,posCl-posOp).c_str());
 		std::string func = demangle(s.substr(posOp,posCl-posOp));
-		return StackTraceElement(func + s.substr(posCl),"",0);
+		return StackTraceElement(func + offs + addr, "", 0);
 	}
 #elif __linux__
 // ./build/threads(mangled_name+0x62) [0x409382]
 	unsigned posOp = s.find('(');
 	unsigned posCl = s.find(')',posOp);
-	if (posOp != std::string::npos && posCl != std::string::npos) {
+	if (posCl != std::string::npos) {
 		posOp+=1;
-		if (posOp < posCl && s.find('+') != std::string::npos) {
-			posCl = s.find('+');
+		std::string addr;
+		std::string offs;
+		if (s.find('[',posCl) != std::string::npos) {
+			int i = s.find('[',posCl)+1;
+			addr = " [" + s.substr(i, s.find(']', i)-i) + "]";
+		}
+		if (s.find('+',posOp) < posCl) {
+			int i = s.find('+',posOp);
+			posCl = i;
+			offs = s.substr(i, s.find(')', i)-i);
 		}
 		//std::printf("demangling: '%s'\n", s.substr(posOp,posCl-posOp).c_str());
 		std::string func = demangle(s.substr(posOp,posCl-posOp));
-		posCl = s.find(')',posOp)+1;
-		return StackTraceElement(func + s.substr(posCl),"",0);
+		return StackTraceElement(func + offs + addr, "", 0);
 	}
 #endif
 	return StackTraceElement(s,"",0);
