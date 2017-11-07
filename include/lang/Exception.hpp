@@ -37,27 +37,33 @@ public:
 
 class StackTraceElement {
 private:
+	void * fptr;
 	String methodName;
 	String fileName;
 	int    lineNumber;
+	void fillInfo();
 public:
 	StackTraceElement(StackTraceElement&& o) {
+		fptr = std::move(o.fptr);
 		methodName = std::move(o.methodName);
 		fileName = std::move(o.fileName);
 		lineNumber = o.lineNumber; o.lineNumber=0;
 	}
 	StackTraceElement(const StackTraceElement& o) {
+		fptr = o.fptr;
 		methodName = o.methodName;
 		fileName = o.fileName;
 		lineNumber = o.lineNumber;
 	}
 	StackTraceElement& operator=(StackTraceElement&& o) {
+		fptr = std::move(o.fptr);
 		methodName = std::move(o.methodName);
 		fileName = std::move(o.fileName);
 		lineNumber = o.lineNumber; o.lineNumber=0;
 		return *this;
 	}
 	StackTraceElement& operator=(const StackTraceElement& o) {
+		fptr = o.fptr;
 		methodName = o.methodName;
 		fileName = o.fileName;
 		lineNumber = o.lineNumber;
@@ -66,6 +72,7 @@ public:
 	~StackTraceElement() {}
 
 	StackTraceElement(){}
+	StackTraceElement(void *f) : fptr(f) {}
 	StackTraceElement(const String& methodName, const String& fileName, int lineNumber) :
    		methodName(methodName), fileName(fileName), lineNumber(lineNumber) {
 	}

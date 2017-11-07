@@ -1,12 +1,9 @@
 #include <lang/Object.hpp>
 #include <lang/Class.hpp>
 #include <lang/System.hpp>
-#include <iomanip>
-#include <sstream>
-#include <vector>
 
-#include <execinfo.h>
-
+#include <execinfo.h> //backtrace
+#include <dlfcn.h> //dladdr
 #ifdef __GNUG__ // gnu C++ compiler
 #include <memory>
 #include <cxxabi.h>
@@ -46,7 +43,7 @@ std::string demangle(const std::string& name) {
 	std::size_t len = 0;
 	int status = 0;
 	std::unique_ptr< char, decltype(&std::free) > ptr(
-		__cxxabiv1::__cxa_demangle(name.c_str(), null, &len, &status), &std::free );
+		__cxxabiv1::__cxa_demangle(name.c_str(), null, &len, &status), &std::free);
 	return status == 0 ? ptr.get() : name;
 #else
 	return name;
@@ -54,77 +51,46 @@ std::string demangle(const std::string& name) {
 }
 String getSimpleBinaryName() { return ""; }
 
-StackTraceElement parseStackEntry(const std::string& s) {
-#ifdef __APPLE__
-// 0   threads                             0x000000010b84db25 mangled_name + 211
-	unsigned posOp = s.find("0x");
-	unsigned posCl = s.find(" +",posOp);
-	if (posCl != std::string::npos) {
-		std::string addr;
-		std::string offs;
-		if (posOp != std::string::npos) {
-			int i = posOp;
-			addr = " [" + s.substr(i, s.find(' ', i)-i) + "]";
-		}
-		if (posCl != std::string::npos) {
-			offs = s.substr(posCl);
-		}
-		posOp = s.find(' ', posOp)+1;
-
-		//std::printf("demangling: '%s'\n", s.substr(posOp,posCl-posOp).c_str());
-		std::string func = demangle(s.substr(posOp,posCl-posOp));
-		return StackTraceElement(func + offs + addr, "", 0);
-	}
-#elif __linux__
-// ./build/threads(mangled_name+0x62) [0x409382]
-	unsigned posOp = s.find('(');
-	unsigned posCl = s.find(')',posOp);
-	if (posCl != std::string::npos) {
-		posOp+=1;
-		std::string addr;
-		std::string offs;
-		if (s.find('[',posCl) != std::string::npos) {
-			int i = s.find('[',posCl)+1;
-			addr = " [" + s.substr(i, s.find(']', i)-i) + "]";
-		}
-		if (s.find('+',posOp) < posCl) {
-			int i = s.find('+',posOp);
-			posCl = i;
-			offs = s.substr(i, s.find(')', i)-i);
-		}
-		//std::printf("demangling: '%s'\n", s.substr(posOp,posCl-posOp).c_str());
-		std::string func = demangle(s.substr(posOp,posCl-posOp));
-		return StackTraceElement(func + offs + addr, "", 0);
-	}
-#endif
-	return StackTraceElement(s,"",0);
-}
-
 void captureStack(Array<StackTraceElement>& stackTrace) {
 	const int depth = 50;
-	void *array[depth];
-	int got = ::backtrace(array, depth);
+	void *trace[depth];
+	int got = ::backtrace(trace, depth);
 	if (got <= 2) return ;
 	//better backtrace_symbols
 	//http://cairo.sourcearchive.com/documentation/1.9.4/backtrace-symbols_8c-source.html
-	//TODO use dladdr to get symbol info struct (without converting to string)
-	char **strings = ::backtrace_symbols(array, got);
+
 	got -= 2;
 	stackTrace = Array<StackTraceElement>(got);
 	for (int i = 0; i < got; ++i) {
-		//std::printf("bt[%d]: %s\n", i, strings[i + 2]);
-		stackTrace[i] = parseStackEntry(strings[i + 2]);
+		Dl_info info;
+		std::string addr = "[0x"+Integer::toHexString((long)trace[i+2]).intern()+"]";
+		if (dladdr(trace[i+2], &info) != 0) {
+			//dli_fname - path of shared object (exe or so)
+			//dli_fbase - Base adress of shared object
+			//dli_sname - Name of nearest symbol
+			//dli_saddr - Exact address of symbol
+			std::string func = demangle(info.dli_sname);
+			std::string offs = "+" + std::to_string((long)trace[i+2] - (long)info.dli_saddr);
+			stackTrace[i] = StackTraceElement(func + offs +" "+ addr, "", 0);
+		}
+		else {
+			stackTrace[i] = StackTraceElement(addr, "", 0);
+		}
+
 	}
-	::free (strings);
 }
 #ifdef BACKTRACE
 void captureStack2(Array<StackTraceElement>& stackTrace) {
 	stackTrace = Array<StackTraceElement>(traceSize());
 	for (int i = 0; i < stackTrace.length; ++i) {
 		CallTrace *ct = calltrace[stackTrace.length - i - 1];
-		if (ct == null) continue;
-		//std::printf("bt[%d]: f='%s'  @ '%s:%d'\n", i, ct->func,ct->file,ct->line);
-		stackTrace[i] = StackTraceElement(ct->func,ct->file,ct->line);
+		if (ct == null) {
+			stackTrace[i] = StackTraceElement("","",0);
+		}
+		else {
+			//std::printf("bt[%d]: f='%s'  @ '%s:%d'\n", i, ct->func,ct->file,ct->line);
+			stackTrace[i] = StackTraceElement(ct->func,ct->file,ct->line);
+		}
 	}
 }
 #endif
