@@ -152,7 +152,7 @@ class IndexOutOfBoundsException : public Exception {
 public:
 	IndexOutOfBoundsException() : Exception() {}
 	IndexOutOfBoundsException(const String& msg) : Exception(msg) {}
-	IndexOutOfBoundsException(int i) : Exception(String("Index ")+i) {}
+	IndexOutOfBoundsException(int i) : Exception("Index "+String::valueOf(i)) {}
 };
 
 class IllegalThreadStateException : public Exception {

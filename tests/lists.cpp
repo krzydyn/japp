@@ -13,21 +13,21 @@ static void test_ArrayList() {
 		System.out.println(list.dequeue());
 		--guard;
 	}
-	System.out.println(String("ArrayList toString = ")+list.toString());
-	System.out.println(String("ArrayList simplename = ")+list.getClass().getSimpleName());
-	System.out.println(String("guard=")+guard);
+	System.out.println("ArrayList toString = "+list.toString());
+	System.out.println("ArrayList simplename = "+list.getClass().getSimpleName());
+	System.out.println("guard="+guard);
 
 	for (int i=1; i < 10; ++i) {list.enqueue(i);++guard;}
 	for (Iterator<int> i = list.iterator(); i->hasNext(); ) {
 		int v = i->next();
-		System.out.println(String("val = ")+v+"a");
+		System.out.println("val = "+String::valueOf(v)+"a");
 	}
 }
 
 static void test_ArrayList2() {
 	ArrayList<String> list;
 
-	list.add(String("aaa"));
+	list.add("aaa");
 	list.add(String("bbb"));
 	System.out.println("list.toString");
 	System.out.println(list.toString());

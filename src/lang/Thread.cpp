@@ -88,7 +88,7 @@ void Thread::start() {
 	this->tid=threadSeqNumber;
 	++threadSeqNumber;
 
-	if (name.length() == 0) name = String("Thread-") + tid;
+	if (name.length() == 0) name = "Thread-" + String::valueOf(tid);
 	this->thread = new std::thread([=] {
 		try {
 			runHelper();

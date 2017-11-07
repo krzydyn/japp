@@ -213,6 +213,9 @@ public:
 	}
 };
 
+inline String operator+(const char *a,const String& s) {TRACE;
+	return a + s.intern();
+}
 }
 
 #endif
