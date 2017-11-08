@@ -127,7 +127,12 @@ public:
 		return false;
 	}
 	virtual boolean unlink(File f) const {
-		return ::unlink(f.getPath().intern().c_str()) == 0;
+		int r = ::unlink(f.getPath().intern().c_str());
+		if (r == -1) {
+			String emsg(std::strerror(errno));
+			System.err.println("unlink error: "+emsg+"("+errno+") "+f.getPath());
+		}
+		return r == 0;
 	}
 	virtual Array<String> list(const File& f) const {
 		return Array<String>();

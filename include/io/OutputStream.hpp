@@ -1,10 +1,9 @@
 #ifndef __IO_OUTPUTSTREAM_HPP
 #define __IO_OUTPUTSTREAM_HPP
 
-#include <lang/Exception.hpp>
 #include <io/Closeable.hpp>
 #include <io/Flushable.hpp>
-#include <iostream>
+#include <lang/Exception.hpp>
 
 namespace io {
 
@@ -18,6 +17,7 @@ public:
 		write(b, 0, len);
 	}
 	virtual void write(const char *b) {
+		if (b == null) throw NullPointerException();
 		write(b, std::strlen(b));
 	}
 	virtual void write(const void *b, int off, int len) {
