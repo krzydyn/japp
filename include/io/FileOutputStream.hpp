@@ -3,6 +3,7 @@
 
 #include <io/OutputStream.hpp>
 #include <iostream>
+#include <fstream>
 
 namespace io {
 
@@ -10,20 +11,20 @@ class FileOutputStream : public OutputStream {
 private:
 	//use pointer to impl. assign oparation while std::istream assign is protected
 	std::ostream* out;
+	boolean allocated = true;
 public:
-	//copy constructor
-	FileOutputStream(const FileOutputStream& other) : out(other.out) {}
-	//move constructor
-	FileOutputStream(FileOutputStream&& other) { out=other.out; other.out=null; }
-	//copy assigment
-	FileOutputStream& operator=(const FileOutputStream& other) {out=other.out; return *this;}
-	//move assigment
-	FileOutputStream& operator=(FileOutputStream&& other) {
-		if (this != &other) {out=other.out; other.out=null;}
+	//FileOutputStream(const FileOutputStream& o) : out(o.out),allocated(false) {}
+	FileOutputStream(FileOutputStream&& o) : out(std::move(o.out)),allocated(o.allocated) { o.allocated=false; }
+	//FileOutputStream& operator=(const FileOutputStream& other) {out=other.out; return *this;}
+	FileOutputStream& operator=(FileOutputStream&& o) {
+		if (this != &o) {out=std::move(o.out); allocated=o.allocated; o.allocated=false;}
 		return *this;
 	}
 
 	FileOutputStream(std::ostream& s) : out(&s) {}
+	FileOutputStream(const io::File& f) {}
+
+	using OutputStream::write;
 	void write(int b) {
 		char c=(char)b;
 		out->write(&c,sizeof(char));
@@ -31,7 +32,9 @@ public:
 	void write(void *b, int off, int len) {
 		out->write((char*)b+off,len);
 	}
-	void close() {}
+	void close() {
+		((std::ofstream*)out)->close();
+	}
 };
 
 } //namespace io

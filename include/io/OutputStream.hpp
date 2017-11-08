@@ -17,6 +17,9 @@ public:
 	virtual void write(const void *b, int len) {
 		write(b, 0, len);
 	}
+	virtual void write(const char *b) {
+		write(b, std::strlen(b));
+	}
 	virtual void write(const void *b, int off, int len) {
 		if (b == null) throw NullPointerException();
 		if ((off < 0) || (len < 0) || ((off + len) < 0)) throw IndexOutOfBoundsException();
