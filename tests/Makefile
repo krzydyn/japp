@@ -17,7 +17,7 @@ CC:=g++
 CPPFLAGS:=$(DEBUG) -I$(INC_DIR) -fPIC -std=c++11
 CPPFLAGS+=-Wall -Werror
 ifeq ($(HOST_OS),Linux)
-LDFLAGS:=-rdynamic
+LDFLAGS:=-rdynamic -ldl
 endif
 LDFLAGS+=-lpthread
 

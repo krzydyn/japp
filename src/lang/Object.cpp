@@ -38,7 +38,7 @@ unsigned traceSize() { return calltrace_size; }
 #endif
 
 std::string demangle(const std::string& name) {
-	if (name.empty()) return "?";
+	if (name.empty()) return "??";
 #ifdef __GNUG__ // gnu C++ compiler
 	std::size_t len = 0;
 	int status = 0;
@@ -69,6 +69,7 @@ void captureStack(Array<StackTraceElement>& stackTrace) {
 			//dli_fbase - Base adress of shared object
 			//dli_sname - Name of nearest symbol
 			//dli_saddr - Exact address of symbol
+			if (info.dli_sname == null) info.dli_sname="";
 			std::string func = demangle(info.dli_sname);
 			std::string offs = "+" + std::to_string((long)trace[i+2] - (long)info.dli_saddr);
 			stackTrace[i] = StackTraceElement(func + offs +" "+ addr, "", 0);
