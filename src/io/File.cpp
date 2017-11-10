@@ -6,7 +6,9 @@
 #endif
 #define _LARGE_TIME_API 
 
+#include <dirent.h>
 #include <sys/stat.h>
+#include <sys/statvfs.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include <utime.h>
@@ -135,7 +137,15 @@ public:
 		return r == 0;
 	}
 	virtual Array<String> list(const File& f) const {
-		return Array<String>();
+		DIR *dir = opendir(f.getPath().intern().c_str());
+		struct dirent *ent;
+		if (dir == null) return Array<String>();
+		ArrayList<String> l;
+		while ((ent = readdir(dir)) != NULL) {
+			if (ent->d_name[0] == '.') continue;
+			l.add(ent->d_name);
+		}
+		return l.toArray();
 	}
 	virtual boolean createDirectory(File f) const {
 		return ::mkdir(f.getPath().intern().c_str(), 0777) == 0;
@@ -155,8 +165,15 @@ public:
 		int perm = S_IRUSR|S_IRGRP|S_IROTH;
 		return chmod(f.getPath().intern().c_str(), perm) == 0;
 	}
-	virtual Array<File> listRoots() const {return Array<File>();}
-	virtual jlong getSpace(const File& f, int t) const {return 0l;}
+	virtual Array<File> listRoots() const { Array<File> a(1); a[0]=File("/"); return a;}
+	virtual jlong getSpace(const File& f, int t) const {
+		struct statvfs stat;
+		statvfs(f.getPath().intern().c_str(), &stat);
+		if (t == SPACE_TOTAL) return stat.f_blocks * stat.f_frsize;
+		if (t == SPACE_FREE) return stat.f_bavail * stat.f_frsize;
+		if (t == SPACE_USABLE) return (stat.f_blocks-stat.f_bavail)*stat.f_frsize;
+		return -1LL;
+	}
 	virtual int compare(const File& f1, const File& f2) const {return 0;}
 	virtual int hashCode(const File& f) const {return 0;}
 } unixfs;

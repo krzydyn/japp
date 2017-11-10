@@ -175,6 +175,7 @@ public:
 
 	static String valueOf(int n) {TRACE; return String(std::to_string(n)); }
 	static String valueOf(unsigned n) {TRACE; return String(std::to_string(n)); }
+	static String valueOf(long n) {TRACE; return String(std::to_string(n)); }
 	static String valueOf(const Object& obj) {TRACE; return obj.toString(); }
 	template<class T>
 	static String valueOf(const T& t) {TRACE; return valueOf((const AutoType&)t); }

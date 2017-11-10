@@ -86,23 +86,53 @@ public:
 	//virtual boolean operator!=(const Object& obj) const final {return !equals(obj); }
 	//virtual boolean operator==(const void *ptr) const {return ptr == this; }
 	//virtual boolean operator!=(const void *ptr) const {return ptr != this; }
+
+	class Lock {
+		const Object& obj;
+		boolean locked=true;
+	public:
+		Lock(const Object& o) : obj(o) {
+			if (obj.mtx == null) {
+				const_cast<Object&>(obj).mtx = new std::recursive_mutex;
+			}
+			obj.mtx->lock();
+		}
+		~Lock() {
+			obj.mtx->unlock();
+		}
+		operator boolean () const { return locked; }
+		void unlock() { locked=false; }
+	};
 };
 
-class Lock {
-	const Object& obj;
-	boolean locked=true;
+template<class T>
+class Array : extends Object {
+private:
+	T *a;
 public:
-	Lock(const Object& o) : obj(o) {
-		if (obj.mtx == null) {
-			const_cast<Object&>(obj).mtx = new std::recursive_mutex;
-		}
-		obj.mtx->lock();
+	Array<T>& operator=(const Array<T>&o) {
+		if (this == &o) return *this;
+		printf("Array copy length=%d\n",o.length);
+		delete [] a;
+		const_cast<int&>(length) = o.length;
+		a = new T[length];
+		for (int i=0; i < length; ++i) a[i] = o.a[i];
+		return *this;
 	}
-	~Lock() {
-		obj.mtx->unlock();
-	}
-	operator boolean () const { return locked; }
-	void unlock() { locked=false; }
+	/*
+	Array<T>& operator=(Array<T>&& o) {
+		printf("Array move\n");
+		const_cast<int&>(length) = o.length;
+		a = std::move(o.a);
+		return *this;
+	}*/
+
+	const int length;
+	Array() : length(0) { a = null; }
+	Array(int l) : length(l) { a = new T[l]; }
+	~Array() { delete [] a; }
+	T& operator[](int i) { return a[i]; }
+	const T& operator[](int i) const { return a[i]; }
 };
 
 class Integer : extends Object {
@@ -122,7 +152,7 @@ inline bool instanceOf(const T& ptr) {
 
 } //namespace lang
 
-#define synchronized(m) for(Lock lock(m); lock; lock.unlock())
+#define synchronized(m) for(Object::Lock lock(m); lock; lock.unlock())
 
 using namespace lang;
 

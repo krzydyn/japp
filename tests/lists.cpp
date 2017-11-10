@@ -15,7 +15,7 @@ static void test_ArrayList() {
 	}
 	System.out.println("ArrayList toString = "+list.toString());
 	System.out.println("ArrayList simplename = "+list.getClass().getSimpleName());
-	System.out.println("guard="+guard);
+	System.out.println("guard="+String::valueOf(guard));
 
 	for (int i=1; i < 10; ++i) {list.enqueue(i);++guard;}
 	for (Iterator<int> i = list.iterator(); i->hasNext(); ) {

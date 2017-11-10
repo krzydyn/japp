@@ -295,6 +295,7 @@ public:
         try {
 			File canonFile = getCanonicalFile();
 			File parent = canonFile.getParentFile();
+			return (parent.mkdirs() || parent.exists()) && canonFile.mkdir();
         } catch (const IOException& e) {
             return false;
         }

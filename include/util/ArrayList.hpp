@@ -52,9 +52,7 @@ public:
     void add(unsigned i,const T& v) { TRACE;
         if (mSize>=mCapa) ensureCapa(mSize+1);
         if (i == END_OF_LIST) {
-			printf("copy %s into mvec[%d]\n", Class::nameOf(v).intern().c_str(), (mOffs+mSize)%mCapa);
 			mVec[(mOffs+mSize)%mCapa]=v;
-			//memcpy(mVec + ((mOffs+mSize)%mCapa), &v, sizeof(v));
 			++mSize;
 		   	return ;
 	   	}

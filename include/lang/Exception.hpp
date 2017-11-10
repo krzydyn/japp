@@ -7,34 +7,6 @@
 namespace io { class PrintStream; }
 
 namespace lang {
-template<class T>
-class Array {
-private:
-	T *a;
-public:
-	Array<T>& operator=(const Array<T>&o) {
-		if (this == &o) return *this;
-		delete [] a;
-		const_cast<int&>(length) = o.length;
-		a = new T[length];
-		for (int i=0; i < length; ++i) a[i] = o.a[i];
-		return *this;
-	}
-	/*Array<T>& operator=(Array<T>&& o) {
-		const_cast<int&>(length) = o.length;
-		a = o.a;
-		o.a = null;
-		return *this;
-	}*/
-
-	const int length;
-	Array() : length(0) { a = null; }
-	Array(int l) : length(l) { a = new T[l]; }
-	~Array() { delete [] a; }
-	T& operator[](int i) { return a[i]; }
-	const T& operator[](int i) const { return a[i]; }
-};
-
 class StackTraceElement {
 private:
 	void * fptr;
