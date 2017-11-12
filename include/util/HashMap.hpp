@@ -7,6 +7,9 @@ namespace util {
 
 template<class K,class V>
 class MapEntry {
+private:
+    K key;
+    V value;
 public:
 	MapEntry(MapEntry&& o) { key = std::move(o.key); value = std::move(o.value); }
     MapEntry(const MapEntry &me) : key(me.key), value(me.value) {}
@@ -20,9 +23,6 @@ public:
     void setVal(const V& v) {value=v;}
     V& getRef() {return value;}
 	String toString() const { return String::valueOf(key) + "=" + String::valueOf(value); }
-private:
-    K key;
-    V value;
 };
 
 template<class K,class V>
@@ -52,6 +52,25 @@ template<class K,class V>
 class HashMap : extends Object, implements Map<K,V> {
 private:
 	V& null_obj = *((V*)null);
+    ArrayList<MapEntry<K,V>> *map;
+    unsigned mapsize;
+    unsigned elems;
+
+    void init(unsigned s) {
+        map=new ArrayList<MapEntry<K,V>>[s];
+        mapsize=s;
+    }
+    void rehash(unsigned ns) {
+    }
+    const MapEntry<K,V>& entry(unsigned i) const {
+        for (unsigned hc=0; hc<mapsize; ++hc) {
+            ArrayList<MapEntry<K,V>>& l=map[hc];
+            if (i < l.size()) { return l.get(i); }
+            i-=l.size();
+        }
+        return *((MapEntry<K,V>*)null);
+    }
+
 public:
     HashMap() {init(10);}
     HashMap(unsigned s) {init(s);}
@@ -127,26 +146,7 @@ public:
 		}
 		return sb.append('}').toString();
 	}
-private:
-    void init(unsigned s) {
-        map=new ArrayList<MapEntry<K,V>>[s];
-        mapsize=s;
-    }
-    void rehash(unsigned ns) {
-    }
-    const MapEntry<K,V>& entry(unsigned i) const {
-        for (unsigned hc=0; hc<mapsize; ++hc) {
-            ArrayList<MapEntry<K,V>>& l=map[hc];
-            if (i < l.size()) { return l.get(i); }
-            i-=l.size();
-        }
-        return *((MapEntry<K,V>*)null);
-    }
-    ArrayList<MapEntry<K,V>> *map;
-    unsigned mapsize;
-    unsigned elems;
 };
-
 
 template<class K,class V>
 using Hashtable = HashMap<K,V>;

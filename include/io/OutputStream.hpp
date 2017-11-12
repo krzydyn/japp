@@ -9,8 +9,12 @@ namespace io {
 
 class OutputStream : extends Object, implements Closeable, implements Flushable {
 public:
-	OutputStream& operator=(const OutputStream& other) { return *this; }
-	OutputStream& operator=(OutputStream&& other) { return *this; }
+	OutputStream(const OutputStream& o) = delete;
+	OutputStream& operator=(const OutputStream& other) {return *this;}
+	OutputStream(const OutputStream&& o) = delete;
+	OutputStream& operator=(OutputStream&& other) = delete;
+
+	OutputStream() {}
 
 	virtual void write(int b) = 0;
 	virtual void write(const void *b, int len) {

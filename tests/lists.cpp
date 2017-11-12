@@ -18,7 +18,7 @@ static void test_ArrayList() {
 	System.out.println("guard="+String::valueOf(guard));
 
 	for (int i=1; i < 10; ++i) {list.enqueue(i);++guard;}
-	for (Iterator<int> i = list.iterator(); i->hasNext(); ) {
+	for (IteratorPtr<int> i = list.iterator(); i->hasNext(); ) {
 		int v = i->next();
 		System.out.println("val = "+String::valueOf(v)+"a");
 	}

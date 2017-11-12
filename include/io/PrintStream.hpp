@@ -12,10 +12,10 @@ class PrintStream : public OutputStream {
 protected:
 	 OutputStream& out;
 public:
-	PrintStream(const PrintStream& other) = delete;
-	PrintStream(PrintStream&& other) = delete;
-	PrintStream& operator=(const PrintStream& other) { out = other.out; return *this; }
-	PrintStream& operator=(PrintStream&& other) { out = std::move(other.out); return *this; }
+	PrintStream(const PrintStream& o) = delete;
+	PrintStream& operator=(const PrintStream& o) { out = o.out; return *this;}
+	PrintStream(PrintStream&& o) = delete;
+	PrintStream& operator=(PrintStream&& o) = delete;
 
 	PrintStream(OutputStream& o) : out(o) {}
 

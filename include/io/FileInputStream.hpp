@@ -13,6 +13,7 @@ private:
 	std::istream* in;
 	boolean allocated = false;
 	boolean closed = true;
+
 public:
 	FileInputStream(const FileInputStream& o) = delete;
 	FileInputStream& operator=(const FileInputStream& o) = delete;

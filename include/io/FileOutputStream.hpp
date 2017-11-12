@@ -14,6 +14,7 @@ private:
 	String fn;
 	boolean allocated = false;
 	boolean closed = true;
+
 public:
 	FileOutputStream(const FileOutputStream& o) = delete;
 	FileOutputStream& operator=(const FileOutputStream& o) = delete;

@@ -7,7 +7,7 @@
 namespace io { class PrintStream; }
 
 namespace lang {
-class StackTraceElement {
+class StackTraceElement final {
 private:
 	void * fptr;
 	String methodName;
@@ -15,30 +15,30 @@ private:
 	int    lineNumber;
 	void fillInfo();
 public:
-	StackTraceElement(StackTraceElement&& o) {
-		fptr = std::move(o.fptr);
-		methodName = std::move(o.methodName);
-		fileName = std::move(o.fileName);
-		lineNumber = o.lineNumber; o.lineNumber=0;
-	}
 	StackTraceElement(const StackTraceElement& o) {
 		fptr = o.fptr;
 		methodName = o.methodName;
 		fileName = o.fileName;
 		lineNumber = o.lineNumber;
 	}
-	StackTraceElement& operator=(StackTraceElement&& o) {
-		fptr = std::move(o.fptr);
-		methodName = std::move(o.methodName);
-		fileName = std::move(o.fileName);
-		lineNumber = o.lineNumber; o.lineNumber=0;
-		return *this;
-	}
 	StackTraceElement& operator=(const StackTraceElement& o) {
 		fptr = o.fptr;
 		methodName = o.methodName;
 		fileName = o.fileName;
 		lineNumber = o.lineNumber;
+		return *this;
+	}
+	StackTraceElement(StackTraceElement&& o) {
+		fptr = std::move(o.fptr);
+		methodName = std::move(o.methodName);
+		fileName = std::move(o.fileName);
+		lineNumber = o.lineNumber; o.lineNumber=0;
+	}
+	StackTraceElement& operator=(StackTraceElement&& o) {
+		fptr = std::move(o.fptr);
+		methodName = std::move(o.methodName);
+		fileName = std::move(o.fileName);
+		lineNumber = o.lineNumber; o.lineNumber=0;
 		return *this;
 	}
 	~StackTraceElement() {}
@@ -59,7 +59,22 @@ public:
 };
 
 class Throwable : public Object {
+private:
+	String detailMessage;
+	Array<StackTraceElement> stackTrace;
+	Throwable *cause = null;
+
+	void move(Throwable* o) {
+		std::cout << "Throwable move" << std::endl;
+		detailMessage = std::move(o->detailMessage);
+		stackTrace = std::move(o->stackTrace);
+		cause = std::move(o->cause);
+	}
 public:
+	Throwable(const Throwable& o) = delete;
+	Throwable& operator=(const Throwable& o) = delete;
+	Throwable(Throwable&& o) {move(&o);}
+	Throwable& operator=(Throwable&& o) {move(&o); return *this;}
 	~Throwable() {}
 
 	Throwable() {fillInStackTrace();}
@@ -74,10 +89,6 @@ public:
 	void printStackTrace(const io::PrintStream& s) const;
 	Throwable& fillInStackTrace();
 	const Array<StackTraceElement>& getStackTrace() const { return stackTrace; }
-private:
-	String detailMessage;
-	Array<StackTraceElement> stackTrace;
-	Throwable *cause = null;
 };
 
 class Error : public Throwable {

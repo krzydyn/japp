@@ -24,6 +24,13 @@ class String;
 
 extern Object& nullref;
 
+//#define TRACE CallTrace UNIQUE_NAME(the_calltrace)(__FUNCTION__, __FILE__,__LINE__);UNIQUE_NAME(the_calltrace).r()
+
+#ifndef TRACE
+#define TRACE
+#undef BACKTRACE
+#else
+#define BACKTRACE
 class CallTrace {
 public:
 	const char *func;
@@ -33,14 +40,6 @@ public:
 	void r();
 	~CallTrace();
 };
-
-//#define TRACE CallTrace UNIQUE_NAME(the_calltrace)(__FUNCTION__, __FILE__,__LINE__);UNIQUE_NAME(the_calltrace).r()
-
-#ifndef TRACE
-#define TRACE
-#undef BACKTRACE
-#else
-#define BACKTRACE
 #endif
 
 class Interface {
@@ -72,6 +71,7 @@ public:
 	virtual const Class getClass() const;
 	virtual long hashCode() const {return (long)this;}
 	virtual long hashCode() {return ((const Object*)this)->hashCode();}
+
 	virtual boolean equals(const Object& obj) const {return this == &obj;}
 	virtual String toString() const;
 	virtual void notify() {}
@@ -88,6 +88,7 @@ public:
 	//virtual boolean operator!=(const void *ptr) const {return ptr != this; }
 
 	class Lock {
+	private:
 		const Object& obj;
 		boolean locked=true;
 	public:
@@ -110,6 +111,10 @@ class Array : extends Object {
 private:
 	T *a;
 public:
+	Array(const Array& o) : length(o.length) {
+		a = new T[length];
+		for (int i=0; i < length; ++i) a[i] = o.a[i];
+	}
 	Array<T>& operator=(const Array<T>&o) {
 		if (this == &o) return *this;
 		printf("Array copy length=%d\n",o.length);
@@ -119,13 +124,15 @@ public:
 		for (int i=0; i < length; ++i) a[i] = o.a[i];
 		return *this;
 	}
-	/*
+
 	Array<T>& operator=(Array<T>&& o) {
-		printf("Array move\n");
+		printf("%s move lenght=%d\n",this->getClass().getName().intern().c_str(),o.length);
 		const_cast<int&>(length) = o.length;
-		a = std::move(o.a);
+		const_cast<int&>(o.length) = 0;
+		a = o.a; o.a=null; //a = std::move(o.a); is wrong here
+		printf("%s move done\n",this->getClass().getName().intern().c_str());
 		return *this;
-	}*/
+	}
 
 	const int length;
 	Array() : length(0) { a = null; }

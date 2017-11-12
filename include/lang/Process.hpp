@@ -56,16 +56,16 @@ private:
 	HashMap<String,String> env;
 public:
 	ProcessBuilder(List<String>& command) : cmd(command),dir(".") {}
-	List<String>& command() { return cmd; }
-	Map<String,String>& environment() {return env;}
-	const File& directory() { return dir; }
+	const List<String>& command() const { return cmd; }
+	const Map<String,String>& environment() const {return env;}
+	const File& directory() const { return dir; }
 	ProcessBuilder& directory(File& dir) {
 		this->dir= dir;
 		return *this;
 	}
 	ProcessBuilder& environment(List<String> *envp) {
 		if (envp == null) return *this;
-		for (Iterator<String> i=envp->iterator(); i->hasNext(); ) {
+		for (IteratorPtr<String> i=envp->iterator(); i->hasNext(); ) {
 			String envstring = i->next();
 			int eqlsign = envstring.indexOf('=', ProcessEnvironment::MIN_NAME_LENGTH);
 			if (eqlsign != -1) env.put(envstring.substring(0,eqlsign), envstring.substring(eqlsign+1));

@@ -4,23 +4,26 @@
 
 namespace lang {
 
-void String::assign(String *d, const String *s) {
+const char *String::emptystr="";
+
+void String::copystr(String *d, const char *s) {
 	if (s == null || d == null) throw NullPointerException();
-	//std::cout << "assign '" << s->value << "'" << std::endl;
+	//std::cout << "copy_cstr '" << s << "'" << std::endl;
+	d->value = s;
+	d->hash = 0;
+}
+void String::copy(String *d, const String *s) {
+	if (s == null || d == null) throw NullPointerException();
+	//std::cout << "copy '" << s->value << "'" << std::endl;
 	d->value = s->value;
 	d->hash = s->hash;
 }
 void String::move(String *d, const String *s) {
 	if (s == null || d == null) throw NullPointerException();
 	//std::cout << "move '" << s->value << "'" << std::endl;
-	d->value = std::move(s->value);
+	if (s->intern().empty()) d->value=emptystr;
+	else d->value = std::move(s->value);
 	d->hash = s->hash;
-}
-void String::assign(String *d, const char *s) {
-	if (s == null || d == null) throw NullPointerException();
-	//std::cout << "assign_cstr '" << s << "'" << std::endl;
-	d->value = s;
-	d->hash = 0;
 }
 
 String::String(const String& s, int offset, int count) {TRACE;

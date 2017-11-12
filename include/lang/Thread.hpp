@@ -53,6 +53,8 @@ private:
 	Interruptible interruptor;
 
 	std::thread *thread = null;
+	void runHelper();
+
 public:
 	Thread(const Thread& other) = delete;
 	Thread(Thread&& other) = delete;
@@ -94,7 +96,7 @@ public:
 	void checkAccess() {}
 	String toString() {TRACE;return getClass().getName()+":"+getName();}
 	Array<StackTraceElement> getStackTrace() {TRACE;
-		return Throwable().getStackTrace();
+		return std::move(Throwable().getStackTrace());
 	}
 	long getId() {return tid;}
 
@@ -124,8 +126,6 @@ public:
 	static void dumpStack() {TRACE;
 		Throwable("Stack trace").printStackTrace();
 	}
-private:
-	void runHelper();
 };
 
 } //namespace lang

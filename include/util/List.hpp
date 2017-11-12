@@ -12,7 +12,7 @@ template<class T>
 interface Iterable : Interface {
 public:
 	Iterable(){}
-	virtual Iterator<T> iterator() = 0;
+	virtual IteratorPtr<T> iterator() = 0;
 };
 
 template<class T>
@@ -22,11 +22,11 @@ public:
 	virtual unsigned size() const = 0;
 	virtual boolean isEmpty() const final {return size()==0;}
 	virtual boolean contains(const T& v) const = 0;
-	virtual Iterator<T> iterator() = 0;
+	virtual IteratorPtr<T> iterator() = 0;
 	virtual Array<T> toArray() const {
 		Array<T> a(size());
 		unsigned ai=0;
-		for (Iterator<T> i = const_cast<Collection&>(*this).iterator(); i->hasNext(); ++ai) {
+		for (IteratorPtr<T> i = const_cast<Collection&>(*this).iterator(); i->hasNext(); ++ai) {
 			a[ai] = i->next();
 		}
 		return a;
@@ -35,12 +35,12 @@ public:
 	virtual boolean remove(const T& v) = 0;
 	virtual boolean containsAll(const Collection<T>& c) {return false;}
 	virtual void addAll(Collection<T>& c) {
-		for (Iterator<T> i = c.iterator(); i->hasNext(); ) {
+		for (IteratorPtr<T> i = c.iterator(); i->hasNext(); ) {
 			add(i->next());
 		}
 	}
 	virtual void removeAll(const Collection<T>& c) {
-		for (Iterator<T> i = iterator(); i->hasNext(); ) {
+		for (IteratorPtr<T> i = iterator(); i->hasNext(); ) {
 			if (c.contains(i->next())) i->remove();
 		}
 	}
@@ -102,11 +102,11 @@ public:
 	virtual ~AbstractList() {}
 
 	AbstractList() {}
-	Iterator<T> iterator() = 0;
+	IteratorPtr<T> iterator() = 0;
 	String toString() const {
 		StringBuilder s;
 		s.append("[");
-		Iterator<T> i = const_cast<AbstractList&>(*this).iterator();
+		IteratorPtr<T> i = const_cast<AbstractList&>(*this).iterator();
 		if (i->hasNext()) s.append(i->next());
 		while (i->hasNext()) {
 			s.append(",");

@@ -10,6 +10,8 @@
 namespace lang {
 
 class The_System final : extends Object {
+private:
+	static Properties props;
 public:
 	The_System(){}
 	The_System(const The_System& other) = delete;
@@ -40,8 +42,6 @@ public:
 	 */
 	static void exit(int code);
 	static void gc();
-private:
-	static Properties props;
 };
 
 extern const The_System System;

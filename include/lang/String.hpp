@@ -27,22 +27,25 @@ private:
 	class AutoType;
 	std::string value;
 	long hash = 0;
-	static void assign(String *d, const String *s);
+
+	static const char * emptystr;
+	static void copystr(String *d, const char *s);
+	static void copy(String *d, const String *s);
 	static void move(String *d, const String *s);
-	static void assign(String *d, const char *s);
+
 	static String valueOf(const AutoType& any);
 
 public:
 	String(String&& o) {TRACE;move(this,&o);}
-	String(const String& o) {TRACE;assign(this,&o); }
+	String(const String& o) {TRACE;copy(this,&o); }
 	String& operator=(String&& o) {TRACE;move(this,&o);return*this;}
-	String& operator=(const String& o) {TRACE; assign(this,&o);return*this;}
+	String& operator=(const String& o) {TRACE; copy(this,&o);return*this;}
 	String(const std::string& v) {TRACE; value = v; }
 
-	String(const char *v) {TRACE; assign(this, v); }
-	explicit String(const std::nullptr_t&) {TRACE; assign(this, (const char *)0); }
+	String(const char *v) {TRACE; copystr(this, v); }
+	explicit String(const std::nullptr_t&) {TRACE; copystr(this, (const char *)0); }
 
-	String() {}
+	String() : value(emptystr) {}
 	String(const String& s, int offset, int count);
 	String(const char *s, int offset, int count);
 

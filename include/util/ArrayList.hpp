@@ -17,6 +17,23 @@ inline boolean util_equals(const T& a, const T& b) { return (void*)&a == (void*)
 template<class T>
 class ArrayList : public AbstractList<T> {
 class ArrayListIterator;
+private:
+    T *mVec;
+    unsigned mOffs,mSize, mCapa;
+    void ensureCapa(unsigned ns){TRACE;
+		if (mCapa>=ns) return ;
+		if (ns<8) ns=8;
+		else ns=hiBit(ns)<<1;
+		T *v = new T[ns];
+		if (!v) throw OutOfMemoryError();
+		if (mVec) {
+			for (unsigned i=0; i < mSize; ++i) v[i]=std::move(mVec[(mOffs+i)%mCapa]);
+			delete [] mVec;
+		}
+		mOffs=0;
+		mVec=v; mCapa=ns;
+		//std::cerr << "capa = " << mCapa << std::endl;
+	}
 
 public:
     ArrayList(unsigned initCapa=0) {
@@ -25,7 +42,7 @@ public:
     } 
     ~ArrayList() { delete [] mVec; } 
 
-	Iterator<T> iterator() { TRACE;
+	IteratorPtr<T> iterator() { TRACE;
 		return makeIterator<ArrayListIterator>(*this);
 	}
     void clear() { mOffs=mSize=0; }
@@ -149,31 +166,14 @@ public:
     }
 
 private:
-    T *mVec;
-    unsigned mOffs,mSize, mCapa;
-    void ensureCapa(unsigned ns){TRACE;
-		if (mCapa>=ns) return ;
-		if (ns<8) ns=8;
-		else ns=hiBit(ns)<<1;
-		T *v = new T[ns];
-		if (!v) throw OutOfMemoryError();
-		if (mVec) {
-			for (unsigned i=0; i < mSize; ++i) v[i]=std::move(mVec[(mOffs+i)%mCapa]);
-			delete [] mVec;
-		}
-		mOffs=0;
-		mVec=v; mCapa=ns;
-		//std::cerr << "capa = " << mCapa << std::endl;
-	}
-
-	class ArrayListIterator : public IteratorBase<T> {
+	class ArrayListIterator : public Iterator<T> {
 	private:
 		ArrayList<T>& mList;
     	unsigned mNext;
 
 	public:
 		ArrayListIterator(ArrayList& list) : mList(list), mNext(0) {}
-		bool hasNext() {TRACE; return mNext < mList.mSize; }
+		bool hasNext() const {TRACE; return mNext < mList.mSize; }
 		const T& next() {TRACE; return mList.get(mNext++); }
 		void remove() {TRACE;
 			if (mNext > 0) {

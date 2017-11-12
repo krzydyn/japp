@@ -7,21 +7,19 @@
 namespace util {
 
 template<class T>
-interface IteratorBase : Interface {
+interface Iterator : Interface {
 protected:
-	IteratorBase() {}
+	Iterator() {}
 public:
-	virtual bool hasNext() = 0;
+	virtual bool hasNext() const = 0;
 	virtual const T& next() = 0;
 	virtual void remove() {
 		throw UnsupportedOperationException("remove");
 	}
-	//template<class E>
-	//void forEachRemaining(Consumer<E> action) {}
 };
 
 template<class T>
-using Iterator = std::shared_ptr<IteratorBase<T>>;
+using IteratorPtr = std::shared_ptr<Iterator<T>>;
 
 template<class T, class... Args>
 std::shared_ptr<T> makeIterator(Args&&... args) { return std::make_shared<T>(args...); }

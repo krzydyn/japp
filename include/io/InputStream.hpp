@@ -8,8 +8,12 @@ namespace io {
 
 class InputStream : extends Object, implements Closeable {
 public:
-	InputStream& operator=(const InputStream& other) { return *this; }
-	InputStream& operator=(InputStream&& other) { return *this; }
+	InputStream(const InputStream& o) = delete;
+	InputStream& operator=(const InputStream& o) { return *this; }
+	InputStream(const InputStream&& o) = delete;
+	InputStream& operator=(InputStream&& o) { return *this; }
+
+	InputStream() {}
 
 	virtual int read() = 0;
 	virtual int read(const void *b, int len) {
