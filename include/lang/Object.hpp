@@ -44,10 +44,10 @@ public:
 
 class Interface {
 protected:
-	Interface(const Interface& other) = delete;
-	Interface(Interface&& other) = delete;
-	Interface& operator=(const Interface& other) = delete;
-	Interface& operator=(Interface&& other) = delete;
+	Interface(const Interface& o) = delete;
+	Interface(Interface&& o) = delete;
+	Interface& operator=(const Interface& o) = delete;
+	Interface& operator=(Interface&& o) = delete;
 	virtual ~Interface() {}
 	Interface() {}
 };
@@ -56,17 +56,20 @@ class Object {
 	friend class Lock;
 private:
 	std::recursive_mutex *mtx=null;
+	void move(Object *o) {
+		if (this == o) return ;
+		mtx = o->mtx; o->mtx = null;
+	}
 protected:
 	virtual void finalize() {}
 	virtual Object& clone() const;
 public:
-	Object(const Object& other) {}
-	Object(Object&& other) {mtx = std::move(other.mtx);}
-	Object& operator=(const Object& other) {return *this;}
-	Object& operator=(Object&& other) {mtx = std::move(other.mtx);return *this;}
-	virtual ~Object() {
-		if (mtx) delete mtx;
-	}
+	Object(const Object& o) {}
+	Object& operator=(const Object& o) {return *this;}
+	Object(Object&& o) {move(&o);}
+	Object& operator=(Object&& o) {move(&o);return *this;}
+	virtual ~Object() { delete mtx; }
+
 	Object() {}
 	virtual const Class getClass() const;
 	virtual long hashCode() const {return (long)this;}
@@ -127,9 +130,8 @@ public:
 
 	Array<T>& operator=(Array<T>&& o) {
 		//printf("%s move lenght=%d\n",this->getClass().getName().intern().c_str(),o.length);
-		const_cast<int&>(length) = o.length;
-		const_cast<int&>(o.length) = 0;
-		a = o.a; o.a=null; //a = std::move(o.a); is wrong here
+		const_cast<int&>(length) = o.length; const_cast<int&>(o.length) = 0;
+		a = o.a; o.a=null;
 		//printf("%s move done\n",this->getClass().getName().intern().c_str());
 		return *this;
 	}

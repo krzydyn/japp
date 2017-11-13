@@ -15,20 +15,19 @@ private:
 	boolean allocated = false;
 	boolean closed = true;
 
+	void move(FileOutputStream* o) {
+		if (o==this) return ;
+		out = o->out; o->out = null;
+		allocated = o->allocated; o->allocated = false;
+	}
 public:
 	FileOutputStream(const FileOutputStream& o) = delete;
 	FileOutputStream& operator=(const FileOutputStream& o) = delete;
-	FileOutputStream(FileOutputStream&& o) : out(std::move(o.out)),allocated(o.allocated) { o.allocated=false; }
-	FileOutputStream& operator=(FileOutputStream&& o) {
-		if (this != &o) {out=std::move(o.out); allocated=o.allocated; o.allocated=false;}
-		return *this;
-	}
+	FileOutputStream(FileOutputStream&& o) { move(&o); }
+	FileOutputStream& operator=(FileOutputStream&& o) { move(&o); return *this; }
 	~FileOutputStream() {
 		close();
-		if (allocated) {
-			delete out;
-			System.err.println("ostream deleted");
-		}
+		if (allocated) delete out;
 	}
 
 	FileOutputStream(std::ostream& s) : out(&s), allocated(false) {}

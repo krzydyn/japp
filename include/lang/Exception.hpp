@@ -29,13 +29,13 @@ public:
 		return *this;
 	}
 	StackTraceElement(StackTraceElement&& o) {
-		fptr = std::move(o.fptr);
+		fptr = o.fptr;
 		methodName = std::move(o.methodName);
 		fileName = std::move(o.fileName);
 		lineNumber = o.lineNumber; o.lineNumber=0;
 	}
 	StackTraceElement& operator=(StackTraceElement&& o) {
-		fptr = std::move(o.fptr);
+		fptr = o.fptr;
 		methodName = std::move(o.methodName);
 		fileName = std::move(o.fileName);
 		lineNumber = o.lineNumber; o.lineNumber=0;
@@ -65,10 +65,9 @@ private:
 	Throwable *cause = null;
 
 	void move(Throwable* o) {
-		std::cout << "Throwable move" << std::endl;
 		detailMessage = std::move(o->detailMessage);
 		stackTrace = std::move(o->stackTrace);
-		cause = std::move(o->cause);
+		cause = o->cause; o->cause = null;
 	}
 public:
 	Throwable(const Throwable& o) = delete;

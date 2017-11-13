@@ -13,21 +13,20 @@ private:
 	std::istream* in;
 	boolean allocated = false;
 	boolean closed = true;
+	void move(FileInputStream* o) {
+		if (o==this) return ;
+		in = o->in; o->in = null;
+		allocated = o->allocated; o->allocated = false;
+	}
 
 public:
 	FileInputStream(const FileInputStream& o) = delete;
 	FileInputStream& operator=(const FileInputStream& o) = delete;
-	FileInputStream(FileInputStream&& o) : in(std::move(o.in)),allocated(o.allocated) { o.allocated=false; }
-	FileInputStream& operator=(FileInputStream&& o) {
-		if (this != &o) {in=std::move(o.in); allocated=o.allocated; o.allocated=false;}
-		return *this;
-	}
+	FileInputStream(FileInputStream&& o) { move(&o); }
+	FileInputStream& operator=(FileInputStream&& o) { move(&o); return *this; }
 	~FileInputStream() {
 		close();
-		if (allocated) {
-			delete in;
-			System.err.println("istream deleted");
-		}
+		if (allocated) delete in;
 	}
 
 	FileInputStream(std::istream& s) : in(&s), allocated(false) {}
