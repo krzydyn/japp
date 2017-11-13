@@ -117,7 +117,7 @@ public:
 	}
 	Array<T>& operator=(const Array<T>&o) {
 		if (this == &o) return *this;
-		printf("Array copy length=%d\n",o.length);
+		//printf("Array copy length=%d\n",o.length);
 		delete [] a;
 		const_cast<int&>(length) = o.length;
 		a = new T[length];
@@ -126,11 +126,11 @@ public:
 	}
 
 	Array<T>& operator=(Array<T>&& o) {
-		printf("%s move lenght=%d\n",this->getClass().getName().intern().c_str(),o.length);
+		//printf("%s move lenght=%d\n",this->getClass().getName().intern().c_str(),o.length);
 		const_cast<int&>(length) = o.length;
 		const_cast<int&>(o.length) = 0;
 		a = o.a; o.a=null; //a = std::move(o.a); is wrong here
-		printf("%s move done\n",this->getClass().getName().intern().c_str());
+		//printf("%s move done\n",this->getClass().getName().intern().c_str());
 		return *this;
 	}
 

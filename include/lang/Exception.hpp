@@ -77,9 +77,9 @@ public:
 	Throwable& operator=(Throwable&& o) {move(&o); return *this;}
 	~Throwable() {}
 
-	Throwable() {fillInStackTrace();}
-	Throwable(const String& msg) : detailMessage(msg) {fillInStackTrace();}
-	Throwable(const String& msg, Throwable *c) : detailMessage(msg), cause(c) {fillInStackTrace();}
+	Throwable() {}
+	Throwable(const String& msg) : detailMessage(msg) {}
+	Throwable(const String& msg, Throwable *c) : detailMessage(msg), cause(c) {}
 
 	virtual const String& getMessage() const {return detailMessage;}
 	virtual const String& getLocalizedMessage() const {return getMessage();}
@@ -89,6 +89,7 @@ public:
 	void printStackTrace(const io::PrintStream& s) const;
 	Throwable& fillInStackTrace();
 	const Array<StackTraceElement>& getStackTrace() const { return stackTrace; }
+	void setStackTrace(Array<StackTraceElement>& st) { stackTrace=std::move(st); }
 };
 
 class Error : public Throwable {
