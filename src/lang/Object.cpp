@@ -5,6 +5,7 @@
 #include <exception>
 #include <stdexcept> //std::exception_ptr
 
+#include <signal.h> // signal, SIGxxx
 #include <execinfo.h> //backtrace
 #include <dlfcn.h> //dladdr
 #ifdef __GNUG__ // gnu C++ compiler
@@ -41,10 +42,10 @@ namespace {
 boolean initialize();
 static const boolean SET_TERMINATE = initialize();
 
-void terminate_hnd();
+void terminate_hook();
 boolean initialize() {
-	std::set_terminate(terminate_hnd);
-	signal(SIGFPE, [](int signum) {throw std::logic_error("FPE");});
+	std::set_terminate(terminate_hook);
+	signal(SIGFPE, [](int signum) {throw Throwable("FPE");});
 	return true;
 }
 
@@ -88,7 +89,7 @@ Array<StackTraceElement>& captureStackTrace(Array<StackTraceElement>& stackTrace
 	if (got <= skip) {
 		return stackTrace;
 	}
-	//better backtrace_symbols
+	//better backtrace_symbols ??
 	//http://cairo.sourcearchive.com/documentation/1.9.4/backtrace-symbols_8c-source.html
 
 	got -= skip;
@@ -131,7 +132,7 @@ void captureStack2(Array<StackTraceElement>& stackTrace) {
 }
 #endif
 [[noreturn]]
-void terminate_hnd() {
+void terminate_hook() {
 	std::set_terminate(null); // avoid loop
 	std::exception_ptr ep = std::current_exception();
 	if (ep != null) {
