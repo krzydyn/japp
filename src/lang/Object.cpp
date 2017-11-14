@@ -38,8 +38,15 @@ void __cxa_throw(void* thrown_exception, void* _tinfo, void (*dest)(void*)) {
 }
 
 namespace {
+boolean initialize();
+static const boolean SET_TERMINATE = initialize();
+
 void terminate_hnd();
-static const bool SET_TERMINATE = std::set_terminate(terminate_hnd);
+boolean initialize() {
+	std::set_terminate(terminate_hnd);
+	signal(SIGFPE, [](int signum) {throw std::logic_error("FPE");});
+	return true;
+}
 
 #ifdef BACKTRACE
 #define BACKTRACE_SIZE 2048
@@ -96,6 +103,7 @@ Array<StackTraceElement>& captureStackTrace(Array<StackTraceElement>& stackTrace
 			//dli_saddr - Exact address of symbol
 			if (info.dli_sname == null) info.dli_sname="";
 			std::string path = info.dli_fname;
+			if (path.rfind('/') != std::string::npos) path = path.substr(path.rfind('/')+1);
 			std::string func = demangle(info.dli_sname);
 			std::string offs = "+" + std::to_string((long)trace[i+skip] - (long)info.dli_saddr);
 			stackTrace[i] = StackTraceElement(func+offs+" "+path+addr, "", 0);

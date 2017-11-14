@@ -53,7 +53,6 @@ private:
 	Interruptible interruptor;
 
 	std::thread *thread = null;
-	void runHelper();
 
 public:
 	Thread(const Thread& other) = delete;

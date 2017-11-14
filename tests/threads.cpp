@@ -6,10 +6,15 @@ static void test_backtrace() { TRACE;
 }
 
 static void test_thread() {
+	static int x=1;
 	class RunSleep1 : implements Runnable {
 		void run() {
+			x--;
 			System.out.println("Sleeping for 1s");
 			Thread::sleep(1000);
+			//throw Throwable("exception in thread");
+			int a=1/x;
+			printf("%d\n",a);
 		}
 	} rs1;
 

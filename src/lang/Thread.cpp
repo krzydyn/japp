@@ -71,16 +71,6 @@ Thread& Thread::currentThread() {
 	return tmp;
 }
 
-void Thread::runHelper() {
-	//TODO use mutex, condition... for synchronization
-	while (threadStatus == NEW) yield();
-	if (threadStatus != RUNNABLE) return ;
-	setNativeName(*thread, name);
-	run();
-	System.out.println(name + " terminated");
-	threadStatus = TERMINATED;
-}
-
 void Thread::start() {
 	if (threadStatus != NEW) {
 		throw IllegalThreadStateException();
@@ -91,12 +81,18 @@ void Thread::start() {
 	if (name.length() == 0) name = "Thread-" + String::valueOf(tid);
 	this->thread = new std::thread([=] {
 		try {
-			runHelper();
-		}
-		catch(const Throwable& e) {
-			System.err.println(name + "- uncautch exeption in thread");
+			setNativeName(*thread, name);
+			while (threadStatus == NEW) yield();
+			if (threadStatus == RUNNABLE) run();
+		} catch(const Throwable& e) {
 			e.printStackTrace(System.err);
+		} catch (const std::exception& e) {
+			Throwable(e.what()).fillInStackTrace().printStackTrace();
+		} catch (...) {
+			Throwable().fillInStackTrace().printStackTrace();
 		}
+		System.out.println(name + " terminated");
+		threadStatus = TERMINATED;
 	});
 	threadStatus = RUNNABLE;
 }
