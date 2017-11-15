@@ -1,11 +1,27 @@
 #include <lang/System.hpp>
 #include <lang/Thread.hpp>
+#include <util/HashMap.hpp>
 #include <chrono>
 #include <thread>
 
 namespace lang {
 
 namespace {
+HashMap<std::thread::id,Thread*> thrmap;
+
+class MainThread : extends Thread {
+private:
+	std::thread::id thrid;
+public:
+	MainThread() : Thread("main") {
+		thrid = std::this_thread::get_id();
+		thrmap.put(thrid, this);
+	}
+	~MainThread() {
+		thrmap.remove(thrid);
+	}
+} main_thread;
+
 void setNativePriority(std::thread& thread, int priority) {
 	int policy;
 	sched_param sch_params;
@@ -23,9 +39,12 @@ void setNativeName(std::thread& thread, const String& name) {
 }
 }
 
-
 long Thread::threadSeqNumber = 0;
 
+void Thread::setId() {
+	tid = threadSeqNumber;
+	++threadSeqNumber;
+}
 Thread& Thread::operator=(Thread&& o) {
 	if (threadStatus != NEW) {
 		throw IllegalThreadStateException();
@@ -67,19 +86,26 @@ void Thread::setName(const String& name) {
 }
 
 Thread& Thread::currentThread() {
-	static Thread tmp;
-	return tmp;
+	std::thread::id thrid = std::this_thread::get_id();
+	Thread *t = thrmap.get(thrid);
+	if (t == null) {
+		System.err.println("thread not found: "+String::valueOf(thrid));
+		return main_thread;
+	}
+	return *t;
 }
 
 void Thread::start() {
 	if (threadStatus != NEW) {
 		throw IllegalThreadStateException();
 	}
-	this->tid=threadSeqNumber;
-	++threadSeqNumber;
 
+	setId();
 	if (name.length() == 0) name = "Thread-" + String::valueOf(tid);
+
 	this->thread = new std::thread([=] {
+		std::thread::id thrid = std::this_thread::get_id();
+		thrmap.put(thrid, this);
 		try {
 			setNativeName(*thread, name);
 			while (threadStatus == NEW) yield();
@@ -93,6 +119,7 @@ void Thread::start() {
 		}
 		System.out.println(name + " terminated");
 		threadStatus = TERMINATED;
+		thrmap.remove(thrid);
 	});
 	threadStatus = RUNNABLE;
 }

@@ -1,6 +1,7 @@
 #include <lang/Object.hpp>
 #include <lang/Class.hpp>
 #include <lang/System.hpp>
+#include <lang/Thread.hpp>
 
 #include <exception>
 #include <stdexcept> //std::exception_ptr
@@ -177,6 +178,9 @@ CallTrace::~CallTrace() {
 }
 #endif
 
+Throwable::Throwable(const String& msg, Throwable *c) : detailMessage(msg), cause(c) {
+	threadInfo = Thread::currentThread().getName();
+}
 String Throwable::toString() const {
 	String s = getClass().getName();
 	String message = getLocalizedMessage();
@@ -195,7 +199,7 @@ void Throwable::printStackTrace() const {TRACE;
 	printStackTrace(System.err);	
 }
 void Throwable::printStackTrace(const io::PrintStream& s) const {TRACE;
-	s.println(this->toString());
+	s.println("Exception in thread  \"" + threadInfo + "\" " + this->toString());
 	for (int i=0; i < stackTrace.length; ++i) {
 		s.print("\tat ");
 		s.println(stackTrace[i].toString());
@@ -218,7 +222,6 @@ String Class::getSimpleName() const {TRACE;
 }
 String Class::getCanonicalName() const {TRACE;return getName();}
 String Class::getTypeName(const std::type_info& type) {TRACE;
-	//Exception e; e.printStackTrace();
 	return demangle(type.name());
 }
 

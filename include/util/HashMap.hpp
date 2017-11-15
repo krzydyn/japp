@@ -42,6 +42,13 @@ public:
 
 inline long hash_code(const long& v) {return v;}
 inline long hash_code(const Object& v) {return v.hashCode();}
+template<class T, class std::enable_if<!std::is_base_of<Object,T>::value,Object>::type* = nullptr>
+inline long hash_code(const T& v) {
+	if (sizeof(v) == 1) return *(uint8_t*)(&v);
+	if (sizeof(v) == 2) return *(uint16_t*)(&v);
+	if (sizeof(v) == 4) return *(uint32_t*)(&v);
+	return *(long*)(&v);
+}
 
 inline boolean is_equal(const Object& a, const Object& b) { return a.equals(b); }
 //SFINAE to choose above function for Object type

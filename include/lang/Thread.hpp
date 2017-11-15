@@ -53,6 +53,8 @@ private:
 	Interruptible interruptor;
 
 	std::thread *thread = null;
+protected:
+	void setId();
 
 public:
 	Thread(const Thread& other) = delete;
@@ -72,13 +74,13 @@ public:
 		if (target != null) target->run();
 	}
 	void interrupt() {}
-	boolean isInterrupted() {return isInterrupted(false);}
-	boolean isInterrupted(boolean ClearInterrupted) {return false;}
-	boolean isAlive() {return threadStatus != NEW && threadStatus != TERMINATED;}
+	boolean isInterrupted() const {return isInterrupted(false);}
+	boolean isInterrupted(boolean ClearInterrupted) const {return false;}
+	boolean isAlive() const {return threadStatus != NEW && threadStatus != TERMINATED;}
 	void setPriority(int newPriority);
-	int getPriority() {return 0;}
+	int getPriority() const {return priority;}
 	void setName(const String& name);
-	String getName() {return name;}
+	String getName() const {return name;}
 	void join(long millis=0);
 	void join(long millis, int nanos) {TRACE;
 		if (millis < 0) throw IllegalArgumentException("timeout value is negative");
@@ -91,13 +93,13 @@ public:
 		if (isAlive()) throw IllegalThreadStateException();
 		daemon = on;
 	}
-	boolean isDaemon() { return daemon; }
-	void checkAccess() {}
-	String toString() {TRACE;return getClass().getName()+":"+getName();}
+	boolean isDaemon() const { return daemon; }
+	void checkAccess() const {}
+	String toString() const {TRACE;return getClass().getName()+":"+getName();}
 	Array<StackTraceElement> getStackTrace() {TRACE;
 		return std::move(Throwable().getStackTrace());
 	}
-	long getId() {return tid;}
+	long getId() const {return tid;}
 
 	enum State {
 		NEW,
@@ -108,7 +110,7 @@ public:
 		TERMINATED
 	};
 
-	State getState() { return (State)threadStatus; }
+	State getState() const { return (State)threadStatus; }
 
 	static int activeCount() {return 0;}
 	static Thread& currentThread();

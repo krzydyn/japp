@@ -1,11 +1,15 @@
 #include <lang/System.hpp>
 #include <lang/Thread.hpp>
 
+static void test_mainthread() {
+	if (!Thread::currentThread().getName().equals("main"))
+		System.err.println("main thread has wrong name");
+}
 static void test_backtrace() { TRACE;
 	Thread::dumpStack();
 }
 
-void test_thread() {
+static void test_thread() {
 	static int x=1;
 	class RunSleep1 : implements Runnable {
 		void run() {
@@ -36,6 +40,7 @@ void test_thread() {
 }
 
 int main(int argc, const char *argv[]) { TRACE;
+	test_mainthread();
 	test_backtrace();
 	test_thread();
 }

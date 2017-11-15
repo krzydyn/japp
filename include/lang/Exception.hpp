@@ -60,15 +60,17 @@ public:
 
 class Throwable : public Object {
 private:
+	String threadInfo;
 	String detailMessage;
 	Array<StackTraceElement> stackTrace;
 	Throwable *cause = null;
-
 	void move(Throwable* o) {
+		threadInfo = std::move(o->threadInfo);
 		detailMessage = std::move(o->detailMessage);
 		stackTrace = std::move(o->stackTrace);
 		cause = o->cause; o->cause = null;
 	}
+
 public:
 	Throwable(const Throwable& o) = delete;
 	Throwable& operator=(const Throwable& o) = delete;
@@ -76,9 +78,8 @@ public:
 	Throwable& operator=(Throwable&& o) {move(&o); return *this;}
 	~Throwable() {}
 
-	Throwable() {}
-	Throwable(const String& msg) : detailMessage(msg) {}
-	Throwable(const String& msg, Throwable *c) : detailMessage(msg), cause(c) {}
+	Throwable() : Throwable("", null) {}
+	Throwable(const String& msg, Throwable *c=null);
 
 	virtual const String& getMessage() const {return detailMessage;}
 	virtual const String& getLocalizedMessage() const {return getMessage();}
