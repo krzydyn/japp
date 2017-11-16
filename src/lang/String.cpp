@@ -49,6 +49,21 @@ char String::charAt(int index) const {TRACE;
 }
 
 class String::AutoType {};
-String String::valueOf(const String::AutoType& t) { return Class::nameOf(t) + "@" + Integer::toHexString((long)&t).intern(); }
+String String::valueOf(const String::AutoType& t) { return Class::nameOf(t) + "@" + Integer::toHexString((long)&t); }
+
+String String::format(const char *fmt, va_list& args) {
+	static Object sync;
+	static char buffer[1023];
+	String s;
+	synchronized (sync) {
+		if ((unsigned)vsnprintf(buffer,sizeof(buffer),fmt,args) > sizeof(buffer)) {
+			strcpy(buffer+1023-5,"...");
+		}
+		s = buffer;
+	}
+	//FILE *stream;
+	//vfprintf(stream, fmt, args);
+	return s;
+}
 
 } //namespace lang

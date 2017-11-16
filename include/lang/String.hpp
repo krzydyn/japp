@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <cstdarg>
 
 namespace lang {
 
@@ -176,12 +177,39 @@ public:
 		return *this;
 	}
 
-	static String valueOf(int n) {TRACE; return String(std::to_string(n)); }
-	static String valueOf(unsigned n) {TRACE; return String(std::to_string(n)); }
-	static String valueOf(long n) {TRACE; return String(std::to_string(n)); }
+	static String valueOf(boolean b) {TRACE; return b ? "true" : "false"; }
+	static String valueOf(char n) {TRACE; return std::to_string(n); }
+	static String valueOf(short n) {TRACE; return std::to_string(n); }
+	static String valueOf(unsigned short n) {TRACE; return std::to_string(n); }
+	static String valueOf(int n) {TRACE; return std::to_string(n); }
+	static String valueOf(unsigned n) {TRACE; return std::to_string(n); }
+	static String valueOf(long n) {TRACE; return std::to_string(n); }
+	static String valueOf(unsigned long n) {TRACE; return std::to_string(n); }
+	static String valueOf(float n) {TRACE; return std::to_string(n); }
+	static String valueOf(double n) {TRACE; return std::to_string(n); }
+
 	static String valueOf(const Object& obj) {TRACE; return obj.toString(); }
+	static String valueOf(const void *ptr) {TRACE; return Integer::toHexString((unsigned long)ptr);}
+	static String valueOf(const char *s) {TRACE; return s;}
+	static String valueOf(const String& s) {TRACE; return s;}
 	template<class T>
 	static String valueOf(const T& t) {TRACE; return valueOf((const AutoType&)t); }
+
+	static String format(String fmt, ...) {
+		va_list args;
+		va_start(args, fmt);
+		String s = format(fmt.intern().c_str(), args);
+		va_end(args);
+		return s;
+	}
+	static String format(const char *fmt, ...) {
+		va_list args;
+		va_start(args, fmt);
+		String s = format(fmt, args);
+		va_end(args);
+		return s;
+	}
+	static String format(const char *fmt, va_list& args);
 };
 
 inline String toString(const String& s) {TRACE;return s;}

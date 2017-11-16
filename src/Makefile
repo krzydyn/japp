@@ -6,7 +6,7 @@ TOP_DIR?=.
 BUILD_DIR?=$(TOP_DIR)/build
 SOURCE_DIR?=$(PREFIX)
 INC_DIR?=../include
-DEBUG?=-O2
+DEBUG?=-g2
 #SOFLAGS:=-Wl,-soname,jre.so.1
 
 CC:=g++

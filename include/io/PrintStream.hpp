@@ -41,48 +41,16 @@ public:
 		}
 	}
 
-	void print(boolean b) const {TRACE;
-		write(b ? "true" : "false");
-	}
-	void print(char c) const {TRACE;
-		write(String::valueOf(c));
-	}
-	void print(int i) const {TRACE;
-		write(String::valueOf(i));
-	}
-	void print(long l) const {TRACE;
-		write(String::valueOf(l));
-	}
-	void print(float f) const {TRACE;
-		write(String::valueOf(f));
-	}
-	void print(double d) const {TRACE;
-		write(String::valueOf(d));
-	}
-
 	void print(const char *s) const {TRACE;
-		if (s == null) {
-			s = "null";
-		}
+		if (s == null) s = "null";
 		write(s);
 	}
-	void print(const String& s) const {TRACE;
-		write(s);
-	}
-	template <class T>
-	void print(const T& s) const {TRACE;
-		if (instanceOf<const Object>(s)) {
-			print(s.toString());
-		}
-		else {
-			const void *ptr = (const void *)&s;
-			print(Integer::toHexString((unsigned long)ptr));
-		}
-	}
+	void print(const Object& s) const {TRACE; write(s.toString());}
+	void print(const String& s) const {TRACE; write(s);}
+	template<class T, class std::enable_if<!std::is_base_of<Object,T>::value,Object>::type* = nullptr>
+	void print(const T& v) const {TRACE; write(String::valueOf(v)); }
 
-	void println() {TRACE;
-		newLine();
-	}
+	void println() {TRACE; newLine(); }
 	template <class T>
 	void println(const T& s) const {TRACE;
 		synchronized (*this) {
@@ -105,9 +73,12 @@ public:
 		va_end(args);
 		return *this;
 	}
+	void format(const char *fmt, va_list& args) const {
+		write(String::format(fmt,args));
+	}
 
 	const PrintStream& append(const CharSequence& csq) const {
-		print(csq.toString());
+		write(csq.toString());
 		return *this;
 	}
 
@@ -126,8 +97,6 @@ private:
 		synchronized (*this) {
 			out.write(s.intern().c_str(),s.length());
 		}
-	}
-	void format(const char *fmt, va_list& args) const {
 	}
 };
 
