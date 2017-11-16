@@ -4,7 +4,7 @@
 #ifndef _POSIX_SOURCE
 #define _POSIX_SOURCE 1
 #endif
-#define _LARGE_TIME_API 
+#define _LARGE_TIME_API
 
 #include <dirent.h>
 #include <sys/stat.h>

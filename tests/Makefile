@@ -8,7 +8,7 @@ BUILD_DIR?=$(TOP_DIR)/build
 SOURCE_DIR?=$(PREFIX)
 INC_DIR?=../include
 JRELIB?=../src/build/jre.a
-DEBUG?=-g
+DEBUG?=-g2
 
 HOST_OS:=$(shell uname -s)
 GCC_VERSION:=$(shell gcc --version | awk '/^gcc/ {print $$4}')

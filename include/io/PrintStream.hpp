@@ -50,8 +50,7 @@ public:
 	void print(int i) const {TRACE;
 		write(String::valueOf(i));
 	}
-
-    void print(long l) const {TRACE;
+	void print(long l) const {TRACE;
 		write(String::valueOf(l));
 	}
 	void print(float f) const {TRACE;

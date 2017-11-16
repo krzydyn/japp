@@ -12,7 +12,7 @@ private:
 	void * fptr;
 	String methodName;
 	String fileName;
-	int    lineNumber;
+	int lineNumber;
 	void fillInfo();
 public:
 	StackTraceElement(const StackTraceElement& o) {

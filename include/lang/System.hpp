@@ -13,12 +13,13 @@ class The_System final : extends Object {
 private:
 	static Properties props;
 public:
-	The_System(){}
 	The_System(const The_System& other) = delete;
 	The_System(The_System&& other) = delete;
 	The_System& operator=(const The_System& other) = delete;
 	The_System& operator=(The_System&& other) = delete;
-	//~The_System() = delete;
+	~The_System(){}
+
+	The_System(){}
 
 	static io::PrintStream& err;
 	static io::PrintStream& out;

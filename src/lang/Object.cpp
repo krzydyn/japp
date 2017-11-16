@@ -45,8 +45,9 @@ static const boolean SET_TERMINATE = initialize();
 
 void terminate_hook();
 boolean initialize() {
+	(void)SET_TERMINATE;
 	std::set_terminate(terminate_hook);
-	signal(SIGFPE, [](int signum) {throw Throwable("FPE");});
+	signal(SIGFPE, [](int signum) {throw ArithmeticException("SIGFPE");});
 	return true;
 }
 
@@ -196,10 +197,10 @@ Throwable& Throwable::fillInStackTrace() {
 	return *this;
 }
 void Throwable::printStackTrace() const {TRACE;
-	printStackTrace(System.err);	
+	printStackTrace(System.err);
 }
 void Throwable::printStackTrace(const io::PrintStream& s) const {TRACE;
-	s.println("Exception in thread  \"" + threadInfo + "\" " + this->toString());
+	s.println("Exception in thread \"" + threadInfo + "\" " + this->toString());
 	for (int i=0; i < stackTrace.length; ++i) {
 		s.print("\tat ");
 		s.println(stackTrace[i].toString());

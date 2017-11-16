@@ -20,10 +20,10 @@ private:
 	bool running = true;
 public:
 	SyncQueue(const SyncQueue& other) = delete;
-    SyncQueue(SyncQueue&& other) = delete;
-    SyncQueue& operator=(const SyncQueue& other) = delete;
-    SyncQueue& operator=(SyncQueue&& other) = delete;
-    virtual ~SyncQueue() = default;
+	SyncQueue(SyncQueue&& other) = delete;
+	SyncQueue& operator=(const SyncQueue& other) = delete;
+	SyncQueue& operator=(SyncQueue&& other) = delete;
+	virtual ~SyncQueue() = default;
 
 	SyncQueue(){}
 

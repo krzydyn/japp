@@ -18,9 +18,9 @@ template<class T>
 class ArrayList : public AbstractList<T> {
 class ArrayListIterator;
 private:
-    T *mVec;
-    unsigned mOffs,mSize, mCapa;
-    void ensureCapa(unsigned ns){TRACE;
+	T *mVec;
+	unsigned mOffs,mSize, mCapa;
+	void ensureCapa(unsigned ns){TRACE;
 		if (mCapa>=ns) return ;
 		if (ns<8) ns=8;
 		else ns=hiBit(ns)<<1;
@@ -36,23 +36,23 @@ private:
 	}
 
 public:
-    ArrayList(unsigned initCapa=0) {
-        mVec=null;mOffs=mSize=0;mCapa=0;
-        if (initCapa) ensureCapa(initCapa);
-    } 
-    ~ArrayList() { delete [] mVec; } 
+	ArrayList(unsigned initCapa=0) {
+		mVec=null;mOffs=mSize=0;mCapa=0;
+		if (initCapa) ensureCapa(initCapa);
+	}
+	~ArrayList() { delete [] mVec; }
 
 	IteratorPtr<T> iterator() { TRACE;
 		return makeIterator<ArrayListIterator>(*this);
 	}
-    void clear() { mOffs=mSize=0; }
-    unsigned size() const {return mSize;}
-    void shrink(unsigned s) {if (s < mSize) mSize=s;}
-    const T& get(unsigned i) const { TRACE;
+	void clear() { mOffs=mSize=0; }
+	unsigned size() const {return mSize;}
+	void shrink(unsigned s) {if (s < mSize) mSize=s;}
+	const T& get(unsigned i) const { TRACE;
 		if (i >= mSize) throw IndexOutOfBoundsException(i);
 		return mVec[(mOffs+i)%mCapa];
 	}
-    T& get(unsigned i) { TRACE;
+	T& get(unsigned i) { TRACE;
 		if (i >= mSize) throw IndexOutOfBoundsException(i);
 		return mVec[(mOffs+i)%mCapa];
 	}
@@ -66,15 +66,15 @@ public:
 	using List<T>::add;
 	using List<T>::remove;
 
-    void add(unsigned i,const T& v) { TRACE;
-        if (mSize>=mCapa) ensureCapa(mSize+1);
-        if (i == END_OF_LIST) {
+	void add(unsigned i,const T& v) { TRACE;
+		if (mSize>=mCapa) ensureCapa(mSize+1);
+		if (i == END_OF_LIST) {
 			mVec[(mOffs+mSize)%mCapa]=v;
 			++mSize;
 		   	return ;
 	   	}
 		if (i > mSize) throw IndexOutOfBoundsException(i);
-        unsigned j=i;
+		unsigned j=i;
 		if (i < mSize - i) {
 			mOffs = (mOffs + mCapa - 1)%mCapa;
 			for (i=0; i < j; ++i) mVec[(mOffs+i)%mCapa]=mVec[(mOffs+i+1)%mCapa];
@@ -83,42 +83,42 @@ public:
 			for (i=mSize; i > j; --i) mVec[(mOffs+i)%mCapa]=mVec[(mOffs+i-1)%mCapa];
 		}
 		printf("copy into mvec\n");
-        mVec[(mOffs+j)%mCapa]=v; ++mSize;
-    }
-    unsigned indexOf(const T& v,unsigned start=0) const {TRACE;
+		mVec[(mOffs+j)%mCapa]=v; ++mSize;
+	}
+	unsigned indexOf(const T& v,unsigned start=0) const {TRACE;
 		for (unsigned i=start; i < mSize; ++i ) {
 			if (util_equals(mVec[(mOffs+i)%mCapa],v)) return i;
 		}
 		return END_OF_LIST;
 	}
-    unsigned lastIndexOf(const T& v,unsigned start=0) const {TRACE;
+	unsigned lastIndexOf(const T& v,unsigned start=0) const {TRACE;
 		return END_OF_LIST;
 	}
-    void removeAll(const Collection<T>& c) {TRACE;
-        unsigned d=0;
-        for (unsigned i=0; i<mSize; ++i) {
+	void removeAll(const Collection<T>& c) {TRACE;
+		unsigned d=0;
+		for (unsigned i=0; i<mSize; ++i) {
 			//copy elements not existing on c
-            if (!c.contains(mVec[(mOffs+i)%mCapa])) {
-                if (d!=i) mVec[(mOffs+d)%mCapa]=mVec[(mOffs+i)%mCapa];
-                ++d;
-            }
-        }
-        mSize=d;
-    }
-    T removeAt(unsigned i) {TRACE;
+			if (!c.contains(mVec[(mOffs+i)%mCapa])) {
+				if (d!=i) mVec[(mOffs+d)%mCapa]=mVec[(mOffs+i)%mCapa];
+				++d;
+			}
+		}
+		mSize=d;
+	}
+	T removeAt(unsigned i) {TRACE;
 		if (i >= mSize) throw IndexOutOfBoundsException(i);
-        T v=mVec[(mOffs+i)%mCapa]; --mSize;
+		T v=mVec[(mOffs+i)%mCapa]; --mSize;
 		if (i < mSize - i) {
-        	for (; i > 0; --i) {
+			for (; i > 0; --i) {
 				mVec[(mOffs+i)%mCapa]=mVec[(mOffs+i-1)%mCapa];
 			}
 			++mOffs;
 		}
 		else {
-        	for (; i < mSize; ++i) mVec[(mOffs+i)%mCapa]=mVec[(mOffs+i+1)%mCapa];
+			for (; i < mSize; ++i) mVec[(mOffs+i)%mCapa]=mVec[(mOffs+i+1)%mCapa];
 		}
-        return v;
-    }
+		return v;
+	}
 
 	void comboSort() {
 		int gap = mSize;
@@ -130,46 +130,46 @@ public:
 
 			swapped = false;
 			for (int i = 0; i + gap < mSize; ++i) {
-                T x=mVec[i+gap];
+				T x=mVec[i+gap];
 				if (x < mVec[i]) {
 					mVec[i+gap]=mVec[i];
 					mVec[i]=x;
-		            swapped = true;
-		           }
-		      }
+					swapped = true;
+				   }
+			  }
 		}
 	}
-    void isort() { //simple insert sort
-        for (unsigned i=0; i<mSize; ++i) {
-            T e=mVec[i];
-            unsigned iv=i;
-            for (unsigned j=i+1; j<mSize; ++j) {
-                T x=mVec[j];
-                if (x < e) { e=x; iv=j; }
-            }
-            if (iv!=i) { e=mVec[i]; mVec[i]=mVec[iv]; mVec[iv]=e; }
-        }
-    }
-    void qsort(int l, int h) { //quick sort
-        T e = mVec[l+(h-l)/2]; //pivot element
-        int i=l,j=h;
-        do {
-            while (mVec[i] < e) ++i;
-            while (e < mVec[j]) --j;
-            if (i <= j) {
-                if (i!=j) {T x=mVec[i]; mVec[i]=mVec[j]; mVec[j]=x;}
-                ++i; --j;
-            }
-        } while (i<=j);
-        if (l < j) qsort(l, j);
-        if (i < h) qsort(i, h);
-    }
+	void isort() { //simple insert sort
+		for (unsigned i=0; i<mSize; ++i) {
+			T e=mVec[i];
+			unsigned iv=i;
+			for (unsigned j=i+1; j<mSize; ++j) {
+				T x=mVec[j];
+				if (x < e) { e=x; iv=j; }
+			}
+			if (iv!=i) { e=mVec[i]; mVec[i]=mVec[iv]; mVec[iv]=e; }
+		}
+	}
+	void qsort(int l, int h) { //quick sort
+		T e = mVec[l+(h-l)/2]; //pivot element
+		int i=l,j=h;
+		do {
+			while (mVec[i] < e) ++i;
+			while (e < mVec[j]) --j;
+			if (i <= j) {
+				if (i!=j) {T x=mVec[i]; mVec[i]=mVec[j]; mVec[j]=x;}
+				++i; --j;
+			}
+		} while (i<=j);
+		if (l < j) qsort(l, j);
+		if (i < h) qsort(i, h);
+	}
 
 private:
 	class ArrayListIterator : public Iterator<T> {
 	private:
 		ArrayList<T>& mList;
-    	unsigned mNext;
+		unsigned mNext;
 
 	public:
 		ArrayListIterator(ArrayList& list) : mList(list), mNext(0) {}

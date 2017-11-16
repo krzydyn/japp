@@ -9,10 +9,10 @@
 class ThreadPool {
 	public:
 	ThreadPool(const ThreadPool& other) = delete;
-    ThreadPool(ThreadPool&& other) = delete;
-    ThreadPool& operator=(const ThreadPool& other) = delete;
-    ThreadPool& operator=(ThreadPool&& other) = delete;
-    ~ThreadPool() = default;
+	ThreadPool(ThreadPool&& other) = delete;
+	ThreadPool& operator=(const ThreadPool& other) = delete;
+	ThreadPool& operator=(ThreadPool&& other) = delete;
+	~ThreadPool() = default;
 
 	ThreadPool(int threads=0){
 		if (threads > 0) maxThreads = threads;

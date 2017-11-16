@@ -13,25 +13,25 @@ namespace lang {
 class Interruptible
 {
 public:
-    Interruptible(): intr(false) {}
+	Interruptible(): intr(false) {}
 
-    void interrupt() {
-        std::unique_lock<std::mutex> lock(mtx);
-        intr = true;
-        cond.notify_all();
-    }
+	void interrupt() {
+		std::unique_lock<std::mutex> lock(mtx);
+		intr = true;
+		cond.notify_all();
+	}
 
-    void wait(long millis) {
-        std::unique_lock<std::mutex> lock(mtx);
-        if (intr || cond.wait_for(lock, std::chrono::milliseconds(millis)) == std::cv_status::no_timeout) {
-            intr = false;
-            //throw InterruptedException;
-        }
-    }
+	void wait(long millis) {
+		std::unique_lock<std::mutex> lock(mtx);
+		if (intr || cond.wait_for(lock, std::chrono::milliseconds(millis)) == std::cv_status::no_timeout) {
+			intr = false;
+			//throw InterruptedException;
+		}
+	}
 private:
-    bool intr;
-    std::mutex mtx;
-    std::condition_variable cond;
+	bool intr;
+	std::mutex mtx;
+	std::condition_variable cond;
 };
 
 interface Runnable : extends Interface {
@@ -41,10 +41,8 @@ public:
 
 class Thread : extends Object, implements Runnable {
 private:
-	static long threadSeqNumber;
-
 	String  name;
-	int     priority;
+	int priority;
 	boolean daemon = false;
 	Runnable* target;
 	long stackSize;

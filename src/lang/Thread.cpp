@@ -7,7 +7,9 @@
 namespace lang {
 
 namespace {
+Object threadSeqSync;
 HashMap<std::thread::id,Thread*> thrmap;
+long threadSeqNumber = 0;
 
 class MainThread : extends Thread {
 private:
@@ -39,11 +41,11 @@ void setNativeName(std::thread& thread, const String& name) {
 }
 }
 
-long Thread::threadSeqNumber = 0;
-
 void Thread::setId() {
-	tid = threadSeqNumber;
-	++threadSeqNumber;
+	synchronized(threadSeqSync) {
+		tid = threadSeqNumber;
+		++threadSeqNumber;
+	}
 }
 Thread& Thread::operator=(Thread&& o) {
 	if (threadStatus != NEW) {
@@ -87,9 +89,10 @@ void Thread::setName(const String& name) {
 
 Thread& Thread::currentThread() {
 	std::thread::id thrid = std::this_thread::get_id();
-	Thread *t = thrmap.get(thrid);
+	Thread *t = null;
+	synchronized(thrmap) { t = thrmap.get(thrid); }
 	if (t == null) {
-		System.err.println("thread not found: "+String::valueOf(thrid));
+		System.err.println("FATAL: thread not found: " + String::valueOf(thrid));
 		return main_thread;
 	}
 	return *t;
@@ -105,10 +108,10 @@ void Thread::start() {
 
 	this->thread = new std::thread([=] {
 		std::thread::id thrid = std::this_thread::get_id();
-		thrmap.put(thrid, this);
+		synchronized(thrmap) { thrmap.put(thrid, this); }
 		try {
 			setNativeName(*thread, name);
-			while (threadStatus == NEW) yield();
+			do { yield(); } while (threadStatus == NEW);
 			if (threadStatus == RUNNABLE) run();
 		} catch(const Throwable& e) {
 			e.printStackTrace(System.err);
@@ -119,7 +122,7 @@ void Thread::start() {
 		}
 		System.out.println(name + " terminated");
 		threadStatus = TERMINATED;
-		thrmap.remove(thrid);
+		synchronized(thrmap) { thrmap.remove(thrid); }
 	});
 	threadStatus = RUNNABLE;
 }

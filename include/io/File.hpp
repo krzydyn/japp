@@ -35,16 +35,16 @@ public:
 	virtual String canonicalize(const String& path) const = 0;
 
 	enum {
-		BA_EXISTS    = 0x01,
-		BA_REGULAR   = 0x02,
+		BA_EXISTS = 0x01,
+		BA_REGULAR = 0x02,
 		BA_DIRECTORY = 0x04,
-		BA_HIDDEN    = 0x08
+		BA_HIDDEN = 0x08
 	};
 	virtual int getBooleanAttributes(const File& f) const = 0;
 
 	enum {
-		ACCESS_READ    = 0x04,
-		ACCESS_WRITE   = 0x02,
+		ACCESS_READ = 0x04,
+		ACCESS_WRITE = 0x02,
 		ACCESS_EXECUTE = 0x01
 	};
 	virtual boolean checkAccess(const File& f, int access) const = 0;
@@ -223,11 +223,11 @@ public:
 	jlong lastModified() {
 		if (isInvalid()) return 0L;
 		return fs.getLastModifiedTime(*this);
-    }
+	}
 	jlong length() {
 		if (isInvalid()) return 0L;
 		return fs.getLength(*this);
-    }
+	}
 
 	/* -- File operations -- */
 	boolean createNewFile() {
@@ -292,13 +292,13 @@ public:
 	boolean mkdirs() {
 		if (exists()) return false;
 		if (mkdir()) return true;
-        try {
+		try {
 			File canonFile = getCanonicalFile();
 			File parent = canonFile.getParentFile();
 			return (parent.mkdirs() || parent.exists()) && canonFile.mkdir();
-        } catch (const IOException& e) {
-            return false;
-        }
+		} catch (const IOException& e) {
+			return false;
+		}
 	}
 	boolean renameTo(const File& dest) {
 		//if (dest == null) throw NullPointerException();

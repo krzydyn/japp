@@ -9,7 +9,7 @@ template<class T>
 class LinkedListNode {
 	LinkedListNode<T> *mNext, *mPrev;
 public:
-	T item; 
+	T item;
 
 	LinkedListNode() {mPrev=mNext=this;}
 	LinkedListNode(T e) {item=e;mPrev=mNext=this;}
