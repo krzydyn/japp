@@ -8,7 +8,7 @@
 
 namespace io {
 
-class PrintStream : public OutputStream {
+class PrintStream : extends OutputStream {
 protected:
 	 OutputStream& out;
 public:

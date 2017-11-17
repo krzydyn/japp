@@ -15,7 +15,7 @@ class Shutdown final {
 	static void halt(int status);
 };
 
-class Runtime : public Object {
+class Runtime : extends Object {
 private:
 	static File null_file;
 	static Runtime currentRuntime;

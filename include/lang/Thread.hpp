@@ -10,8 +10,15 @@
 namespace std { class thread; }
 namespace lang {
 
-class Interruptible
-{
+class InterruptedException : extends Exception {
+	using Exception::Exception;
+};
+
+class Interruptible {
+private:
+	bool intr;
+	std::mutex mtx;
+	std::condition_variable cond;
 public:
 	Interruptible(): intr(false) {}
 
@@ -25,13 +32,9 @@ public:
 		std::unique_lock<std::mutex> lock(mtx);
 		if (intr || cond.wait_for(lock, std::chrono::milliseconds(millis)) == std::cv_status::no_timeout) {
 			intr = false;
-			//throw InterruptedException;
+			throw InterruptedException();
 		}
 	}
-private:
-	bool intr;
-	std::mutex mtx;
-	std::condition_variable cond;
 };
 
 interface Runnable : extends Interface {
@@ -41,17 +44,21 @@ public:
 
 class Thread : extends Object, implements Runnable {
 private:
+	Thread *parent = null;
 	String  name;
 	int priority;
 	boolean daemon = false;
-	Runnable* target;
+	Runnable* target = null;
 	long stackSize;
 	long tid;
 	volatile int threadStatus = NEW;
 	Interruptible interruptor;
-
 	std::thread *thread = null;
+	boolean pendingNameChange = false;
+	void selfupdate();
+
 protected:
+	Thread(const String& name, int status) : name(name), threadStatus(status) {}
 	void setId();
 
 public:
@@ -61,9 +68,9 @@ public:
 	Thread& operator=(Thread&& o);
 
 	//TODO suport lamba as target in constructor
-	Thread() : target(null) {}
+	Thread() {}
 	Thread(Runnable& target) : target(&target) {}
-	Thread(const String& name) : name(name), target(null){}
+	Thread(const String& name) : name(name) {}
 	Thread(Runnable& target, const String& name) : name(name), target(&target) {}
 	~Thread();
 
@@ -95,6 +102,7 @@ public:
 	void checkAccess() const {}
 	String toString() const {TRACE;return getClass().getName()+":"+getName();}
 	Array<StackTraceElement> getStackTrace() {TRACE;
+		//TODO get trace of other stack somehow (using signals?)
 		return std::move(Throwable().getStackTrace());
 	}
 	long getId() const {return tid;}
@@ -123,7 +131,7 @@ public:
 	}
 	static boolean interrupted() {return false;}
 	static void dumpStack() {TRACE;
-		Throwable("Stack trace").printStackTrace();
+		Throwable("Stack trace").fillInStackTrace().printStackTrace();
 	}
 };
 

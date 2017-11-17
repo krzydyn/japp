@@ -2,7 +2,7 @@
 #include <lang/System.hpp>
 #include <lang/Exception.hpp>
 
-static void test_String() {
+void test_String() {
 	String s1;
 	String s2("abc");
 	String s3(s2);

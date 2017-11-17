@@ -5,7 +5,7 @@
 
 namespace util {
 
-class Properties : public Object {
+class Properties : extends Object {
 	HashMap<String,String> props;
 public:
 	const String& setProperty(const String& key, const String& value) {

@@ -1,6 +1,6 @@
 namespace awt {
 
-class Component : public Object {
+class Component : extends Object {
 	Container *parent;
 	int x,y,width,height;
 	Color       foreground;
@@ -16,10 +16,10 @@ class Component : public Object {
 	Container *getContainer() { return getParent(); }
 };
 
-class Container : public Component {
+class Container : extends Component {
 };
 
-class Window : public Container {
+class Window : extends Container {
 };
 
 } //namespace awt

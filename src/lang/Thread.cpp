@@ -11,19 +11,6 @@ Object threadSeqSync;
 HashMap<std::thread::id,Thread*> thrmap;
 long threadSeqNumber = 0;
 
-class MainThread : extends Thread {
-private:
-	std::thread::id thrid;
-public:
-	MainThread() : Thread("main") {
-		thrid = std::this_thread::get_id();
-		thrmap.put(thrid, this);
-	}
-	~MainThread() {
-		thrmap.remove(thrid);
-	}
-} main_thread;
-
 void setNativePriority(std::thread& thread, int priority) {
 	int policy;
 	sched_param sch_params;
@@ -32,21 +19,34 @@ void setNativePriority(std::thread& thread, int priority) {
 	sch_params.sched_priority = priority;
 	pthread_setschedparam(thread.native_handle(), policy, &sch_params);
 }
-void setNativeName(std::thread& thread, const String& name) {
-#ifdef __APPLE__
-	pthread_setname_np(name.intern().c_str());
-#else
+void setNativeName(std::thread& thread, const String& name, boolean& pending) {
+	#ifdef __APPLE__
+	if (thread.get_id() == std::this_thread::get_id()) {
+		pthread_setname_np(name.intern().c_str());
+		pending = false;
+	}
+	else pending = true;
+	#else
+	pending = false;
 	pthread_setname_np(thread.native_handle(), name.intern().c_str());
-#endif
-}
+	#endif
 }
 
-void Thread::setId() {
-	synchronized(threadSeqSync) {
-		tid = threadSeqNumber;
-		++threadSeqNumber;
+class MainThread : extends Thread {
+private:
+	std::thread::id thrid;
+public:
+	MainThread() : Thread("main", RUNNABLE) {
+		thrid = std::this_thread::get_id();
+		thrmap.put(thrid, this);
 	}
+	~MainThread() {
+		thrmap.remove(thrid);
+	}
+} main_thread;
+
 }
+
 Thread& Thread::operator=(Thread&& o) {
 	if (threadStatus != NEW) {
 		throw IllegalThreadStateException();
@@ -62,31 +62,71 @@ Thread& Thread::operator=(Thread&& o) {
 }
 Thread::~Thread() {
 	if (thread == null) return ;
-	System.out.println(name + " destructor");
+	System.out.println(getName() + " destructor");
 	if (thread != null) {
 		thread->join();
 		delete thread;
 	}
 }
-
-void Thread::yield() noexcept { std::this_thread::yield(); }
-void Thread::join(long millis) {TRACE;
-	if (isAlive()) thread->join();
+void Thread::setId() {
+	synchronized(threadSeqSync) {
+		tid = threadSeqNumber;
+		++threadSeqNumber;
+	}
 }
-void Thread::sleep(long millis) {
-	std::this_thread::sleep_for(std::chrono::milliseconds(millis));
-}
-
 void Thread::setPriority(int newPriority) {
 	setNativePriority(*thread, newPriority);
 }
 void Thread::setName(const String& name) {
+	if (this->name.equals(name)) return ;
 	this->name=name;
 	if (threadStatus != NEW) {
-		setNativeName(*thread, name);
+		setNativeName(*thread, name, pendingNameChange);
 	}
 }
+void Thread::start() {
+	if (threadStatus != NEW) {
+		throw IllegalThreadStateException();
+	}
 
+	setId();
+	parent = &Thread::currentThread();
+	if (name.length() == 0) {
+		name += parent->getName() + "::";
+		name += "Thread-" + String::valueOf(tid);
+	}
+	else {
+		name = parent->getName() + "::" + name;
+	}
+	pendingNameChange = true;
+	this->thread = new std::thread([=] {
+		std::thread::id thrid = std::this_thread::get_id();
+		synchronized(thrmap) { thrmap.put(thrid, this); }
+		try {
+			do { Thread::yield(); } while (threadStatus == NEW);
+			if (threadStatus == RUNNABLE) run();
+		} catch(const Throwable& e) {
+			e.printStackTrace(System.err);
+		} catch (const std::exception& e) {
+			Throwable(e.what()).fillInStackTrace().printStackTrace();
+		} catch (...) {
+			Throwable().fillInStackTrace().printStackTrace();
+		}
+		System.out.println(getName() + " terminated");
+		threadStatus = TERMINATED;
+		synchronized(thrmap) { thrmap.remove(thrid); }
+	});
+	threadStatus = RUNNABLE;
+}
+void Thread::join(long millis) {TRACE;
+	if (isAlive()) thread->join();
+}
+void Thread::selfupdate() {
+	if (!thread) return ;
+	if (pendingNameChange) setNativeName(*thread, name, pendingNameChange);
+}
+
+// static functions
 Thread& Thread::currentThread() {
 	std::thread::id thrid = std::this_thread::get_id();
 	Thread *t = null;
@@ -98,33 +138,13 @@ Thread& Thread::currentThread() {
 	return *t;
 }
 
-void Thread::start() {
-	if (threadStatus != NEW) {
-		throw IllegalThreadStateException();
-	}
-
-	setId();
-	if (name.length() == 0) name = "Thread-" + String::valueOf(tid);
-
-	this->thread = new std::thread([=] {
-		std::thread::id thrid = std::this_thread::get_id();
-		synchronized(thrmap) { thrmap.put(thrid, this); }
-		try {
-			setNativeName(*thread, name);
-			do { yield(); } while (threadStatus == NEW);
-			if (threadStatus == RUNNABLE) run();
-		} catch(const Throwable& e) {
-			e.printStackTrace(System.err);
-		} catch (const std::exception& e) {
-			Throwable(e.what()).fillInStackTrace().printStackTrace();
-		} catch (...) {
-			Throwable().fillInStackTrace().printStackTrace();
-		}
-		System.out.println(name + " terminated");
-		threadStatus = TERMINATED;
-		synchronized(thrmap) { thrmap.remove(thrid); }
-	});
-	threadStatus = RUNNABLE;
+void Thread::yield() noexcept {
+	Thread::currentThread().selfupdate();
+	std::this_thread::yield();
+}
+void Thread::sleep(long millis) {
+	Thread::currentThread().selfupdate();
+	std::this_thread::sleep_for(std::chrono::milliseconds(millis));
 }
 
 } //namespace lang

@@ -58,7 +58,7 @@ public:
 	}
 };
 
-class Throwable : public Object {
+class Throwable : extends Object {
 private:
 	String threadInfo;
 	String detailMessage;
@@ -92,67 +92,63 @@ public:
 	void setStackTrace(Array<StackTraceElement>& st) { stackTrace=std::move(st); }
 };
 
-class Error : public Throwable {
+class Error : extends Throwable {
 public:
-	Error() : Throwable() {}
-	Error(const String& msg) : Throwable(msg) {}
+	using Throwable::Throwable;
 };
 
-class Exception : public Throwable {
+class Exception : extends Throwable {
 public:
-	Exception() : Throwable() {}
-	Exception(const String& msg) : Throwable(msg) {}
-	Exception(const String& msg, Throwable *c) : Throwable(msg, c) {}
+	using Throwable::Throwable;
 };
 
-class OutOfMemoryError : public Error {
+class OutOfMemoryError : extends Error {
 public:
-	OutOfMemoryError() : Error() {}
-	OutOfMemoryError(const String& msg) : Error(msg) {}
+	using Error::Error;
 };
 
-class ArithmeticException : public Exception {
+class ArithmeticException : extends Exception {
 public:
 	ArithmeticException() : Exception() {}
 	ArithmeticException(const String& msg) : Exception(msg) {}
 };
-class NullPointerException : public Exception {
+class NullPointerException : extends Exception {
 public:
 	NullPointerException() : Exception() {}
 	NullPointerException(const String& msg) : Exception(msg) {}
 };
-class CloneNotSupportedException : public Exception {
+class CloneNotSupportedException : extends Exception {
 public:
 	CloneNotSupportedException() : Exception() {}
 	CloneNotSupportedException(const String& msg) : Exception(msg) {}
 };
-class UnsupportedOperationException : public Exception {
+class UnsupportedOperationException : extends Exception {
 public:
 	UnsupportedOperationException() : Exception() {}
 	UnsupportedOperationException(const String& msg) : Exception(msg) {}
 };
 
-class IndexOutOfBoundsException : public Exception {
+class IndexOutOfBoundsException : extends Exception {
 public:
 	IndexOutOfBoundsException() : Exception() {}
 	IndexOutOfBoundsException(const String& msg) : Exception(msg) {}
 	IndexOutOfBoundsException(int i) : Exception("Index "+String::valueOf(i)) {}
 };
 
-class IllegalThreadStateException : public Exception {
+class IllegalThreadStateException : extends Exception {
 public:
 	IllegalThreadStateException() : Exception() {}
 	IllegalThreadStateException(const String& msg) : Exception(msg) {}
 };
 
-class IllegalArgumentException : public Exception {
+class IllegalArgumentException : extends Exception {
 public:
 	IllegalArgumentException() : Exception() {}
 	IllegalArgumentException(const String& msg) : Exception(msg) {}
 	IllegalArgumentException(const String& msg, Throwable *c) : Exception(msg, c) {}
 };
 
-class IllegalStateException : public Exception {
+class IllegalStateException : extends Exception {
 public:
 	IllegalStateException() : Exception() {}
 	IllegalStateException(const String& msg) : Exception(msg) {}

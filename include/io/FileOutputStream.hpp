@@ -7,7 +7,7 @@
 
 namespace io {
 
-class FileOutputStream : public OutputStream {
+class FileOutputStream : extends OutputStream {
 private:
 	//use pointer to impl. assign oparation while std::istream assign is protected
 	std::ostream* out;

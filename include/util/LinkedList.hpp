@@ -31,7 +31,7 @@ public:
 };
 
 template<class T>
-class LinkedList : public AbstractList<T> {
+class LinkedList : extends AbstractList<T> {
 	LinkedListNode<T> head;
 	unsigned mSize;
 public:

@@ -15,7 +15,7 @@ template<class T>
 inline boolean util_equals(const T& a, const T& b) { return (void*)&a == (void*)&b; }
 
 template<class T>
-class ArrayList : public AbstractList<T> {
+class ArrayList : extends AbstractList<T> {
 class ArrayListIterator;
 private:
 	T *mVec;
@@ -166,7 +166,7 @@ public:
 	}
 
 private:
-	class ArrayListIterator : public Iterator<T> {
+	class ArrayListIterator : extends Iterator<T> {
 	private:
 		ArrayList<T>& mList;
 		unsigned mNext;

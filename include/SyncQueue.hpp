@@ -6,7 +6,7 @@
 #include <mutex>
 #include <condition_variable>
 
-class SyncQueueException : public std::runtime_error {
+class SyncQueueException : extends std::runtime_error {
 public:
 	SyncQueueException() : std::runtime_error("The SyncQueue has been stopped.") {}
 };

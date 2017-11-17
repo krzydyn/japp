@@ -14,7 +14,7 @@ public:
 };
 
 class File;
-class FileSystem : public Object {
+class FileSystem : extends Object {
 private:
 	static boolean useCanonCaches;
 	static boolean useCanonPrefixCache;
@@ -84,7 +84,7 @@ public:
 	virtual boolean accept(const File& path) const = 0;
 };
 
-class File : public Object {
+class File : extends Object {
 	friend class FileSystem;
 public:
 	//public static final char separatorChar = fs.getSeparator();

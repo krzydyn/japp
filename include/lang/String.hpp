@@ -23,7 +23,7 @@ public:
 	virtual String toString() const = 0;
 };
 
-class String final : public Object, implements CharSequence {
+class String final : extends Object, implements CharSequence {
 private:
 	class AutoType;
 	std::string value;
@@ -69,14 +69,14 @@ public:
 	String operator+(const T& v) const {TRACE;
 		return value+std::to_string(v);
 	}
-/*
-	boolean operator==(const Object& anObject) const {
-		return equals(anObject);
+	String& operator+=(const char *rhs){
+		value += rhs;
+		return *this;
 	}
-	boolean operator==(const std::nullptr_t&) const {
-		return false;
+	String& operator+=(const String& rhs){
+		value += rhs.value;
+		return *this;
 	}
-*/
 	boolean equals(const char *str) const {TRACE;
 		return str==null ? value == "" : value == str;
 	}
@@ -216,7 +216,7 @@ inline String toString(const String& s) {TRACE;return s;}
 template<class T>
 inline String toString(T v) {TRACE;return String(v);}
 
-class StringBuilder : public Object {
+class StringBuilder : extends Object {
 private:
 	std::stringstream value;
 public:

@@ -15,7 +15,7 @@
 
 namespace io {
 namespace {
-class UnixFileSystem : public FileSystem {
+class UnixFileSystem : extends FileSystem {
 private:
 	String normalize(const String& path, int len, int off) const {
 		if (len == 0) return path;

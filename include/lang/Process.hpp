@@ -24,7 +24,7 @@ public:
 	static const int MIN_NAME_LENGTH=1;
 };
 
-class Process : public Object {
+class Process : extends Object {
 public:
 	virtual OutputStream& getOutputStream() = 0;
 	virtual InputStream& getInputStream() = 0;
@@ -49,7 +49,7 @@ public:
 	}
 };
 
-class ProcessBuilder : public Object {
+class ProcessBuilder : extends Object {
 private:
 	List<String>& cmd;
 	File dir;

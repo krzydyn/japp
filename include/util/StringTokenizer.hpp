@@ -5,7 +5,7 @@
 
 namespace util {
 
-class StringTokenizer : public Object {
+class StringTokenizer : extends Object {
 private:
 	String str;
 public:

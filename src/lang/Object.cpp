@@ -44,10 +44,11 @@ boolean initialize();
 static const boolean SET_TERMINATE = initialize();
 
 void terminate_hook();
+void signal_handle(int signum);
 boolean initialize() {
 	(void)SET_TERMINATE;
 	std::set_terminate(terminate_hook);
-	signal(SIGFPE, [](int signum) {throw ArithmeticException("SIGFPE");});
+	signal(SIGFPE, signal_handle);
 	return true;
 }
 
@@ -83,7 +84,9 @@ std::string demangle(const std::string& name) {
 #endif
 }
 String getSimpleBinaryName() { return ""; }
-
+//TODO https://github.com/CyberGrandChallenge/binutils/blob/master/binutils/addr2line.c
+//     osx(atos): sprintf(addr2line_cmd,"atos -o %.256s %p", program_name, addr);
+//     linux:     sprintf(addr2line_cmd,"addr2line -f -p -e %.256s %p", program_name, addr);
 Array<StackTraceElement>& captureStackTrace(Array<StackTraceElement>& stackTrace, const int skip=3) {
 	const int depth = 50;
 	void *trace[depth];
@@ -91,8 +94,6 @@ Array<StackTraceElement>& captureStackTrace(Array<StackTraceElement>& stackTrace
 	if (got <= skip) {
 		return stackTrace;
 	}
-	//better backtrace_symbols ??
-	//http://cairo.sourcearchive.com/documentation/1.9.4/backtrace-symbols_8c-source.html
 
 	got -= skip;
 	stackTrace = Array<StackTraceElement>(got);
@@ -104,9 +105,9 @@ Array<StackTraceElement>& captureStackTrace(Array<StackTraceElement>& stackTrace
 			//dli_fbase - Base adress of shared object
 			//dli_sname - Name of nearest symbol
 			//dli_saddr - Exact address of symbol
-			if (info.dli_sname == null) info.dli_sname="";
 			std::string path = info.dli_fname;
 			if (path.rfind('/') != std::string::npos) path = path.substr(path.rfind('/')+1);
+			if (info.dli_sname == null) info.dli_sname="";
 			std::string func = demangle(info.dli_sname);
 			std::string offs = "+" + std::to_string((long)trace[i+skip] - (long)info.dli_saddr);
 			stackTrace[i] = StackTraceElement(func+offs+" "+path+addr, "", 0);
@@ -133,6 +134,12 @@ void captureStack2(Array<StackTraceElement>& stackTrace) {
 	}
 }
 #endif
+void signal_handle(int signum) {
+	std::cerr << "Received signal " << signum << std::endl;
+	if (signum == SIGFPE) throw ArithmeticException("SIGFPE");
+	Throwable().fillInStackTrace().printStackTrace();
+	terminate_hook();
+}
 [[noreturn]]
 void terminate_hook() {
 	std::set_terminate(null); // avoid loop
@@ -160,7 +167,7 @@ void terminate_hook() {
 	}
 	std::_Exit(EXIT_FAILURE);
 }
-class NullRef : public Object {
+class NullRef : extends Object {
 } nullObject;
 
 }
@@ -200,6 +207,7 @@ void Throwable::printStackTrace() const {TRACE;
 	printStackTrace(System.err);
 }
 void Throwable::printStackTrace(const io::PrintStream& s) const {TRACE;
+	synchronized(s) {
 	s.println("Exception in thread \"" + threadInfo + "\" " + this->toString());
 	for (int i=0; i < stackTrace.length; ++i) {
 		s.print("\tat ");
@@ -208,6 +216,7 @@ void Throwable::printStackTrace(const io::PrintStream& s) const {TRACE;
 	if (cause != null) {
 		s.print("Caused by ");
 		cause->printStackTrace(s);
+	}
 	}
 }
 
