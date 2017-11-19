@@ -135,7 +135,7 @@ void captureStack2(Array<StackTraceElement>& stackTrace) {
 }
 #endif
 void signal_handle(int signum) {
-	std::cerr << "Received signal " << signum << std::endl;
+	System.err.println("Received signal " + String::valueOf(signum));
 	if (signum == SIGFPE) throw ArithmeticException("SIGFPE");
 	Throwable().fillInStackTrace().printStackTrace();
 	terminate_hook();
@@ -145,7 +145,7 @@ void terminate_hook() {
 	std::set_terminate(null); // avoid loop
 	std::exception_ptr ep = std::current_exception();
 	if (ep != null) {
-		std::cerr << "Uncatched exception received" << std::endl;
+		System.err.println("Uncatched exception received");
 		try {
 			std::rethrow_exception(ep);
 		} catch (const Throwable& e) {
@@ -163,7 +163,7 @@ void terminate_hook() {
 		}
 	}
 	else {
-		std::cerr << "Terminated, no exception" << std::endl;
+		System.err.println("Terminated, no exception");
 	}
 	std::_Exit(EXIT_FAILURE);
 }
@@ -189,6 +189,14 @@ CallTrace::~CallTrace() {
 Throwable::Throwable(const String& msg, Throwable *c) : detailMessage(msg), cause(c) {
 	threadInfo = Thread::currentThread().getName();
 }
+Throwable& Throwable::initCause(const Throwable *cause) {
+	if (this->cause != this)
+		throw IllegalStateException("Can't overwrite cause with " + String::valueOf(cause), this);
+	if (cause == this)
+		throw IllegalArgumentException("Self-causation not permitted", this);
+	this->cause = cause;
+	return *this;
+}
 String Throwable::toString() const {
 	String s = getClass().getName();
 	String message = getLocalizedMessage();
@@ -213,7 +221,8 @@ void Throwable::printStackTrace(const io::PrintStream& s) const {TRACE;
 		s.print("\tat ");
 		s.println(stackTrace[i].toString());
 	}
-	if (cause != null) {
+	const Throwable *ourCause = getCause();
+	if (ourCause != null) {
 		s.print("Caused by ");
 		cause->printStackTrace(s);
 	}

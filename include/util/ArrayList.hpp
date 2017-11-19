@@ -5,7 +5,7 @@
 #include <lang/Exception.hpp>
 #include <lang/Class.hpp>
 #include <util/List.hpp>
-#include <iostream>
+#include <utility> //std::move
 
 namespace util {
 
@@ -22,7 +22,8 @@ private:
 	unsigned mOffs,mSize, mCapa;
 	void ensureCapa(unsigned ns){TRACE;
 		if (mCapa>=ns) return ;
-		if (ns<8) ns=8;
+		if (mCapa == 0) ;
+		else if (ns<8) ns=8;
 		else ns=hiBit(ns)<<1;
 		T *v = new T[ns];
 		if (!v) throw OutOfMemoryError();
@@ -32,7 +33,6 @@ private:
 		}
 		mOffs=0;
 		mVec=v; mCapa=ns;
-		//std::cerr << "capa = " << mCapa << std::endl;
 	}
 
 public:

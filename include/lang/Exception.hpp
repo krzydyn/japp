@@ -1,7 +1,7 @@
 #ifndef __LANG_EXCEPTION_HPP
 #define __LANG_EXCEPTION_HPP
 
-#include <lang/String.hpp>
+#include <util/List.hpp>
 #include <cstring>
 
 namespace io { class PrintStream; }
@@ -63,12 +63,13 @@ private:
 	String threadInfo;
 	String detailMessage;
 	Array<StackTraceElement> stackTrace;
-	Throwable *cause = null;
+	const Throwable *cause = this;
+	util::List<Throwable*> *suppressedExceptions = null;
 	void move(Throwable* o) {
 		threadInfo = std::move(o->threadInfo);
 		detailMessage = std::move(o->detailMessage);
 		stackTrace = std::move(o->stackTrace);
-		cause = o->cause; o->cause = null;
+		cause = o->cause; o->cause = o;
 	}
 
 public:
@@ -83,13 +84,20 @@ public:
 
 	virtual const String& getMessage() const {return detailMessage;}
 	virtual const String& getLocalizedMessage() const {return getMessage();}
-	Throwable& initCause(Throwable *c);
+	virtual const Throwable *getCause() const {
+		return (cause==this ? null : cause);
+	}
+	Throwable& initCause(const Throwable *c);
 	String toString() const;
 	void printStackTrace() const;
 	void printStackTrace(const io::PrintStream& s) const;
 	Throwable& fillInStackTrace();
 	const Array<StackTraceElement>& getStackTrace() const { return stackTrace; }
 	void setStackTrace(Array<StackTraceElement>& st) { stackTrace=std::move(st); }
+	void addSuppressed(const Throwable& exception) {}
+	Array<Throwable*> getSuppressed() {
+		return suppressedExceptions == null ? Array<Throwable*>() : suppressedExceptions->toArray();
+	}
 };
 
 class Error : extends Throwable {
@@ -137,8 +145,7 @@ public:
 
 class IllegalThreadStateException : extends Exception {
 public:
-	IllegalThreadStateException() : Exception() {}
-	IllegalThreadStateException(const String& msg) : Exception(msg) {}
+	using Exception::Exception;
 };
 
 class IllegalArgumentException : extends Exception {
@@ -154,15 +161,6 @@ public:
 	IllegalStateException(const String& msg) : Exception(msg) {}
 	IllegalStateException(const String& msg, Throwable *c) : Exception(msg, c) {}
 };
-
-inline Throwable& Throwable::initCause(Throwable *cause) {
-	if (this->cause != this)
-		throw IllegalStateException("Can't overwrite cause with a null", this);
-	if (cause == this)
-		throw IllegalArgumentException("Self-causation not permitted", this);
-	this->cause = cause;
-	return *this;
-}
 
 } //namespace lang
 

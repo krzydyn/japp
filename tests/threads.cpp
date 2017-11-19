@@ -37,7 +37,11 @@ static void test_thread() {
 		nt[i].start();
 	}
 
-	((Runnable&)rs1).run();
+	try{
+		((Runnable&)rs1).run();
+	}catch(const Throwable& e) {
+		e.printStackTrace();
+	}
 }
 
 int main(int argc, const char *argv[]) { TRACE;

@@ -2,12 +2,31 @@
 #define __UTIL_LIST_HPP
 
 #include <lang/String.hpp>
-#include <util/Iterator.hpp>
+#include <memory> //shared_ptr
 
 #define END_OF_LIST ((unsigned)-1)
 
 namespace util {
 
+namespace helper {
+void throwUnsupportedOperationException();
+}
+
+template<class T>
+interface Iterator : Interface {
+protected:
+	Iterator() {}
+public:
+	virtual bool hasNext() const = 0;
+	virtual const T& next() = 0;
+	virtual void remove() {helper::throwUnsupportedOperationException();}
+};
+
+template<class T>
+using IteratorPtr = std::shared_ptr<Iterator<T>>;
+
+template<class T, class... Args>
+std::shared_ptr<T> makeIterator(Args&&... args) { return std::make_shared<T>(args...); }
 template<class T>
 interface Iterable : Interface {
 public:

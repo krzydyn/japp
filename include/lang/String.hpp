@@ -9,7 +9,7 @@
 
 namespace lang {
 
-//TODO
+//TODO Locale
 class Locale {
 public:
 	static Locale getDefault();
@@ -212,10 +212,6 @@ public:
 	static String format(const char *fmt, va_list& args);
 };
 
-inline String toString(const String& s) {TRACE;return s;}
-template<class T>
-inline String toString(T v) {TRACE;return String(v);}
-
 class StringBuilder : extends Object {
 private:
 	std::stringstream value;
@@ -241,7 +237,7 @@ public:
 		return *this;
 	}
 	String toString() const {TRACE;
-		return String(value.str());
+		return value.str();
 	}
 };
 

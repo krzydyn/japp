@@ -8,19 +8,16 @@ const char *String::emptystr="";
 
 void String::copystr(String *d, const char *s) {
 	if (s == null || d == null) throw NullPointerException();
-	//std::cout << "copy_cstr '" << s << "'" << std::endl;
 	d->value = s;
 	d->hash = 0;
 }
 void String::copy(String *d, const String *s) {
 	if (s == null || d == null) throw NullPointerException();
-	//std::cout << "copy '" << s->value << "'" << std::endl;
 	d->value = s->value;
 	d->hash = s->hash;
 }
 void String::move(String *d, const String *s) {
 	if (s == null || d == null) throw NullPointerException();
-	//std::cout << "move '" << s->value << "'" << std::endl;
 	if (s->intern().empty()) d->value=emptystr;
 	else d->value = std::move(s->value);
 	d->hash = s->hash;
