@@ -72,7 +72,7 @@ public:
 	};
 	virtual jlong getSpace(const File& f, int t) const = 0;
 	virtual int compare(const File& f1, const File& f2) const = 0;
-	virtual int hashCode(const File& f) const = 0;
+	virtual jint hashCode(const File& f) const = 0;
 };
 
 interface FilenameFilter : Interface {

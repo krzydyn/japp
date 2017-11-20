@@ -3,18 +3,20 @@
 
 #include <mutex>
 
-#define boolean bool
-#define null nullptr
 #define interface class
 #define extends public
 #define implements virtual public
+#define null nullptr
 
+using boolean=bool;
+using byte=unsigned char;
 using jint=long;
 using jlong=long long;
 
 #define PP_CAT(a, b) PP_CAT_I(a, b)
 #define PP_CAT_I(a, b) a ## b
 #define UNIQUE_NAME(base) PP_CAT(base, __LINE__)
+//#define TRACE CallTrace UNIQUE_NAME(the_calltrace)(__FUNCTION__, __FILE__,__LINE__);UNIQUE_NAME(the_calltrace).r()
 
 namespace lang {
 
@@ -23,8 +25,6 @@ class Object;
 class String;
 
 extern Object& nullref;
-
-//#define TRACE CallTrace UNIQUE_NAME(the_calltrace)(__FUNCTION__, __FILE__,__LINE__);UNIQUE_NAME(the_calltrace).r()
 
 #ifndef TRACE
 #define TRACE
@@ -72,8 +72,8 @@ public:
 
 	Object() {}
 	virtual const Class getClass() const;
-	virtual long hashCode() const {return (long)this;}
-	virtual long hashCode() {return ((const Object*)this)->hashCode();}
+	virtual jint hashCode() const {return (jint)this;}
+	virtual jint hashCode() {return ((const Object*)this)->hashCode();}
 
 	virtual boolean equals(const Object& obj) const {return this == &obj;}
 	virtual String toString() const;
@@ -137,11 +137,6 @@ public:
 	~Array() { delete [] a; }
 	T& operator[](int i) { return a[i]; }
 	const T& operator[](int i) const { return a[i]; }
-};
-
-class Integer : extends Object {
-public:
-	static String toHexString(long v);
 };
 
 //usage if: (instanceOf<Integer>(objPtr)) {...}

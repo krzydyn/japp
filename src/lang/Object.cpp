@@ -1,5 +1,6 @@
 #include <lang/Object.hpp>
 #include <lang/Class.hpp>
+#include <lang/Number.hpp>
 #include <lang/System.hpp>
 #include <lang/Thread.hpp>
 
@@ -49,6 +50,7 @@ boolean initialize() {
 	(void)SET_TERMINATE;
 	std::set_terminate(terminate_hook);
 	signal(SIGFPE, signal_handle);
+	signal(SIGSEGV, signal_handle);
 	return true;
 }
 
@@ -91,7 +93,9 @@ Array<StackTraceElement>& captureStackTrace(Array<StackTraceElement>& stackTrace
 	const int depth = 50;
 	void *trace[depth];
 	int got = ::backtrace(trace, depth);
+	printf("::backtrace = %d\n",got);
 	if (got <= skip) {
+		//System.err.println("no backtrace");
 		return stackTrace;
 	}
 
@@ -99,7 +103,8 @@ Array<StackTraceElement>& captureStackTrace(Array<StackTraceElement>& stackTrace
 	stackTrace = Array<StackTraceElement>(got);
 	for (int i = 0; i < got; ++i) {
 		Dl_info info;
-		std::string addr = "[0x"+Integer::toHexString((long)trace[i+skip]).intern()+"]";
+		//std::cerr << "addr 0x" << std::hex << (long)trace[i+skip] << std::endl;
+		std::string addr = "[0x"+Long::toHexString((long)trace[i+skip]).intern()+"]";
 		if (dladdr(trace[i+skip], &info) != 0) {
 			//dli_fname - path of shared object (exe or so)
 			//dli_fbase - Base adress of shared object
@@ -137,7 +142,12 @@ void captureStack2(Array<StackTraceElement>& stackTrace) {
 void signal_handle(int signum) {
 	System.err.println("Received signal " + String::valueOf(signum));
 	if (signum == SIGFPE) throw ArithmeticException("SIGFPE");
-	Throwable().fillInStackTrace().printStackTrace();
+	Array<StackTraceElement> st;
+	captureStackTrace(st);
+	for (int i=0; i < st.length; ++i) {
+		System.err.println(st[i].toString());
+	}
+	//Throwable().fillInStackTrace().printStackTrace();
 	terminate_hook();
 }
 [[noreturn]]
@@ -214,7 +224,7 @@ Throwable& Throwable::fillInStackTrace() {
 void Throwable::printStackTrace() const {TRACE;
 	printStackTrace(System.err);
 }
-void Throwable::printStackTrace(const io::PrintStream& s) const {TRACE;
+void Throwable::printStackTrace(io::PrintStream& s) const {TRACE;
 	synchronized(s) {
 	s.println("Exception in thread \"" + threadInfo + "\" " + this->toString());
 	for (int i=0; i < stackTrace.length; ++i) {
@@ -226,6 +236,7 @@ void Throwable::printStackTrace(const io::PrintStream& s) const {TRACE;
 		s.print("Caused by ");
 		cause->printStackTrace(s);
 	}
+	s.flush();
 	}
 }
 
@@ -252,12 +263,6 @@ Object& Object::clone() const {TRACE;
 }
 String Object::toString() const {TRACE;
 	return getClass().getName() + "@" + Integer::toHexString(hashCode());
-}
-
-String Integer::toHexString(long v) {TRACE;
-	std::stringstream stream;
-	stream << std::hex << (unsigned long)v;
-	return stream.str();
 }
 
 }

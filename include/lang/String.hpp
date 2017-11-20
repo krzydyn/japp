@@ -37,11 +37,11 @@ private:
 	static String valueOf(const AutoType& any);
 
 public:
-	String(String&& o) {TRACE;move(this,&o);}
-	String(const String& o) {TRACE;copy(this,&o); }
-	String& operator=(String&& o) {TRACE;move(this,&o);return*this;}
-	String& operator=(const String& o) {TRACE; copy(this,&o);return*this;}
-	String(const std::string& v) {TRACE; value = v; }
+	String(String&& o) {move(this,&o);}
+	String(const String& o) {copy(this,&o); }
+	String& operator=(String&& o) {move(this,&o);return*this;}
+	String& operator=(const String& o) {copy(this,&o);return*this;}
+	String(const std::string& v) {value = v; }
 
 	String(const char *v) {TRACE; copystr(this, v); }
 	explicit String(const std::nullptr_t&) {TRACE; copystr(this, (const char *)0); }
@@ -56,17 +56,20 @@ public:
 	boolean isEmpty() const { return value.length() == 0; }
 	char charAt(int index) const;
 
-	String operator+(const char *s) const {TRACE;
+	String operator+(const char *s) const {
 		return value+s;
 	}
-	String operator+(const std::string& s) const {TRACE;
+	String operator+(const std::string& s) const {
 		return value+s;
 	}
-	String operator+(const String& s) const {TRACE;
+	String operator+(const String& s) const {
 		return value+s.value;
 	}
+	String operator+(const Object& s) const {TRACE;
+		return value+s.toString().intern();
+	}
 	template<class T>
-	String operator+(const T& v) const {TRACE;
+	String operator+(const T& v) const {
 		return value+std::to_string(v);
 	}
 	String& operator+=(const char *rhs){
@@ -77,7 +80,7 @@ public:
 		value += rhs.value;
 		return *this;
 	}
-	boolean equals(const char *str) const {TRACE;
+	boolean equals(const char *str) const {
 		return str==null ? value == "" : value == str;
 	}
 	boolean equals(const Object& anObject) const {TRACE;
@@ -86,7 +89,7 @@ public:
 		return value == ((const String&)anObject).value;
 	}
 
-	boolean startsWith(const String& prefix, int toffset) const {TRACE;
+	boolean startsWith(const String& prefix, int toffset) const {
 		int pc = prefix.value.length();
 		if ((toffset < 0) || (toffset > length() - pc)) {
 			return false;
@@ -96,15 +99,15 @@ public:
 		}
 		return true;
 	}
-	boolean startsWith(const String& prefix) const {TRACE;
+	boolean startsWith(const String& prefix) const {
 		return startsWith(prefix, 0);
 	}
-	boolean endsWith(const String& suffix) const {TRACE;
+	boolean endsWith(const String& suffix) const {
 		return startsWith(suffix, value.length() - suffix.value.length());
 	}
 
-	long hashCode() const {TRACE;
-		long h = hash;
+	jint hashCode() const {
+		jint h = hash;
 		if (h == 0 && value.length() > 0) {
 			for (int i = 0; i < length(); i++) {
 				h = 31 * h + value[i];
@@ -112,8 +115,8 @@ public:
 		}
 		return h;
 	}
-	long hashCode() {TRACE;
-		long h = hash;
+	jint hashCode() {
+		jint h = hash;
 		if (h == 0 && value.length() > 0) {
 			h = ((const Object *)this)->hashCode();
 			hash = h;
@@ -189,7 +192,7 @@ public:
 	static String valueOf(double n) {TRACE; return std::to_string(n); }
 
 	static String valueOf(const Object& obj) {TRACE; return obj.toString(); }
-	static String valueOf(const void *ptr) {TRACE; return Integer::toHexString((unsigned long)ptr);}
+	static String valueOf(const void *ptr);
 	static String valueOf(const char *s) {TRACE; return s;}
 	static String valueOf(const String& s) {TRACE; return s;}
 	template<class T>

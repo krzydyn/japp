@@ -90,7 +90,7 @@ public:
 	Throwable& initCause(const Throwable *c);
 	String toString() const;
 	void printStackTrace() const;
-	void printStackTrace(const io::PrintStream& s) const;
+	void printStackTrace(io::PrintStream& s) const;
 	Throwable& fillInStackTrace();
 	const Array<StackTraceElement>& getStackTrace() const { return stackTrace; }
 	void setStackTrace(Array<StackTraceElement>& st) { stackTrace=std::move(st); }

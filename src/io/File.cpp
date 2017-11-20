@@ -175,7 +175,7 @@ public:
 		return -1LL;
 	}
 	virtual int compare(const File& f1, const File& f2) const {return 0;}
-	virtual int hashCode(const File& f) const {return 0;}
+	virtual jint hashCode(const File& f) const {return 0;}
 } unixfs;
 }
 

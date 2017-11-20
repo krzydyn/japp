@@ -41,18 +41,18 @@ public:
 	virtual void clear() = 0;
 };
 
-inline long hash_code(const Object& v) {return v.hashCode();}
+inline jint hash_code(const Object& v) {return v.hashCode();}
 template<class T, class std::enable_if<!std::is_base_of<Object,T>::value,Object>::type* = nullptr>
-inline long hash_code(const T& v) {
+inline jint hash_code(const T& v) {
 	if (sizeof(v) == 1) return *(uint8_t*)(&v);
 	if (sizeof(v) == 2) return *(uint16_t*)(&v);
 	if (sizeof(v) == 4) return *(uint32_t*)(&v);
 
 	const long *p = (const long *)&v;
-	long h=0;
+	jint h=0;
 	for (unsigned i=0; i < sizeof(v)/sizeof(long); ++i)
 		h = 31 * h + p[i];
-	return h;
+	return (int)h;
 
 	//when using "const char *p ...", causes a crash, mayby std::hash has the same problem??
 
@@ -128,6 +128,7 @@ public:
 	const V& put(const K& k, const V& v) {
 		unsigned hc = hash_code(k)%mapsize;
 		ArrayList<MapEntry<K,V>>& l=map[hc];
+		std::cerr << "map.size=" << l.size() << std::endl;
 		for (unsigned i=0; i<l.size(); ++i) {
 			if (is_equal(l.get(i).getKey(), k)) {
 				l.get(i).setVal(v);

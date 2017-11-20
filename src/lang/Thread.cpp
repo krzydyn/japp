@@ -7,10 +7,6 @@
 namespace lang {
 
 namespace {
-Object threadSeqSync;
-HashMap<std::thread::id,Thread*> thrmap;
-long threadSeqNumber = 0;
-
 void setNativePriority(std::thread& thread, int priority) {
 	int policy;
 	sched_param sch_params;
@@ -33,17 +29,45 @@ void setNativeName(std::thread& thread, const String& name, boolean& pending) {
 }
 
 class MainThread : extends Thread {
-private:
-	std::thread::id thrid;
 public:
-	MainThread() : Thread("main", RUNNABLE) {
-		thrid = std::this_thread::get_id();
-		thrmap.put(thrid, this);
+	MainThread() : Thread("main", RUNNABLE) {}
+};
+
+class Threads : extends Object {
+	std::thread::id mainid;
+public:
+	long threadSeqNumber = 0;
+	HashMap<std::thread::id,Thread*> thrmap;
+	MainThread main;
+	Threads() : thrmap(), main() {
+		mainid = std::this_thread::get_id();
+		std::cerr << "adding main" << std::endl;
+		addThread(mainid, &main);
+		std::cerr << "adding main done" << std::endl;
 	}
-	~MainThread() {
-		thrmap.remove(thrid);
+	~Threads() {
+		removeThread(mainid);
 	}
-} main_thread;
+	long nextThreadNumber() {
+		long tid;
+		synchronized(*this) {
+			tid = threadSeqNumber;
+			++threadSeqNumber;
+		}
+		return tid;
+	}
+	void addThread(std::thread::id id, Thread* t) {
+		synchronized(thrmap) { thrmap.put(id, t); }
+	}
+	void removeThread(std::thread::id id) {
+		synchronized(thrmap) { thrmap.remove(id); }
+	}
+	Thread* getThread(std::thread::id id) {
+		Thread *t = null;
+		synchronized(thrmap) { t = thrmap.get(id); }
+		return t;
+	}
+} threads;
 
 }
 
@@ -68,12 +92,6 @@ Thread::~Thread() {
 		delete thread;
 	}
 }
-void Thread::setId() {
-	synchronized(threadSeqSync) {
-		tid = threadSeqNumber;
-		++threadSeqNumber;
-	}
-}
 void Thread::setPriority(int newPriority) {
 	setNativePriority(*thread, newPriority);
 }
@@ -89,7 +107,7 @@ void Thread::start() {
 		throw IllegalThreadStateException();
 	}
 
-	setId();
+	tid = threads.nextThreadNumber();
 	parent = &Thread::currentThread();
 	if (name.length() == 0) {
 		name += parent->getName() + "::";
@@ -101,7 +119,7 @@ void Thread::start() {
 	pendingNameChange = true;
 	this->thread = new std::thread([=] {
 		std::thread::id thrid = std::this_thread::get_id();
-		synchronized(thrmap) { thrmap.put(thrid, this); }
+		threads.addThread(thrid, this);
 		try {
 			do { Thread::yield(); } while (threadStatus == NEW);
 			if (threadStatus == RUNNABLE) run();
@@ -114,7 +132,7 @@ void Thread::start() {
 		}
 		System.out.println(getName() + " terminated");
 		threadStatus = TERMINATED;
-		synchronized(thrmap) { thrmap.remove(thrid); }
+		threads.removeThread(thrid);
 	});
 	threadStatus = RUNNABLE;
 }
@@ -128,12 +146,11 @@ void Thread::selfupdate() {
 
 // static functions
 Thread& Thread::currentThread() {
-	std::thread::id thrid = std::this_thread::get_id();
-	Thread *t = null;
-	synchronized(thrmap) { t = thrmap.get(thrid); }
+	std::thread::id id = std::this_thread::get_id();
+	Thread *t = threads.getThread(id);
 	if (t == null) {
-		System.err.println("FATAL: thread not found: " + String::valueOf(thrid));
-		return main_thread;
+		System.err.println("FATAL: thread not found: " + String::valueOf(id));
+		return threads.main;
 	}
 	return *t;
 }
