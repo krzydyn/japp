@@ -102,11 +102,11 @@ public:
 
 	virtual boolean addAll(int index, const Collection<T>& c) {return false;}
 
-	// stack interface (LIFO)
+	// generic stack interface (LIFO)
 	virtual void push(const T& v) final {add(END_OF_LIST,v);}
 	virtual T pop() final {return removeAt(size()-1);}
 
-	// queue interface (FIFO)
+	// generic queue interface (FIFO)
 	virtual void enqueue(const T& v) final {add(END_OF_LIST,v);}
 	virtual T dequeue() final {return removeAt(0U);}
 };

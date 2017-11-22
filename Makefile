@@ -12,7 +12,7 @@ export BUILD_DIR:=build
 export INC_DIR:=include
 export JRELIB:=build/jre.a
 
-#export DEBUG=-O3
+export DEBUG=-g3
 
 SUBDIRS:=src tests
 

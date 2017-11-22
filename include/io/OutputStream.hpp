@@ -4,6 +4,7 @@
 #include <io/Closeable.hpp>
 #include <io/Flushable.hpp>
 #include <lang/Exception.hpp>
+#include <cstring> //std::strlen
 
 namespace io {
 

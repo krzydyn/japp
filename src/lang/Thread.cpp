@@ -41,9 +41,7 @@ public:
 	MainThread main;
 	Threads() : thrmap(), main() {
 		mainid = std::this_thread::get_id();
-		std::cerr << "adding main" << std::endl;
 		addThread(mainid, &main);
-		std::cerr << "adding main done" << std::endl;
 	}
 	~Threads() {
 		removeThread(mainid);

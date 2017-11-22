@@ -25,7 +25,6 @@ public:
 
 class String final : extends Object, implements CharSequence {
 private:
-	class AutoType;
 	std::string value;
 	long hash = 0;
 
@@ -34,7 +33,8 @@ private:
 	static void copy(String *d, const String *s);
 	static void move(String *d, const String *s);
 
-	static String valueOf(const AutoType& any);
+	static String valueHex(long);
+	static String getTypeName(const std::type_info&);
 
 public:
 	String(String&& o) {move(this,&o);}
@@ -180,23 +180,23 @@ public:
 		return *this;
 	}
 
-	static String valueOf(boolean b) {TRACE; return b ? "true" : "false"; }
-	static String valueOf(char n) {TRACE; return std::to_string(n); }
-	static String valueOf(short n) {TRACE; return std::to_string(n); }
-	static String valueOf(unsigned short n) {TRACE; return std::to_string(n); }
-	static String valueOf(int n) {TRACE; return std::to_string(n); }
-	static String valueOf(unsigned n) {TRACE; return std::to_string(n); }
-	static String valueOf(long n) {TRACE; return std::to_string(n); }
-	static String valueOf(unsigned long n) {TRACE; return std::to_string(n); }
-	static String valueOf(float n) {TRACE; return std::to_string(n); }
-	static String valueOf(double n) {TRACE; return std::to_string(n); }
+	static String valueOf(boolean b) {return b ? "true" : "false"; }
+	static String valueOf(char n) {return std::to_string(n); }
+	static String valueOf(short n) {return std::to_string(n); }
+	static String valueOf(unsigned short n) {return std::to_string(n); }
+	static String valueOf(int n) {return std::to_string(n); }
+	static String valueOf(unsigned n) {return std::to_string(n); }
+	static String valueOf(long n) {return std::to_string(n); }
+	static String valueOf(unsigned long n) {return std::to_string(n); }
+	static String valueOf(float n) {return std::to_string(n); }
+	static String valueOf(double n) {return std::to_string(n); }
 
 	static String valueOf(const Object& obj) {TRACE; return obj.toString(); }
 	static String valueOf(const void *ptr);
-	static String valueOf(const char *s) {TRACE; return s;}
-	static String valueOf(const String& s) {TRACE; return s;}
+	static String valueOf(const char *s) {return s;}
+	static String valueOf(const String& s) {return s;}
 	template<class T>
-	static String valueOf(const T& t) {TRACE; return valueOf((const AutoType&)t); }
+	static String valueOf(const T& t) {return getTypeName(typeid(t)) + "@" + valueHex((long)&t); }
 
 	static String format(String fmt, ...) {
 		va_list args;

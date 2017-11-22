@@ -24,7 +24,7 @@ public:
 	 * @since 1.8
 	 */
 	String toGenericString() const {return toString();}
-	String getName() const;
+	String getName() const {return getTypeName(type);}
 	String getSimpleName() const;
 	String getCanonicalName() const;
 	boolean isInstance(const Object& obj) const {return false;}
@@ -36,7 +36,7 @@ public:
 	boolean isSynthetic() const {return false;}
 
 	template<class T>
-	static String nameOf(const T& o) {TRACE;return getTypeName(typeid(o)); }
+	static String typeOf(const T& o) {return getTypeName(typeid(o)); }
 };
 
 } //namespace lang

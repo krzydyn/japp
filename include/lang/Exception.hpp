@@ -2,7 +2,6 @@
 #define __LANG_EXCEPTION_HPP
 
 #include <util/List.hpp>
-#include <cstring>
 
 namespace io { class PrintStream; }
 

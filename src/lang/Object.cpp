@@ -241,7 +241,6 @@ void Throwable::printStackTrace(io::PrintStream& s) const {TRACE;
 }
 
 Class::Class(const Object& o) : type(typeid(o)) {}
-String Class::getName() const {return demangle(type.name()); }
 String Class::getSimpleName() const {TRACE;
 	String simpleName = getSimpleBinaryName();
 	if (simpleName.isEmpty()) { // top level class
@@ -251,7 +250,7 @@ String Class::getSimpleName() const {TRACE;
 	return simpleName;
 }
 String Class::getCanonicalName() const {TRACE;return getName();}
-String Class::getTypeName(const std::type_info& type) {TRACE;
+String Class::getTypeName(const std::type_info& type) {
 	return demangle(type.name());
 }
 
@@ -259,10 +258,13 @@ const Class Object::getClass() const {TRACE; return Class(*this);}
 
 Object& Object::clone() const {TRACE;
 	throw CloneNotSupportedException();
-	//return nullref;
 }
-String Object::toString() const {TRACE;
+String Object::toString() const {
 	return getClass().getName() + "@" + Integer::toHexString(hashCode());
+}
+
+String String::getTypeName(const std::type_info& type) {
+	return demangle(type.name());
 }
 
 }

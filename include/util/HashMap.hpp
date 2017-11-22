@@ -23,7 +23,7 @@ public:
 	const V& getValue() const {return value;}
 	void setVal(const V& v) {value=v;}
 	V& getRef() {return value;}
-	String toString() const { return String::valueOf(key) + "=" + String::valueOf(value); }
+	String toString() const { return String::valueOf(key) + ":" + String::valueOf(value); }
 };
 
 template<class K,class V>
@@ -73,21 +73,21 @@ private:
 	V& null_obj = *((V*)null);
 	ArrayList<MapEntry<K,V>> *map;
 	unsigned mapsize;
-	unsigned elems;
+	unsigned elems=0;
 
 	void init(unsigned s) {
-		map=new ArrayList<MapEntry<K,V>>[s];
 		mapsize=s;
+		map=new ArrayList<MapEntry<K,V>>[s];
 	}
 	void rehash(unsigned ns) {
 	}
-	const MapEntry<K,V>& entry(unsigned i) const {
+	const MapEntry<K,V>* entry(unsigned i) const {
 		for (unsigned hc=0; hc<mapsize; ++hc) {
 			ArrayList<MapEntry<K,V>>& l=map[hc];
-			if (i < l.size()) { return l.get(i); }
+			if (i < l.size()) { return &l.get(i); }
 			i-=l.size();
 		}
-		return *((MapEntry<K,V>*)null);
+		return null;
 	}
 
 public:
@@ -145,6 +145,7 @@ public:
 		for (unsigned i=0; i<l.size(); ++i) {
 			if (is_equal(l.get(i).getKey(), k)) {
 				--elems;
+				std::cerr << "removed " << String::valueOf(k).intern() << std::endl;
 				return l.removeAt(i).getValue();
 			}
 		}
@@ -157,12 +158,12 @@ public:
 	String toString() const {
 		if (!elems) return "{}";
 		StringBuilder sb;
-		sb.append('{');
+		sb.append("["+String::valueOf(elems)+"] {");
 		for (unsigned i=0; i < elems; ++i) {
 			if (i > 0) sb.append(",");
-			const MapEntry<K,V>& e = entry(i);
-			if (&e == null) sb.append("<null>");
-			else sb.append(e.toString());
+			const MapEntry<K,V>* e = entry(i);
+			if (e == null) sb.append("<null>");
+			else sb.append(e->toString());
 		}
 		return sb.append('}').toString();
 	}

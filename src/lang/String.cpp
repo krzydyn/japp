@@ -47,8 +47,7 @@ char String::charAt(int index) const {TRACE;
 }
 
 String String::valueOf(const void *ptr) {TRACE; return Integer::toHexString((unsigned long)ptr);}
-class String::AutoType {};
-String String::valueOf(const String::AutoType& t) { return Class::nameOf(t) + "@" + Integer::toHexString((long)&t); }
+String String::valueHex(long l) { return Integer::toHexString(l); }
 
 String String::format(const char *fmt, va_list& args) {
 	static Object sync;
