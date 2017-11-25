@@ -36,27 +36,27 @@ private:
 	}
 
 public:
-	ArrayList(unsigned initCapa=0) {
+	ArrayList(unsigned initCapa=0) {TRACE;
 		mVec=null;mOffs=mSize=0;mCapa=0;
 		if (initCapa) ensureCapa(initCapa);
 	}
-	~ArrayList() { delete [] mVec; }
+	~ArrayList() {TRACE; delete [] mVec; }
 
-	IteratorPtr<T> iterator() { TRACE;
+	IteratorPtr<T> iterator() {TRACE;
 		return makeIterator<ArrayListIterator>(*this);
 	}
 	void clear() { mOffs=mSize=0; }
 	unsigned size() const {return mSize;}
 	void shrink(unsigned s) {if (s < mSize) mSize=s;}
-	const T& get(unsigned i) const { TRACE;
+	const T& get(unsigned i) const {TRACE;
 		if (i >= mSize) throw IndexOutOfBoundsException(i);
 		return mVec[(mOffs+i)%mCapa];
 	}
-	T& get(unsigned i) { TRACE;
+	T& get(unsigned i) {TRACE;
 		if (i >= mSize) throw IndexOutOfBoundsException(i);
 		return mVec[(mOffs+i)%mCapa];
 	}
-	void set(unsigned i, const T& v) { TRACE;
+	void set(unsigned i, const T& v) {TRACE;
 		if (i >= mSize) throw IndexOutOfBoundsException(i);
 		mVec[(mOffs+i)%mCapa] = v;
 	}
@@ -66,7 +66,7 @@ public:
 	using List<T>::add;
 	using List<T>::remove;
 
-	void add(unsigned i,const T& v) { TRACE;
+	void add(unsigned i,const T& v) {TRACE;
 		if (mSize>=mCapa) ensureCapa(mSize+1);
 		if (i == END_OF_LIST) {
 			mVec[(mOffs+mSize)%mCapa]=v;
@@ -120,7 +120,7 @@ public:
 		return v;
 	}
 
-	void comboSort() {
+	void comboSort() {TRACE;
 		int gap = mSize;
 		boolean swapped=false;
 		while (gap > 1 || swapped) {
@@ -139,7 +139,7 @@ public:
 			  }
 		}
 	}
-	void isort() { //simple insert sort
+	void isort() {TRACE;
 		for (unsigned i=0; i<mSize; ++i) {
 			T e=mVec[i];
 			unsigned iv=i;
@@ -150,7 +150,7 @@ public:
 			if (iv!=i) { e=mVec[i]; mVec[i]=mVec[iv]; mVec[iv]=e; }
 		}
 	}
-	void qsort(int l, int h) { //quick sort
+	void qsort(int l, int h) {TRACE;
 		T e = mVec[l+(h-l)/2]; //pivot element
 		int i=l,j=h;
 		do {

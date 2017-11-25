@@ -1,6 +1,5 @@
 #include <lang/Number.hpp>
 
-
 int main() {
 	Boolean t1(true);
 	Short t2(1);

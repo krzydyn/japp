@@ -54,25 +54,6 @@ boolean initialize() {
 	return true;
 }
 
-#ifdef BACKTRACE
-#define BACKTRACE_SIZE 2048
-CallTrace *calltrace[BACKTRACE_SIZE];
-unsigned calltrace_size = 0;
-void tracePush(CallTrace *c) {
-	if (calltrace_size < BACKTRACE_SIZE)
-		calltrace[calltrace_size] = c;
-	++calltrace_size;
-}
-CallTrace *tracePop() {
-	if (calltrace_size == 0) return null;
-	--calltrace_size;
-	if (calltrace_size < BACKTRACE_SIZE)
-		return calltrace[calltrace_size];
-	return null;
-}
-unsigned traceSize() { return calltrace_size; }
-#endif
-
 std::string demangle(const std::string& name) {
 	if (name.empty()) return "??";
 #ifdef __GNUG__ // gnu C++ compiler
@@ -126,17 +107,8 @@ Array<StackTraceElement>& captureStackTrace(Array<StackTraceElement>& stackTrace
 }
 #ifdef BACKTRACE
 void captureStack2(Array<StackTraceElement>& stackTrace) {
-	stackTrace = Array<StackTraceElement>(traceSize());
-	for (int i = 0; i < stackTrace.length; ++i) {
-		CallTrace *ct = calltrace[stackTrace.length - i - 1];
-		if (ct == null) {
-			stackTrace[i] = StackTraceElement("","",0);
-		}
-		else {
-			//std::printf("bt[%d]: f='%s'  @ '%s:%d'\n", i, ct->func,ct->file,ct->line);
-			stackTrace[i] = StackTraceElement(ct->func,ct->file,ct->line);
-		}
-	}
+	Thread& t = Thread::currentThread();
+	stackTrace = t.getStackTrace();
 }
 #endif
 void signal_handle(int signum) {
@@ -185,16 +157,6 @@ class NullRef : extends Object {
 namespace lang {
 
 Object& nullref = nullObject;
-
-#ifdef BACKTRACE
-void CallTrace::r() {
-	tracePush(this);
-}
-CallTrace::~CallTrace() {
-	CallTrace *c = tracePop();
-	if (c != this) std::cerr << "stack mismach" << std::endl;
-}
-#endif
 
 Throwable::Throwable(const String& msg, Throwable *c) : detailMessage(msg), cause(c) {
 	threadInfo = Thread::currentThread().getName();

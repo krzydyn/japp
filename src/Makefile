@@ -20,7 +20,7 @@ SRCS+=$(wildcard $(SOURCE_DIR)/util/*.cpp)
 
 OBJS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
 
-TARGETS:=$(BUILD_DIR)/jre.a $(BUILD_DIR)/jre.so
+TARGETS:=$(BUILD_DIR)/jre.a #$(BUILD_DIR)/jre.so
 SRC_BUILD_DIRS:=$(dir $(OBJS))
 
 build: create-build_dir $(TARGETS)

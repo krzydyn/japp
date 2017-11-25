@@ -2,7 +2,7 @@
 #include <lang/System.hpp>
 #include <lang/Exception.hpp>
 
-void test_String() {
+void test_String() {TRACE;
 	String s1;
 	String s2("abc");
 	String s3(s2);
@@ -19,7 +19,7 @@ void test_String() {
 	}
 }
 
-int main(int argc, const char *argv[]) {
+int main(int argc, const char *argv[]) {TRACE;
 	try {
 		test_String();
 	} catch(const lang::Exception& e) {

@@ -16,7 +16,7 @@ using jlong=long long;
 #define PP_CAT(a, b) PP_CAT_I(a, b)
 #define PP_CAT_I(a, b) a ## b
 #define UNIQUE_NAME(base) PP_CAT(base, __LINE__)
-//#define TRACE CallTrace UNIQUE_NAME(the_calltrace)(__FUNCTION__, __FILE__,__LINE__);UNIQUE_NAME(the_calltrace).r()
+//#define TRACE CallTrace UNIQUE_NAME(the_calltrace)(__FUNCTION__, __FILE__,__LINE__);UNIQUE_NAME(the_calltrace).add()
 
 namespace lang {
 
@@ -31,13 +31,15 @@ extern Object& nullref;
 #undef BACKTRACE
 #else
 #define BACKTRACE
+class Thread;
 class CallTrace {
+	Thread *t;
 public:
 	const char *func;
 	const char *file;
 	unsigned line;
-	CallTrace(const char *func, const char *file,unsigned line):func(func),file(file),line(line){}
-	void r();
+	CallTrace(const char *func, const char *file,unsigned line):func(func),file(file),line(line){t=null;}
+	void add();
 	~CallTrace();
 };
 #endif
@@ -151,7 +153,7 @@ inline bool instanceOf(const T& ptr) {
 
 } //namespace lang
 
-#define synchronized(m) for(Object::Lock lock(m); lock; lock.unlock())
+#define synchronized(m) for(Object::Lock __lck(m); __lck; __lck.unlock())
 
 using namespace lang;
 

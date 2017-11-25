@@ -44,6 +44,14 @@ public:
 
 class Thread : extends Object, implements Runnable {
 private:
+#ifdef BACKTRACE
+	friend class CallTrace;
+	#define BACKTRACE_SIZE 2048
+	CallTrace *calltrace[BACKTRACE_SIZE];
+	unsigned calltrace_size = 0;
+	void tracePush(CallTrace *c);
+	CallTrace *tracePop();
+#endif
 	Thread *parent = null;
 	String  name;
 	int priority;
@@ -101,10 +109,7 @@ public:
 	boolean isDaemon() const { return daemon; }
 	void checkAccess() const {}
 	String toString() const {TRACE;return getClass().getName()+":"+getName();}
-	Array<StackTraceElement> getStackTrace() {TRACE;
-		//TODO get trace of other stack somehow (using signals?)
-		return std::move(Throwable().getStackTrace());
-	}
+	Array<StackTraceElement> getStackTrace() const;
 	long getId() const {return tid;}
 
 	enum State {
@@ -130,7 +135,7 @@ public:
 		sleep(millis);
 	}
 	static boolean interrupted() {return false;}
-	static void dumpStack() {TRACE;
+	static void dumpStack() {
 		Throwable("Stack trace").fillInStackTrace().printStackTrace();
 	}
 };

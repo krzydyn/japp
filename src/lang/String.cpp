@@ -7,17 +7,17 @@ namespace lang {
 
 const char *String::emptystr="";
 
-void String::copystr(String *d, const char *s) {
+void String::copystr(String *d, const char *s) {TRACE;
 	if (s == null || d == null) throw NullPointerException();
 	d->value = s;
 	d->hash = 0;
 }
-void String::copy(String *d, const String *s) {
+void String::copy(String *d, const String *s) {TRACE;
 	if (s == null || d == null) throw NullPointerException();
 	d->value = s->value;
 	d->hash = s->hash;
 }
-void String::move(String *d, const String *s) {
+void String::move(String *d, const String *s) {TRACE;
 	if (s == null || d == null) throw NullPointerException();
 	if (s->intern().empty()) d->value=emptystr;
 	else d->value = std::move(s->value);
@@ -47,9 +47,9 @@ char String::charAt(int index) const {TRACE;
 }
 
 String String::valueOf(const void *ptr) {TRACE; return Integer::toHexString((unsigned long)ptr);}
-String String::valueHex(long l) { return Integer::toHexString(l); }
+String String::valueHex(long l) {TRACE; return Integer::toHexString(l); }
 
-String String::format(const char *fmt, va_list& args) {
+String String::format(const char *fmt, va_list& args) {TRACE;
 	static Object sync;
 	static char buffer[1023];
 	String s;

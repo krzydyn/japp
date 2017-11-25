@@ -1,7 +1,7 @@
 #include <lang/System.hpp>
 #include <lang/Thread.hpp>
 
-static void test_mainthread() {
+static void test_mainthread() {TRACE;
 	if (!Thread::currentThread().getName().equals("main"))
 		System.err.println("main thread has wrong name");
 }
@@ -9,9 +9,9 @@ static void test_backtrace() {TRACE;
 	Thread::dumpStack();
 }
 
-static void test_thread() {
+static void test_thread() {TRACE;
 	class RunSleep1 : implements Runnable {
-		void run() {
+		void run() {TRACE;
 			int x=0;
 			System.out.println("Sleeping for 1s");
 			Thread::sleep(1000);
@@ -24,7 +24,7 @@ static void test_thread() {
 	t1.start();
 
 	class RunSleep2 : extends Object, implements Runnable {
-		void run() {
+		void run() {TRACE;
 			System.out.println(Thread::currentThread().getName()+" sleeping for 10s");
 			Thread::sleep(5000);
 		}
@@ -44,7 +44,7 @@ static void test_thread() {
 	}
 }
 
-int main(int argc, const char *argv[]) { TRACE;
+int main(int argc, const char *argv[]) {TRACE;
 	test_mainthread();
 	test_backtrace();
 	test_thread();
