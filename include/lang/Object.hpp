@@ -26,7 +26,7 @@ class Class;
 class Object;
 class String;
 
-extern Object& nullref;
+extern Object& null_ref;
 
 class Interface {
 protected:

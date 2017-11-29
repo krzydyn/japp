@@ -52,7 +52,7 @@ boolean initialize() {
 	(void)SET_TERMINATE;
 	std::set_terminate(terminate_hook);
 	signal(SIGFPE, signal_handle);
-	signal(SIGSEGV, signal_handle);
+	//signal(SIGSEGV, signal_handle);
 	return true;
 }
 
@@ -151,6 +151,7 @@ void terminate_hook() {
 	}
 	std::_Exit(EXIT_FAILURE);
 }
+
 class NullRef : extends Object {
 } nullObject;
 
@@ -164,7 +165,7 @@ public:
 
 namespace lang {
 
-Object& nullref = nullObject;
+Object& null_ref = nullObject;
 
 Throwable::Throwable(const String& msg, Throwable *c) : detailMessage(msg), cause(c) {
 	threadInfo = Thread::currentThread().getName();

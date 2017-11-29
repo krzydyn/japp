@@ -11,10 +11,14 @@ class MapEntry {
 private:
 	K key;
 	V value;
+	void move(MapEntry& o) {
+		key = std::move(o.key);
+		value = std::move(o.value);
+	}
 public:
-	MapEntry(MapEntry&& o) { key = std::move(o.key); value = std::move(o.value); }
-	MapEntry(const MapEntry &me) : key(me.key), value(me.value) {}
-	MapEntry& operator=(MapEntry&& o) { key = std::move(o.key); value = std::move(o.value); return *this;}
+	MapEntry(MapEntry&& o) { move(o); }
+	MapEntry(const MapEntry &o) : key(o.key), value(o.value) {}
+	MapEntry& operator=(MapEntry&& o) { move(o);  return *this;}
 	MapEntry& operator=(const MapEntry& o) { key = o.key; value = o.value; return *this;}
 
 	MapEntry() {}
@@ -41,9 +45,10 @@ public:
 	virtual void clear() = 0;
 };
 
-inline jint hash_code(const Object& v) {return v.hashCode();}
+//SFINAE to choose function for Object type
+inline unsigned hash_code(const Object& v) {return (unsigned)v.hashCode();}
 template<class T, class std::enable_if<!std::is_base_of<Object,T>::value,Object>::type* = nullptr>
-inline jint hash_code(const T& v) {
+inline unsigned hash_code(const T& v) {
 	if (sizeof(v) == 1) return *(uint8_t*)(&v);
 	if (sizeof(v) == 2) return *(uint16_t*)(&v);
 	if (sizeof(v) == 4) return *(uint32_t*)(&v);
@@ -52,9 +57,9 @@ inline jint hash_code(const T& v) {
 	jint h=0;
 	for (unsigned i=0; i < sizeof(v)/sizeof(long); ++i)
 		h = 31 * h + p[i];
-	return (int)h;
+	return (unsigned)h;
 
-	//when using "const char *p ...", causes a crash, mayby std::hash has the same problem??
+	//when using "const char *p ...", causes a crash, maybe std::hash has the same problem??
 
 	//return std::hash<T>{}(v); // causes a crash (why?)
 
@@ -62,15 +67,14 @@ inline jint hash_code(const T& v) {
 	//return hasher(v);  // causes a crash
 }
 
+//SFINAE to choose function for Object type
 inline boolean is_equal(const Object& a, const Object& b) { return a.equals(b); }
-//SFINAE to choose above function for Object type
 template<class T, class std::enable_if<!std::is_base_of<Object,T>::value,Object>::type* = nullptr>
 inline boolean is_equal(const T& a, const T& b) {return a==b;}
 
 template<class K,class V>
 class HashMap : extends Object, implements Map<K,V> {
 private:
-	V& null_obj = *((V*)null);
 	ArrayList<MapEntry<K,V>> *map;
 	unsigned mapsize;
 	unsigned elems=0;
@@ -112,7 +116,7 @@ public:
 				return l.get(i).getValue();
 			}
 		}
-		return null_obj;
+		return (const V&)null_ref;
 	}
 	V& get(const K& k) {TRACE;
 		unsigned hc = util::hash_code(k)%mapsize;
@@ -122,7 +126,7 @@ public:
 				return l.get(i).getRef();
 			}
 		}
-		return null_obj;
+		return (V&)null_ref;
 	}
 
 	const V& put(const K& k, const V& v) {TRACE;
@@ -147,7 +151,7 @@ public:
 				return l.removeAt(i).getValue();
 			}
 		}
-		return null_obj;
+		return *((V*)&null_ref);
 	}
 	void clear() {TRACE;
 		for (unsigned i=0; i < mapsize; ++i) map[i].clear();
