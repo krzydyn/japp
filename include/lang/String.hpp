@@ -88,6 +88,14 @@ public:
 		if (!instanceOf<String>(&o)) return false;
 		return value == ((const String&)o).value;
 	}
+	boolean equalsIgnoreCase(const String& s) const {
+		unsigned sz = value.size();
+		if (s.value.size() != sz) return false;
+		for (unsigned i=0; i < sz; ++i) {
+			if (tolower(value[i]) != tolower(s.value[i])) return false;
+		}
+		return true;
+	}
 
 	boolean startsWith(const String& prefix, int toffset) const {TRACE;
 		int pc = prefix.value.length();

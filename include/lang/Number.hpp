@@ -12,6 +12,8 @@ public:
 
 template<class T>
 interface Comparable : Interface {
+public:
+	virtual int compareTo(const T& o) = 0;
 };
 
 class Number : extends Object {
@@ -26,11 +28,33 @@ public:
 	virtual double doubleValue() const = 0;
 };
 
-class Boolean : implements Comparable<Boolean> {
+class Boolean : extends Object,implements Comparable<Boolean> {
 private:
 	boolean value;
 public:
+	static const Boolean TRUE;
+	static const Boolean FALSE;
+
+	static String toString(boolean v);
+	static Boolean valueOf(boolean b) {return b ? TRUE : FALSE;}
+	static Boolean valueOf(const String& s) {return parseBoolean(s) ? TRUE : FALSE;}
+	static boolean parseBoolean(const String& s) {return s.equalsIgnoreCase("true");}
+	static int hashCode(boolean value) {return value ? 1231 : 1237;}
+	static int compare(boolean x, boolean y) {return (x == y) ? 0 : (x ? 1 : -1);}
+
+	Boolean(const Boolean& o) : value(o.value) {}
 	Boolean(boolean value) : value(value) {}
+	Boolean(const String& s) : value(parseBoolean(s)) {}
+	boolean booleanValue() const {return value;}
+	String toString() const { return toString(value); }
+	jint hashCode() {return Boolean::hashCode(value);}
+	boolean equals(const Object& o) const {
+		if (instanceOf<Boolean>(&o)) {
+			return value == ((const Boolean&)o).booleanValue();
+		}
+		return false;
+	}
+	int compareTo(const Boolean& b) { return compare(value,b.value); }
 };
 
 class Integer : extends Number, implements Comparable<Integer> {
@@ -39,6 +63,7 @@ private:
 public:
 	static const int MIN_VALUE = 0x80000000;
 	static const int MAX_VALUE = 0x7fffffff;
+
 	static String toString(int i, int radix=10);
 	static String toUnsignedString(int i, int radix=10);
 	static String toHexString(int i) {return toUnsignedString(i, 16);}
@@ -51,6 +76,7 @@ public:
 	static Integer valueOf(int i) {return Integer(i);}
 	static Integer decode(String nm);
 	static jint hashCode(int value) {return value;}
+	static int compare(int x, int y) {return (x < y) ? -1 : ((x == y) ? 0 : 1);}
 
 	Integer(Integer&& o) : value(o.value) {}
 	Integer(int value) : value(value) {}
@@ -60,6 +86,14 @@ public:
 	long longValue() const {return (long)value;}
 	float floatValue() const {return (float)value;}
 	double doubleValue() const {return (double)value;}
+	String toString() { return toString(value); }
+	boolean equals(const Object& o) const {
+		if (instanceOf<Integer>(&o)) {
+			return value == ((const Integer&)o).shortValue();
+		}
+		return false;
+	}
+	int compareTo(const Integer& b) { return compare(value,b.value); }
 
 	operator int() { return value; }
 };
@@ -88,6 +122,7 @@ public:
 		return valueOf((short)i);
 	}
 	static jint hashCode(short value) {return (jint)value;}
+	static int compare(short x, short y) {return (x < y) ? -1 : ((x == y) ? 0 : 1);}
 
 	Short(Short&& o) : value(o.value) {}
 	Short(short value) : value(value) {}
@@ -98,6 +133,7 @@ public:
 	long longValue() const {return (long)value;}
 	float floatValue() const {return (float)value;}
 	double doubleValue() const {return (double)value;}
+	String toString() { return toString(value); }
 	jint hashCode() const { return Short::hashCode(value); }
 	boolean equals(const Object& o) const {
 		if (instanceOf<Short>(&o)) {
@@ -105,6 +141,7 @@ public:
 		}
 		return false;
 	}
+	int compareTo(const Short& b) { return compare(value,b.value); }
 };
 
 class Long : extends Number, implements Comparable<Long> {
@@ -124,7 +161,7 @@ public:
 	static Long valueOf(long l) {return Long(l);}
 	static Long decode(const String& nm);
 	static jint hashCode(long value) { return (int)(value ^ (value >> 32)); }
-	
+	static int compare(long x, long y) {return (x < y) ? -1 : ((x == y) ? 0 : 1);}
 
 	Long(Long&& o) : value(o.value) {}
 	Long(long value) : value(value) {}
@@ -134,7 +171,15 @@ public:
 	long longValue() const {return (long)value;}
 	float floatValue() const {return (float)value;}
 	double doubleValue() const {return (double)value;}
+	String toString() { return toString(value); }
 	jint hashCode() const { return Long::hashCode(value); }
+	boolean equals(const Object& o) const {
+		if (instanceOf<Long>(&o)) {
+			return value == ((const Long&)o).longValue();
+		}
+		return false;
+	}
+	int compareTo(const Long& b) { return compare(value,b.value); }
 };
 
 } //namespace lang
