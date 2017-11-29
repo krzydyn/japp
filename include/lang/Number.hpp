@@ -99,9 +99,9 @@ public:
 	float floatValue() const {return (float)value;}
 	double doubleValue() const {return (double)value;}
 	jint hashCode() const { return Short::hashCode(value); }
-	boolean equals(const Object& obj) const {
-		if (instanceOf<Short>(obj)) {
-			return value == ((const Short&)obj).shortValue();
+	boolean equals(const Object& o) const {
+		if (instanceOf<Short>(&o)) {
+			return value == ((const Short&)o).shortValue();
 		}
 		return false;
 	}

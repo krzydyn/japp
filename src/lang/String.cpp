@@ -64,4 +64,8 @@ String String::format(const char *fmt, va_list& args) {TRACE;
 	return s;
 }
 
+String String::className(const std::type_info& type) {
+	return class(type).getName();
+}
+
 } //namespace lang

@@ -6,29 +6,31 @@
 #include <io/OutputStream.hpp>
 #include <lang/Exception.hpp>
 #include <util/HashMap.hpp>
-/*
-namespace io {
-class OutputStream;
-class InputStream;
-}
-*/
-using namespace io;
-using namespace util;
+
 namespace lang {
 
 class TimeUnit {
 };
 
-class ProcessEnvironment final {
+class ProcessEnvironment final : Interface {
+private:
+	static util::HashMap<String,String> theEnvironment;
 public:
 	static const int MIN_NAME_LENGTH=1;
+
+	static const String& getenv(String name) {
+	   return theEnvironment.get(name);
+	}
+	static const util::Map<String,String>& getenv() {
+		return theEnvironment;
+	}
 };
 
 class Process : extends Object {
 public:
-	virtual OutputStream& getOutputStream() = 0;
-	virtual InputStream& getInputStream() = 0;
-	virtual InputStream& getErrorStream() = 0;
+	virtual io::OutputStream& getOutputStream() = 0;
+	virtual io::InputStream& getInputStream() = 0;
+	virtual io::InputStream& getErrorStream() = 0;
 	virtual int waitFor() = 0;
 	boolean waitFor(long timeout, TimeUnit unit) {
 		return false;
@@ -51,19 +53,20 @@ public:
 
 class ProcessBuilder : extends Object {
 private:
-	List<String>& cmd;
-	File dir;
-	HashMap<String,String> env;
+	util::List<String>& cmd;
+	io::File dir;
+	util::HashMap<String,String> env;
+
 public:
-	ProcessBuilder(List<String>& command) : cmd(command),dir(".") {}
-	const List<String>& command() const { return cmd; }
-	const Map<String,String>& environment() const {return env;}
-	const File& directory() const { return dir; }
-	ProcessBuilder& directory(File& dir) {
+	ProcessBuilder(util::List<String>& command) : cmd(command),dir(".") {}
+	const util::List<String>& command() const { return cmd; }
+	const util::Map<String,String>& environment() const {return env;}
+	const io::File& directory() const { return dir; }
+	ProcessBuilder& directory(io::File& dir) {
 		this->dir= dir;
 		return *this;
 	}
-	ProcessBuilder& environment(List<String> *envp) {
+	ProcessBuilder& environment(util::List<String> *envp) {
 		if (envp == null) return *this;
 		for (IteratorPtr<String> i=envp->iterator(); i->hasNext(); ) {
 			String envstring = i->next();

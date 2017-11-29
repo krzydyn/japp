@@ -34,7 +34,7 @@ private:
 	static void move(String *d, const String *s);
 
 	static String valueHex(long);
-	static String getTypeName(const std::type_info&);
+	static String className(const std::type_info&);
 
 public:
 	String(String&& o) {move(this,&o);}
@@ -83,10 +83,10 @@ public:
 	boolean equals(const char *str) const {TRACE;
 		return str==null ? value == "" : value == str;
 	}
-	boolean equals(const Object& anObject) const {TRACE;
-		if (this == &anObject) return true;
-		if (!instanceOf<String>(anObject)) return false;
-		return value == ((const String&)anObject).value;
+	boolean equals(const Object& o) const {TRACE;
+		if (this == &o) return true;
+		if (!instanceOf<String>(&o)) return false;
+		return value == ((const String&)o).value;
 	}
 
 	boolean startsWith(const String& prefix, int toffset) const {TRACE;
@@ -191,12 +191,12 @@ public:
 	static String valueOf(float n) {TRACE;return std::to_string(n); }
 	static String valueOf(double n) {TRACE;return std::to_string(n); }
 
-	static String valueOf(const Object& obj) {TRACE; return obj.toString(); }
 	static String valueOf(const void *ptr);
 	static String valueOf(const char *s) {TRACE;return s;}
+	static String valueOf(const Object& obj) {TRACE; return obj.toString(); }
 	static String valueOf(const String& s) {TRACE;return s;}
-	template<class T>
-	static String valueOf(const T& t) {TRACE;return getTypeName(typeid(t)) + "@" + valueHex((long)&t); }
+	template<class T, class std::enable_if<!std::is_base_of<Object,T>::value,Object>::type* = nullptr>
+	static String valueOf(const T& t) {TRACE;return className(typeid(t)) + "@" + valueHex((long)&t); }
 
 	static String format(String fmt, ...) {TRACE;
 		va_list args;

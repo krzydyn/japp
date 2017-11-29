@@ -2,6 +2,11 @@
 #include <lang/System.hpp>
 #include <lang/Exception.hpp>
 
+void test_formatString() {TRACE;
+	String s = String::format("%d %.2f", 10, 1.1);
+	System.out.println(s);
+	System.out.printf("format %04d\n", 5);
+}
 void test_String() {TRACE;
 	String s1;
 	String s2("abc");
@@ -20,6 +25,7 @@ void test_String() {TRACE;
 }
 
 int main(int argc, const char *argv[]) {TRACE;
+	test_formatString();
 	try {
 		test_String();
 	} catch(const lang::Exception& e) {

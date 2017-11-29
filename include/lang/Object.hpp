@@ -16,7 +16,9 @@ using jlong=long long;
 #define PP_CAT(a, b) PP_CAT_I(a, b)
 #define PP_CAT_I(a, b) a ## b
 #define UNIQUE_NAME(base) PP_CAT(base, __LINE__)
-//#define TRACE CallTrace UNIQUE_NAME(the_calltrace)(__FUNCTION__, __FILE__,__LINE__);UNIQUE_NAME(the_calltrace).add()
+//#define TRACE(a) CallTrace UNIQUE_NAME(the_calltrace)(__FUNCTION__, __FILE__,__LINE__,a);UNIQUE_NAME(the_calltrace).add()
+
+#define class(c) Object::getClass(typeid(c))
 
 namespace lang {
 
@@ -25,6 +27,16 @@ class Object;
 class String;
 
 extern Object& nullref;
+
+class Interface {
+protected:
+	Interface(const Interface& o) = delete;
+	Interface(Interface&& o) = delete;
+	Interface& operator=(const Interface& o) = delete;
+	Interface& operator=(Interface&& o) = delete;
+	virtual ~Interface() {}
+	Interface() {}
+};
 
 #ifndef TRACE
 #define TRACE
@@ -44,16 +56,6 @@ public:
 };
 #endif
 
-class Interface {
-protected:
-	Interface(const Interface& o) = delete;
-	Interface(Interface&& o) = delete;
-	Interface& operator=(const Interface& o) = delete;
-	Interface& operator=(Interface&& o) = delete;
-	virtual ~Interface() {}
-	Interface() {}
-};
-
 class Object {
 	friend class Lock;
 private:
@@ -66,6 +68,8 @@ protected:
 	virtual void finalize() {}
 	virtual Object& clone() const;
 public:
+	static Class *findClass(const std::type_info& type);
+	static void registerClass(Class *c);
 	Object(const Object& o) {}
 	Object& operator=(const Object& o) {return *this;}
 	Object(Object&& o) {move(&o);}
@@ -73,13 +77,14 @@ public:
 	virtual ~Object() { delete mtx; }
 
 	Object() {}
-	virtual const Class getClass() const;
+	virtual const Class& getClass() const final;
 	virtual jint hashCode() const {return (jint)this;}
 	virtual jint hashCode() {return ((const Object*)this)->hashCode();}
 
 	virtual boolean equals(const Object& obj) const {return this == &obj;}
 	virtual String toString() const;
-	virtual void notify() {}
+	virtual void notify() final {}
+	virtual void notifyAll() final {}
 	virtual void wait(long timeout) final {}
 	virtual void wait(long timeout, int nanos) final {}
 	virtual void wait() final {wait(0); }
@@ -87,6 +92,7 @@ public:
 	boolean operator==(const std::nullptr_t&) const {return this == null; }
 	boolean operator!=(const std::nullptr_t&) const {return this != null; }
 
+	static const Class& getClass(const std::type_info& type);
 	class Lock {
 	private:
 		const Object& obj;
@@ -106,11 +112,17 @@ public:
 	};
 };
 
+void registerArrayClass(const std::type_info& type);
 template<class T>
 class Array : extends Object {
 private:
 	T *a;
+	void init() {
+		registerArrayClass(typeid(*this));
+	}
+
 public:
+	const int length;
 	Array(const Array& o) : length(o.length) {
 		a = new T[length];
 		for (int i=0; i < length; ++i) a[i] = o.a[i];
@@ -133,9 +145,8 @@ public:
 		return *this;
 	}
 
-	const int length;
-	Array() : length(0) { a = null; }
-	Array(int l) : length(l) { a = new T[l]; }
+	Array() : length(0) {init(); a = null; }
+	Array(int l) : length(l) {init(); a = new T[l]; }
 	~Array() { delete [] a; }
 	T& operator[](int i) { return a[i]; }
 	const T& operator[](int i) const { return a[i]; }
@@ -146,15 +157,14 @@ template<class Base, class T>
 inline bool instanceOf(const T *ptr) {
 	return dynamic_cast<const Base*>(ptr) != null;
 }
-template<class Base, class T>
-inline bool instanceOf(const T& ptr) {
-	return dynamic_cast<const Base*>(&ptr) != null;
-}
 
 } //namespace lang
 
 #define synchronized(m) for(Object::Lock __lck(m); __lck; __lck.unlock())
 
 using namespace lang;
+
+//template<class T, class std::enable_if<std::is_base_of<Object,T>::value,Object>::type* = nullptr>
+//using classT = typename(T)::theclass;
 
 #endif

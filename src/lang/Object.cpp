@@ -41,6 +41,8 @@ void __cxa_throw(void* thrown_exception, void* _tinfo, void (*dest)(void*)) {
 }
 
 namespace {
+ArrayList<Class*> classmap;
+
 boolean initialize();
 static const boolean SET_TERMINATE = initialize();
 
@@ -152,6 +154,12 @@ void terminate_hook() {
 class NullRef : extends Object {
 } nullObject;
 
+class ArrayClass : extends Class {
+public:
+	ArrayClass(const std::type_info& t) : Class(t) {}
+	boolean isArray() const {return true;}
+};
+
 }
 
 namespace lang {
@@ -202,21 +210,43 @@ void Throwable::printStackTrace(io::PrintStream& s) const {TRACE;
 	}
 }
 
-Class::Class(const Object& o) : type(typeid(o)) {}
 String Class::getSimpleName() const {TRACE;
 	String simpleName = getSimpleBinaryName();
 	if (simpleName.isEmpty()) { // top level class
 		simpleName = getName();
-		return simpleName.substring(simpleName.lastIndexOf(":")+1); // strip the package name
+		int i = simpleName.lastIndexOf(":");
+		if (i >= 0) return simpleName.substring(i+1); // strip the package name
 	}
 	return simpleName;
 }
+String Class::getName() const {TRACE;return demangle(type.name());}
 String Class::getCanonicalName() const {TRACE;return getName();}
-String Class::getTypeName(const std::type_info& type) {
-	return demangle(type.name());
-}
 
-const Class Object::getClass() const {TRACE; return Class(*this);}
+Class *Object::findClass(const std::type_info& type) {
+	for (IteratorPtr<Class*> i = classmap.iterator(); i->hasNext(); ) {
+		Class *c = i->next();
+		if (c->type == type) return c;
+	}
+	return null;
+}
+void Object::registerClass(Class *c) {
+	Class *o = Object::findClass(c->type);
+	if (o == c) return ;
+	if (o) classmap.remove(o);
+	System.out.println("register Class " + c->getName());
+	classmap.add(c);
+}
+const Class& Object::getClass() const {TRACE;
+	const std::type_info& type = typeid(*this);
+	Class *c = Object::findClass(type);
+	if (!c) Object::registerClass(c=new Class(type));
+	return *c;
+}
+const Class& Object::getClass(const std::type_info& type) {
+	Class *c = Object::findClass(type);
+	if (!c) Object::registerClass(c=new Class(type));
+	return *c;
+}
 
 Object& Object::clone() const {TRACE;
 	throw CloneNotSupportedException();
@@ -225,8 +255,9 @@ String Object::toString() const {
 	return getClass().getName() + "@" + Integer::toHexString(hashCode());
 }
 
-String String::getTypeName(const std::type_info& type) {
-	return demangle(type.name());
+void registerArrayClass(const std::type_info& type) {
+	Class *c = Object::findClass(type);
+	if (!c) Object::registerClass(new ArrayClass(type));
 }
 
-}
+} //namespace lang

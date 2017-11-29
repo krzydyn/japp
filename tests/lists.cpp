@@ -3,13 +3,21 @@
 #include <util/LinkedList.hpp>
 #include <util/HashMap.hpp>
 
+static void test_Array() {
+	Array<int> a(5);
+	Object& o = a;
+	System.out.println("isArray = " + String::valueOf(o.getClass().isArray()));
+
+	int x[5];
+	System.out.println("basic array type = " + Object::getClass(typeid(x)).getName());
+}
 static void test_ArrayList() {
 	ArrayList<int> list;
 	for (int i=1; i < 10; ++i) list.enqueue(i);
 	list.remove(1);
 	System.out.println("ArrayList toString = " + list.toString());
 	System.out.println("ArrayList class name = " + list.getClass().getSimpleName());
-	System.out.println("ArrayList element class name = " + Class::typeOf(list.get(0)));
+	System.out.println("ArrayList element class name = " + class(list.get(0)).getName());
 }
 
 static void test_ArrayList2() {
@@ -31,6 +39,8 @@ static void test_HashMap() {
 }
 
 int main(int argc, const char *argv[]) {
+	System.out.println("Array");
+	test_Array();
 	System.out.println("ArrayList - simple types");
 	test_ArrayList();
 	System.out.println("ArrayList - Objects");

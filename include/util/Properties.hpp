@@ -18,6 +18,9 @@ public:
 		String val = getProperty(key);
 		return (val == null) ? defaultValue : val;
 	}
+	const String remove(const String& key) {
+		return props.remove(key);
+	}
 };
 
 } //namespace util

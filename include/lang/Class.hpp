@@ -6,13 +6,12 @@
 
 namespace lang {
 
-class Class final : extends Object {
+class Class : extends Object {
 	friend class Object;
 private:
 	const std::type_info& type;
-	Class(const Object& o);
-
-	static String getTypeName(const std::type_info&);
+protected:
+	Class(const std::type_info& t) : type(t) {}
 public:
 	String toString() const {
 		String c = isInterface() ? "interface " : (isPrimitive() ? "" : "class ");
@@ -24,19 +23,23 @@ public:
 	 * @since 1.8
 	 */
 	String toGenericString() const {return toString();}
-	String getName() const {return getTypeName(type);}
+	String getName() const;
 	String getSimpleName() const;
 	String getCanonicalName() const;
-	boolean isInstance(const Object& obj) const {return false;}
-	boolean isAssignableFrom(const Class& cls) const {return false;}
-	boolean isInterface() const {return false;}
-	boolean isArray() const {return false;}
-	boolean isPrimitive() const {return false;}
-	boolean isAnnotation() const {return false;}
-	boolean isSynthetic() const {return false;}
+	boolean isInstance(const Object& obj) const {
+		//return instanceOf<typename(obj)>(this);
+		return false;
+	}
+	virtual boolean isAssignableFrom(const Class& cls) const {return false;}
+	virtual boolean isInterface() const {return false;}
+	virtual boolean isArray() const {return false;}
+	virtual boolean isPrimitive() const {return false;}
+	virtual boolean isAnnotation() const {return false;}
+	virtual boolean isSynthetic() const {return false;}
 
-	template<class T>
-	static String typeOf(const T& o) {return getTypeName(typeid(o)); }
+	boolean equals(const Class& o) const {
+		return type == o.type;
+	}
 };
 
 } //namespace lang

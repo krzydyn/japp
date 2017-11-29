@@ -6,7 +6,6 @@
 #include <util/ArrayList.hpp>
 #include <util/StringTokenizer.hpp>
 
-using namespace util;
 namespace lang {
 
 class Shutdown final {
@@ -17,7 +16,7 @@ class Shutdown final {
 
 class Runtime : extends Object {
 private:
-	static File null_file;
+	static io::File null_file;
 	static Runtime currentRuntime;
 public:
 	static Runtime& getRuntime() { return currentRuntime; }
@@ -28,10 +27,10 @@ public:
 	Process& exec(String command) {
 		return exec(command, null, null_file);
 	}
-	Process& exec(String command, List<String> *envp) {
+	Process& exec(String command, util::List<String> *envp) {
 		return exec(command, envp, null_file);
 	}
-	Process& exec(String command, List<String> *envp, File dir) {
+	Process& exec(String command, util::List<String> *envp, io::File dir) {
 		if (command.length() == 0)
 			throw IllegalArgumentException("Empty command");
 		StringTokenizer st = StringTokenizer(command);
@@ -40,13 +39,13 @@ public:
 			cmdarray.add(st.nextToken());
 		return exec(cmdarray, envp, dir);
 	}
-	Process& exec(List<String>& cmdarray) {
+	Process& exec(util::List<String>& cmdarray) {
 		return exec(cmdarray, null, null_file);
 	}
-	Process& exec(List<String>& cmdarray, List<String> *envp) {
+	Process& exec(util::List<String>& cmdarray, util::List<String> *envp) {
 		return exec(cmdarray, envp, null_file);
 	}
-	Process& exec(List<String>& cmdarray, List<String> *envp, File dir) {
+	Process& exec(util::List<String>& cmdarray, util::List<String> *envp, io::File dir) {
 		return ProcessBuilder(cmdarray)
 			.environment(envp)
 			.directory(dir)

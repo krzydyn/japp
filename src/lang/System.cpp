@@ -1,6 +1,5 @@
 #include <lang/Math.hpp>
 #include <lang/System.hpp>
-#include <lang/Runtime.hpp>
 #include <io/File.hpp>
 #include <io/FileInputStream.hpp>
 #include <io/FileOutputStream.hpp>
@@ -15,6 +14,9 @@ io::FileOutputStream std_fout(std::cout);
 io::FileOutputStream std_ferr(std::cerr);
 io::PrintStream std_out(std_fout);
 io::PrintStream std_err(std_ferr);
+
+HashMap<String,String> env;
+auto nano_start = high_resolution_clock::now();
 }
 
 namespace lang {
@@ -29,15 +31,19 @@ io::PrintStream& The_System::err = std_err;
 jlong The_System::currentTimeMillis() {
 	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }
+jlong The_System::nanoTime() {
+	return duration_cast<nanoseconds>(high_resolution_clock::now()-nano_start).count();
+}
 
 const String The_System::getenv(const String& name) {
 	const char *v = std::getenv(name.intern().c_str());
 	if (v == null) return String();
 	return v;
 }
-
-void The_System::exit(int code) { Runtime::getRuntime().exit(code); }
-void The_System::gc() { Runtime::getRuntime().gc(); }
+const util::Map<String,String>& The_System::getenv() {
+	//return ProcessEnvironment.getenv();
+	return env;
+}
 
 } //namespace lang
 
