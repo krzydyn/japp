@@ -84,6 +84,15 @@ private:
 		map=new ArrayList<MapEntry<K,V>>[s];
 	}
 	void rehash(unsigned ns) {TRACE;
+		if (ns == mapsize) return ;
+		ArrayList<MapEntry<K,V>> *nmap = new ArrayList<MapEntry<K,V>>[ns];
+		if (nmap == null) return ; //throw RuntimeException("Out of memory");
+		for (int i=0; i < elems; ++i) {
+			MapEntry<K,V>* e = const_cast<MapEntry<K,V>*>(entry(i));
+			unsigned hc = util::hash_code(e->getKey())%ns;
+			nmap[hc].add(std::move(*e));
+		}
+		mapsize = ns;
 	}
 	const MapEntry<K,V>* entry(unsigned i) const {TRACE;
 		for (unsigned hc=0; hc<mapsize; ++hc) {
