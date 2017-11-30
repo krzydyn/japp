@@ -27,7 +27,7 @@ public:
 		for (i = 0 ; i < len ; i++) {
 			int r = read();
 			if (r < 0) break;
-			((char*)b)[off + i]=r;
+			((char*)b)[off + i]=(char)r;
 		}
 		return i;
 	}

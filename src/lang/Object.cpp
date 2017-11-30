@@ -260,5 +260,8 @@ void registerArrayClass(const std::type_info& type) {
 	Class *c = Object::findClass(type);
 	if (!c) Object::registerClass(new ArrayClass(type));
 }
+void checkArrayBounds(int i, int l) {
+	if (i < 0 || i >= l) throw IndexOutOfBoundsException(i);
+}
 
 } //namespace lang

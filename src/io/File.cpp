@@ -94,7 +94,7 @@ public:
 	}
 	virtual boolean setPermission(const File& f, int access, boolean enable, boolean owneronly) const {
 		struct stat st;
-		int perm = 0;
+		mode_t perm = 0;
 		if (::stat(f.getPath().intern().c_str(), &st) < 0)
 			return 0;
 		if (access&ACCESS_READ) perm |= S_IRUSR|S_IRGRP|S_IROTH;
@@ -162,16 +162,16 @@ public:
 		return ::utime(f.getPath().intern().c_str(), &ubuf) == 0;
 	}
 	virtual boolean setReadOnly(const File& f) const {
-		int perm = S_IRUSR|S_IRGRP|S_IROTH;
+		mode_t perm = S_IRUSR|S_IRGRP|S_IROTH;
 		return chmod(f.getPath().intern().c_str(), perm) == 0;
 	}
 	virtual Array<File> listRoots() const { Array<File> a(1); a[0]=File("/"); return a;}
 	virtual jlong getSpace(const File& f, int t) const {
 		struct statvfs stat;
 		statvfs(f.getPath().intern().c_str(), &stat);
-		if (t == SPACE_TOTAL) return stat.f_blocks * stat.f_frsize;
-		if (t == SPACE_FREE) return stat.f_bavail * stat.f_frsize;
-		if (t == SPACE_USABLE) return (stat.f_blocks-stat.f_bavail)*stat.f_frsize;
+		if (t == SPACE_TOTAL) return (jlong)(stat.f_blocks * stat.f_frsize);
+		if (t == SPACE_FREE) return (jlong)(stat.f_bavail * stat.f_frsize);
+		if (t == SPACE_USABLE) return (jlong)((stat.f_blocks-stat.f_bavail)*stat.f_frsize);
 		return -1LL;
 	}
 	virtual int compare(const File& f1, const File& f2) const {return 0;}

@@ -52,7 +52,7 @@ public:
 
 	const std::string& intern() const {TRACE; return value; }
 
-	int length() const { return value.length(); }
+	int length() const { return (int)value.length(); }
 	boolean isEmpty() const { return value.length() == 0; }
 	char charAt(int index) const;
 
@@ -89,21 +89,21 @@ public:
 		return value == ((const String&)o).value;
 	}
 	boolean equalsIgnoreCase(const String& s) const {
-		unsigned sz = value.size();
+		size_t sz = value.size();
 		if (s.value.size() != sz) return false;
-		for (unsigned i=0; i < sz; ++i) {
+		for (size_t i=0; i < sz; ++i) {
 			if (tolower(value[i]) != tolower(s.value[i])) return false;
 		}
 		return true;
 	}
 
 	boolean startsWith(const String& prefix, int toffset) const {TRACE;
-		int pc = prefix.value.length();
+		int pc = (int)prefix.value.length();
 		if ((toffset < 0) || (toffset > length() - pc)) {
 			return false;
 		}
-		for (int po = 0; --pc >= 0; ++toffset,++po) {
-			if (value[toffset] != prefix.value[po]) return false;
+		for (unsigned po = 0; --pc >= 0; ++toffset,++po) {
+			if (value[(unsigned)toffset] != prefix.value[po]) return false;
 		}
 		return true;
 	}
@@ -111,61 +111,58 @@ public:
 		return startsWith(prefix, 0);
 	}
 	boolean endsWith(const String& suffix) const {TRACE;
-		return startsWith(suffix, value.length() - suffix.value.length());
+		return startsWith(suffix, (int)(value.length() - suffix.value.length()));
 	}
 
 	jint hashCode() const {
 		jint h = hash;
 		if (h == 0 && value.length() > 0) {
 			for (int i = 0; i < length(); i++) {
-				h = 31 * h + value[i];
+				h = 31 * h + value[(unsigned)i];
 			}
-		}
-		return h;
-	}
-	jint hashCode() {
-		jint h = hash;
-		if (h == 0 && value.length() > 0) {
-			h = ((const Object *)this)->hashCode();
-			hash = h;
+			const_cast<String*>(this)->hash = h;
 		}
 		return h;
 	}
 
-	int indexOf(int ch, int fromIndex=0) const {TRACE; return value.find((char)ch, fromIndex); }
-	int indexOf(const String& str, int fromIndex=0) const {TRACE; return value.find(str.value, fromIndex); }
+	int indexOf(int ch, int fromIndex=0) const {TRACE; return (int)value.find((char)ch, (unsigned)fromIndex); }
+	int indexOf(const String& str, int fromIndex=0) const {TRACE; return (int)value.find(str.value, (unsigned)fromIndex); }
 
 	int lastIndexOf(int ch, int fromIndex=-1) const {TRACE;
-	   return value.rfind((char)ch, fromIndex < 0 ? std::string::npos : fromIndex);
+	   return (int)value.rfind((char)ch, fromIndex < 0 ? std::string::npos : (unsigned)fromIndex);
 	}
 	int lastIndexOf(const String& str, int fromIndex=-1) const {TRACE;
-		return value.rfind(str.value, fromIndex < 0 ? std::string::npos : fromIndex);
+		return (int)value.rfind(str.value, fromIndex < 0 ? std::string::npos : (unsigned)fromIndex);
 	}
 
-	String substring(int beginIndex) const {TRACE; return value.substr(beginIndex); }
-	String substring(int beginIndex, int endIndex) const {TRACE; return value.substr(beginIndex,endIndex-beginIndex); }
+	String substring(int beginIndex) const {TRACE;
+		return value.substr((unsigned)beginIndex);
+	}
+	String substring(int beginIndex, int endIndex) const {TRACE;
+		return value.substr((unsigned)beginIndex,(unsigned)(endIndex-beginIndex));
+	}
 	/*const CharSequence& subSequence(int beginIndex, int endIndex) const {
 		return substring(beginIndex, endIndex);
 	}*/
 	String concat(String str) {TRACE; return *this + str; }
 	String replace(char oldChar, char newChar) {TRACE;
 		if (oldChar != newChar) {
-			int len = value.length();
+			int len = (int)value.length();
 			int i = -1;
 			const std::string& val = value;
 			while (++i < len) {
-				if (val[i] == oldChar) {
+				if (val[(unsigned)i] == oldChar) {
 					break;
 				}
 			}
 			if (i < len) {
-				std::string buf(len, ' ');
+				std::string buf((unsigned)len, ' ');
 				for (int j = 0; j < i; j++) {
-					buf[j] = val[j];
+					buf[(unsigned)j] = val[(unsigned)j];
 				}
 				while (i < len) {
-					char c = val[i];
-					buf[i] = (c == oldChar) ? newChar : c;
+					char c = val[(unsigned)i];
+					buf[(unsigned)i] = (c == oldChar) ? newChar : c;
 					i++;
 				}
 				return String(buf);

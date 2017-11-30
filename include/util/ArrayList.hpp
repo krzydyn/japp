@@ -36,9 +36,9 @@ private:
 	}
 
 public:
-	ArrayList(unsigned initCapa=0) {TRACE;
+	ArrayList(int initCapa=0) {TRACE;
 		mVec=null;mOffs=mSize=0;mCapa=0;
-		if (initCapa) ensureCapa(initCapa);
+		if (initCapa) ensureCapa((unsigned)initCapa);
 	}
 	~ArrayList() {TRACE; delete [] mVec; }
 
@@ -46,19 +46,22 @@ public:
 		return makeIterator<ArrayListIterator>(*this);
 	}
 	void clear() { mOffs=mSize=0; }
-	unsigned size() const {return mSize;}
-	void shrink(unsigned s) {if (s < mSize) mSize=s;}
-	const T& get(unsigned i) const {TRACE;
-		if (i >= mSize) throw IndexOutOfBoundsException(i);
-		return mVec[(mOffs+i)%mCapa];
+	int size() const {return (int)mSize;}
+	void shrink(int s) {if (s < mSize) mSize=s;}
+	const T& get(int i) const {TRACE;
+		unsigned j=(unsigned)i;
+		if (j >= mSize) throw IndexOutOfBoundsException(i);
+		return mVec[(mOffs+j)%mCapa];
 	}
-	T& get(unsigned i) {TRACE;
-		if (i >= mSize) throw IndexOutOfBoundsException(i);
-		return mVec[(mOffs+i)%mCapa];
+	T& get(int i) {TRACE;
+		unsigned j=(unsigned)i;
+		if (j >= mSize) throw IndexOutOfBoundsException(i);
+		return mVec[(mOffs+j)%mCapa];
 	}
-	void set(unsigned i, const T& v) {TRACE;
-		if (i >= mSize) throw IndexOutOfBoundsException(i);
-		mVec[(mOffs+i)%mCapa] = v;
+	void set(int i, const T& v) {TRACE;
+		unsigned j=(unsigned)i;
+		if (j >= mSize) throw IndexOutOfBoundsException(i);
+		mVec[(mOffs+j)%mCapa] = v;
 	}
 
 	//in C++ methods of the same name from base class are hidden by default
@@ -66,33 +69,33 @@ public:
 	using List<T>::add;
 	using List<T>::remove;
 
-	void add(unsigned i,const T& v) {TRACE;
-		if (mSize>=mCapa) ensureCapa(mSize+1);
-		if (i == END_OF_LIST) {
+	void add(int i,const T& v) {TRACE;
+		if (mSize >= mCapa) ensureCapa(mSize+1);
+		if (i == -1) {
 			mVec[(mOffs+mSize)%mCapa]=v;
 			++mSize;
 		   	return ;
 	   	}
-		if (i > mSize) throw IndexOutOfBoundsException(i);
-		unsigned j=i;
-		if (i < mSize - i) {
+		unsigned j=(unsigned)i;
+		if (j > mSize) throw IndexOutOfBoundsException(i);
+		unsigned ii;
+		if (2*j < mSize) {
 			mOffs = (mOffs + mCapa - 1)%mCapa;
-			for (i=0; i < j; ++i) mVec[(mOffs+i)%mCapa]=mVec[(mOffs+i+1)%mCapa];
+			for (ii=0; ii < j; ++ii) mVec[(mOffs+ii)%mCapa]=mVec[(mOffs+ii+1)%mCapa];
 		}
 		else {
-			for (i=mSize; i > j; --i) mVec[(mOffs+i)%mCapa]=mVec[(mOffs+i-1)%mCapa];
+			for (ii=mSize; ii > j; --ii) mVec[(mOffs+ii)%mCapa]=mVec[(mOffs+ii-1)%mCapa];
 		}
-		printf("copy into mvec\n");
 		mVec[(mOffs+j)%mCapa]=v; ++mSize;
 	}
-	unsigned indexOf(const T& v,unsigned start=0) const {TRACE;
-		for (unsigned i=start; i < mSize; ++i ) {
-			if (util_equals(mVec[(mOffs+i)%mCapa],v)) return i;
+	int indexOf(const T& v,int start=0) const {TRACE;
+		for (unsigned i=(unsigned)start; i < mSize; ++i ) {
+			if (util_equals(mVec[(mOffs+i)%mCapa],v)) return (int)i;
 		}
-		return END_OF_LIST;
+		return -1;
 	}
-	unsigned lastIndexOf(const T& v,unsigned start=0) const {TRACE;
-		return END_OF_LIST;
+	int lastIndexOf(const T& v,int start=0) const {TRACE;
+		return -1;
 	}
 	void removeAll(const Collection<T>& c) {TRACE;
 		unsigned d=0;
@@ -105,17 +108,19 @@ public:
 		}
 		mSize=d;
 	}
-	T removeAt(unsigned i) {TRACE;
-		if (i >= mSize) throw IndexOutOfBoundsException(i);
-		T v=mVec[(mOffs+i)%mCapa]; --mSize;
-		if (i < mSize - i) {
-			for (; i > 0; --i) {
-				mVec[(mOffs+i)%mCapa]=mVec[(mOffs+i-1)%mCapa];
+	T removeAt(int i) {TRACE;
+		if (i==-1) throw IndexOutOfBoundsException(i);
+		unsigned j = (unsigned)i;
+		if (j >= mSize) throw IndexOutOfBoundsException(i);
+		T v=mVec[(mOffs+j)%mCapa]; --mSize;
+		if (j < mSize - j) {
+			for (; j > 0; --j) {
+				mVec[(mOffs+j)%mCapa]=mVec[(mOffs+j-1)%mCapa];
 			}
 			++mOffs;
 		}
 		else {
-			for (; i < mSize; ++i) mVec[(mOffs+i)%mCapa]=mVec[(mOffs+i+1)%mCapa];
+			for (; j < mSize; ++j) mVec[(mOffs+j)%mCapa]=mVec[(mOffs+j+1)%mCapa];
 		}
 		return v;
 	}
@@ -174,11 +179,11 @@ private:
 	public:
 		ArrayListIterator(ArrayList& list) : mList(list), mNext(0) {}
 		bool hasNext() const {TRACE; return mNext < mList.mSize; }
-		const T& next() {TRACE; return mList.get(mNext++); }
+		const T& next() {TRACE; ++mNext; return mList.get((int)(mNext-1)); }
 		void remove() {TRACE;
 			if (mNext > 0) {
 				--mNext;
-				mList.removeAt(mNext);
+				mList.removeAt((int)mNext);
 			}
 		}
 	};

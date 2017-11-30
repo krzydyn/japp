@@ -29,25 +29,25 @@ String::String(const String& s, int offset, int count) {TRACE;
 	if (offset < 0 || count < 0 || s.length() - count < offset) {
 		throw IndexOutOfBoundsException(offset);
 	}
-	value = s.value.substr(offset, count);
+	value = s.value.substr((unsigned)offset, (unsigned)count);
 }
 String::String(const char *s, int offset, int count) {TRACE;
 	if (s == null || this == null) throw NullPointerException();
 	if (offset < 0 || count < 0 || (int)strlen(s) - count < offset) {
 		throw IndexOutOfBoundsException(offset);
 	}
-	value = std::string(s, offset, count);
+	value = std::string(s, (unsigned)offset, (unsigned)count);
 }
 
 char String::charAt(int index) const {TRACE;
 	if ((index < 0) || (index >= length())) {
 		throw IndexOutOfBoundsException(index);
 	}
-	return value[index];
+	return value[(unsigned)index];
 }
 
-String String::valueOf(const void *ptr) {TRACE; return Integer::toHexString((unsigned long)ptr);}
-String String::valueHex(long l) {TRACE; return Integer::toHexString(l); }
+String String::valueOf(const void *ptr) {TRACE; return Long::toHexString((unsigned long)ptr);}
+String String::valueHex(long l) {TRACE; return Long::toHexString(l); }
 
 String String::format(const char *fmt, va_list& args) {TRACE;
 	static Object sync;

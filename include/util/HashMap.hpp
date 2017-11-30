@@ -34,8 +34,8 @@ template<class K,class V>
 class Map {
 public:
 	virtual ~Map() {}
-	virtual unsigned size() const = 0;
-	virtual boolean isEmpty() const = 0;
+	virtual int size() const = 0;
+	virtual boolean isEmpty() const final {return size()==0;}
 	virtual boolean containsKey(const K& key) const = 0;
 	virtual boolean containsValue(const V& value) const = 0;
 	virtual const V& get(const K& key) const = 0;
@@ -94,11 +94,11 @@ private:
 		}
 		mapsize = ns;
 	}
-	const MapEntry<K,V>* entry(unsigned i) const {TRACE;
+	const MapEntry<K,V>* entry(int i) const {TRACE;
 		for (unsigned hc=0; hc<mapsize; ++hc) {
 			ArrayList<MapEntry<K,V>>& l=map[hc];
 			if (i < l.size()) { return &l.get(i); }
-			i-=l.size();
+			i -= l.size();
 		}
 		return null;
 	}
@@ -108,8 +108,7 @@ public:
 	HashMap(unsigned s) {TRACE;init(s);}
 	~HashMap() {TRACE; if (map) delete []map; }
 
-	unsigned size() const {return elems;}
-	boolean isEmpty() const { return elems == 0; }
+	int size() const {return (int)elems;}
 	boolean containsKey(const K& key) const {TRACE;
 		return false;
 	}
@@ -120,7 +119,7 @@ public:
 	const V& get(const K& k) const {TRACE;
 		unsigned hc = util::hash_code(k)%mapsize;
 		const ArrayList<MapEntry<K,V> >& l=map[hc];
-		for (unsigned i=0; i<l.size(); ++i) {
+		for (int i=0; i<l.size(); ++i) {
 			if (is_equal(l.get(i).getKey(), k)) {
 				return l.get(i).getValue();
 			}
@@ -130,7 +129,7 @@ public:
 	V& get(const K& k) {TRACE;
 		unsigned hc = util::hash_code(k)%mapsize;
 		ArrayList<MapEntry<K,V>>& l=map[hc];
-		for (unsigned i=0; i<l.size(); ++i) {
+		for (int i=0; i<l.size(); ++i) {
 			if (is_equal(l.get(i).getKey(), k)) {
 				return l.get(i).getRef();
 			}
@@ -141,7 +140,7 @@ public:
 	const V& put(const K& k, const V& v) {TRACE;
 		unsigned hc = hash_code(k)%mapsize;
 		ArrayList<MapEntry<K,V>>& l=map[hc];
-		for (unsigned i=0; i<l.size(); ++i) {
+		for (int i=0; i<l.size(); ++i) {
 			if (is_equal(l.get(i).getKey(), k)) {
 				l.get(i).setVal(v);
 				return v;
@@ -154,7 +153,7 @@ public:
 	V remove(const K& k) {TRACE;
 		unsigned hc = hash_code(k)%mapsize;
 		ArrayList<MapEntry<K,V>>& l=map[hc];
-		for (unsigned i=0; i<l.size(); ++i) {
+		for (int i=0; i<l.size(); ++i) {
 			if (is_equal(l.get(i).getKey(), k)) {
 				--elems;
 				return l.removeAt(i).getValue();
@@ -171,7 +170,7 @@ public:
 		if (!elems) return "{}";
 		StringBuilder sb;
 		sb.append("["+String::valueOf(elems)+"] {");
-		for (unsigned i=0; i < elems; ++i) {
+		for (int i=0; i < (int)elems; ++i) {
 			if (i > 0) sb.append(",");
 			const MapEntry<K,V>* e = entry(i);
 			if (e == null) sb.append("<null>");

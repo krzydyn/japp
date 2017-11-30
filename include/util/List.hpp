@@ -4,8 +4,6 @@
 #include <lang/String.hpp>
 #include <memory> //shared_ptr
 
-#define END_OF_LIST ((unsigned)-1)
-
 namespace util {
 
 namespace helper {
@@ -38,13 +36,13 @@ template<class T>
 interface Collection : extends Iterable<T> {
 public:
 	Collection(){}
-	virtual unsigned size() const = 0;
+	virtual int size() const = 0;
 	virtual boolean isEmpty() const final {return size()==0;}
 	virtual boolean contains(const T& v) const = 0;
 	virtual IteratorPtr<T> iterator() = 0;
 	virtual Array<T> toArray() const {TRACE;
 		Array<T> a(size());
-		unsigned ai=0;
+		int ai=0;
 		for (IteratorPtr<T> i = const_cast<Collection<T>&>(*this).iterator(); i->hasNext(); ++ai) {
 			a[ai] = i->next();
 		}
@@ -90,25 +88,25 @@ public:
 	List() {}
 
 	virtual boolean contains(const T& v) const final {TRACE; return indexOf(v) < size(); }
-	virtual unsigned size() const = 0;
-	virtual const T& get(unsigned i) const = 0;
-	virtual T& get(unsigned i) = 0;
-	virtual void set(unsigned i, const T& v) = 0;
-	virtual void add(unsigned i, const T& v) = 0;
-	virtual T removeAt(unsigned i) = 0;
-	virtual unsigned indexOf(const T& v,unsigned start=0) const = 0;
-	virtual unsigned lastIndexOf(const T& v,unsigned start=0) const = 0;
+	virtual int size() const = 0;
+	virtual const T& get(int i) const = 0;
+	virtual T& get(int i) = 0;
+	virtual void set(int i, const T& v) = 0;
+	virtual void add(int i, const T& v) = 0;
+	virtual T removeAt(int i) = 0;
+	virtual int indexOf(const T& v,int start=0) const = 0;
+	virtual int lastIndexOf(const T& v,int start=0) const = 0;
 	//virtual List<T>& subList(int fromIndex, int toIndex) {}
 
-	virtual boolean add(const T& v) {TRACE;add(END_OF_LIST,v);return true;}
+	virtual boolean add(const T& v) {TRACE;add(-1,v);return true;}
 	virtual boolean remove(const T& v) {TRACE;
-		unsigned i = indexOf(v);
+		int i = indexOf(v);
 		if (i < size()) {removeAt(i);return true;}
 		return false;
 	}
 
-	virtual boolean addAll(unsigned index, const Collection<T>& c) {TRACE;
-		unsigned ai=0;
+	virtual boolean addAll(int index, const Collection<T>& c) {TRACE;
+		int ai=0;
 		for (IteratorPtr<T> i = const_cast<Collection<T>&>(c).iterator(); i->hasNext(); ++ai) {
 			add(index+ai, i->next());
 		}
@@ -116,11 +114,11 @@ public:
 	}
 
 	// generic stack interface (LIFO)
-	virtual void push(const T& v) final {TRACE;add(END_OF_LIST,v);}
+	virtual void push(const T& v) final {TRACE;add(-1,v);}
 	virtual T pop() final {TRACE;return removeAt(size()-1);}
 
 	// generic queue interface (FIFO)
-	virtual void enqueue(const T& v) final {TRACE;add(END_OF_LIST,v);}
+	virtual void enqueue(const T& v) final {TRACE;add(-1,v);}
 	virtual T dequeue() final {TRACE;return removeAt(0U);}
 };
 

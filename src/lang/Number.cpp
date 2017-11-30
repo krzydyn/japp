@@ -2,15 +2,14 @@
 
 namespace {
 char digit[] = "0123456789ABCDEFGHIJKLMNOPRSTUVWXYZ";
-char getDigit(int d) { return digit[d]; }
+char getDigit(byte d) { return digit[d]; }
 struct base {
-
    mutable std::ostream *_out;
    unsigned _base;
 
    base(unsigned value=10) : _base(value) {}
 
-   const base& operator << (const long & data) const {
+   const base& operator << (const unsigned long & data) const {
         switch(_base) {
             case 8: *_out << std::oct << data; break;
             case 10: *_out << std::dec << data; break;
@@ -20,9 +19,9 @@ struct base {
         return *this;
    }
    void print(unsigned long data) const {
-        int digits[8 * sizeof(data)], i = 0;
+        byte digits[8 * sizeof(data)], i = 0;
         while(data) {
-             digits[i++] = data % _base;
+             digits[i++] = (byte)(data % _base);
              data /= _base;
         }
         while(i) *_out << getDigit(digits[--i]);
@@ -42,31 +41,33 @@ String Boolean::toString(boolean v) {
 	return v ? "true" : "false";
 }
 
-String Integer::toString(int v, int radix) {
-	int s = v >= 0 ? 0 : 1;
-	unsigned long x = v;
+String Integer::toString(jint v, int radix) {
+	if (radix <= 0) throw ArithmeticException();
+	int s = 0;
+	if (v < 0) {s=1;v=-v;}
 	std::stringstream stream;
-	stream << base(radix) << x;
+	stream << base((unsigned)radix) << (unsigned)v;
 	return s ? "-" + stream.str() : stream.str();
 }
-String Integer::toUnsignedString(int v, int radix) {
-	unsigned long x = v;
+String Integer::toUnsignedString(jint v, int radix) {
+	if (radix <= 0) throw ArithmeticException();
 	std::stringstream stream;
-	stream << base(radix) << x;
+	stream << base((unsigned)radix) << (unsigned)v;
 	return stream.str();
 }
 
 String Long::toString(long v, int radix) {
-	int s = v >= 0 ? 0 : 1;
-	unsigned long x = v;
+	if (radix <= 0) throw ArithmeticException();
+	int s = 0;
+	if (v < 0) {s=1;v=-v;}
 	std::stringstream stream;
-	stream << base(radix) << x;
+	stream << base((unsigned)radix) << (unsigned long)v;
 	return s ? "-" + stream.str() : stream.str();
 }
 String Long::toUnsignedString(long v, int radix) {
-	unsigned long x = v;
+	if (radix <= 0) throw ArithmeticException();
 	std::stringstream stream;
-	stream << base(radix) << x;
+	stream << base((unsigned)radix) << (unsigned long)v;
 	return stream.str();
 }
 

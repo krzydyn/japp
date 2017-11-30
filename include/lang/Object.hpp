@@ -79,7 +79,6 @@ public:
 	Object() {}
 	virtual const Class& getClass() const final;
 	virtual jint hashCode() const {return (jint)this;}
-	virtual jint hashCode() {return ((const Object*)this)->hashCode();}
 
 	virtual boolean equals(const Object& obj) const {return this == &obj;}
 	virtual String toString() const;
@@ -113,23 +112,25 @@ public:
 };
 
 void registerArrayClass(const std::type_info& type);
+void checkArrayBounds(int i, int l);
 template<class T>
 class Array : extends Object {
 private:
 	T *a;
-	void init() {
-		registerArrayClass(typeid(*this));
-	}
+	void init() { registerArrayClass(typeid(*this)); }
 
 public:
 	const int length;
-	Array(const Array& o) : length(o.length) {
+	Array(const Array<T>& o) : length(o.length) {
 		a = new T[length];
 		for (int i=0; i < length; ++i) a[i] = o.a[i];
 	}
+	Array(Array<T>&& o) : length(o.length) {
+		const_cast<int&>(o.length) = 0;
+		a = o.a; o.a = null;
+	}
 	Array<T>& operator=(const Array<T>&o) {
 		if (this == &o) return *this;
-		//printf("Array copy length=%d\n",o.length);
 		delete [] a;
 		const_cast<int&>(length) = o.length;
 		a = new T[length];
@@ -138,18 +139,25 @@ public:
 	}
 
 	Array<T>& operator=(Array<T>&& o) {
-		//printf("%s move lenght=%d\n",this->getClass().getName().intern().c_str(),o.length);
 		const_cast<int&>(length) = o.length; const_cast<int&>(o.length) = 0;
-		a = o.a; o.a=null;
-		//printf("%s move done\n",this->getClass().getName().intern().c_str());
+		a = o.a; o.a = null;
 		return *this;
 	}
 
 	Array() : length(0) {init(); a = null; }
-	Array(int l) : length(l) {init(); a = new T[l]; }
+	Array(int l) : length(l) {
+		checkArrayBounds(l, l+1);
+		init(); a = new T[l];
+	}
 	~Array() { delete [] a; }
-	T& operator[](int i) { return a[i]; }
-	const T& operator[](int i) const { return a[i]; }
+	T& operator[](int i) {
+		checkArrayBounds(i, length);
+		return a[i];
+	}
+	const T& operator[](int i) const {
+		checkArrayBounds(i, length);
+		return a[i];
+	}
 };
 
 //usage if: (instanceOf<Integer>(objPtr)) {...}

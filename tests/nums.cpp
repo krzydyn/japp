@@ -1,4 +1,5 @@
 #include <lang/Number.hpp>
+#include <lang/System.hpp>
 
 int main() {
 	Boolean t1(true);

@@ -46,13 +46,13 @@ public:
 		if (in->gcount()==0) return -1;
 		return c;
 	}
-	int read(void *b, int off, int len) {
+	jint read(void *b, int off, int len) {
 		if (b == null) throw NullPointerException();
 		if ((off < 0) || (len < 0) || ((off + len) < 0)) throw IndexOutOfBoundsException();
 		if (len == 0) return 0;
 		in->read((char*)b+off,len);
 		if (in->bad()) throw IOException();
-		return in->gcount();
+		return (jint)in->gcount();
 	}
 	void close() {
 		if (!closed) {

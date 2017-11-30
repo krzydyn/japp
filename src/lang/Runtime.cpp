@@ -26,7 +26,7 @@ void Shutdown::halt(int status) {
 
 Runtime Runtime::currentRuntime;
 int Runtime::availableProcessors() {
-	return std::thread::hardware_concurrency();
+	return (int)std::thread::hardware_concurrency();
 }
 
 Process& ProcessBuilder::start() {

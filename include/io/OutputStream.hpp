@@ -23,7 +23,7 @@ public:
 	}
 	virtual void write(const char *b) {
 		if (b == null) throw NullPointerException();
-		write(b, std::strlen(b));
+		write(b, (int)std::strlen(b));
 	}
 	virtual void write(const void *b, int off, int len) {
 		if (b == null) throw NullPointerException();

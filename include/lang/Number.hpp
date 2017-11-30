@@ -39,7 +39,7 @@ public:
 	static Boolean valueOf(boolean b) {return b ? TRUE : FALSE;}
 	static Boolean valueOf(const String& s) {return parseBoolean(s) ? TRUE : FALSE;}
 	static boolean parseBoolean(const String& s) {return s.equalsIgnoreCase("true");}
-	static int hashCode(boolean value) {return value ? 1231 : 1237;}
+	static jint hashCode(boolean value) {return value ? 1231 : 1237;}
 	static int compare(boolean x, boolean y) {return (x == y) ? 0 : (x ? 1 : -1);}
 
 	Boolean(const Boolean& o) : value(o.value) {}
@@ -61,27 +61,27 @@ class Integer : extends Number, implements Comparable<Integer> {
 private:
 	int value;
 public:
-	static const int MIN_VALUE = 0x80000000;
+	static const int MIN_VALUE = (int)0x80000000;
 	static const int MAX_VALUE = 0x7fffffff;
 
-	static String toString(int i, int radix=10);
-	static String toUnsignedString(int i, int radix=10);
-	static String toHexString(int i) {return toUnsignedString(i, 16);}
-	static String toOctalString(int i) {return toUnsignedString(i, 8);}
-	static String toBinaryString(int i) {return toUnsignedString(i, 2);}
+	static String toString(jint i, int radix=10);
+	static String toUnsignedString(jint i, int radix=10);
+	static String toHexString(jint i) {return toUnsignedString(i, 16);}
+	static String toOctalString(jint i) {return toUnsignedString(i, 8);}
+	static String toBinaryString(jint i) {return toUnsignedString(i, 2);}
 	static int parseInt(const String& s, int radix=10);
 	static int parseUnsignedInt(const String& s, int radix=10);
 	static Integer valueOf(const String& s, int radix) {return Integer::valueOf(parseInt(s,radix));}
 	static Integer valueOf(const String& s) {return Integer::valueOf(parseInt(s, 10));}
 	static Integer valueOf(int i) {return Integer(i);}
 	static Integer decode(String nm);
-	static jint hashCode(int value) {return value;}
+	static jint hashCode(int value) {return (jint)value;}
 	static int compare(int x, int y) {return (x < y) ? -1 : ((x == y) ? 0 : 1);}
 
 	Integer(Integer&& o) : value(o.value) {}
 	Integer(int value) : value(value) {}
 	byte byteValue() const {return (byte)value;}
-	short shortValue() const {return value;}
+	short shortValue() const {return (short)value;}
 	int intValue() const {return (int)value;}
 	long longValue() const {return (long)value;}
 	float floatValue() const {return (float)value;}
@@ -128,7 +128,7 @@ public:
 	Short(short value) : value(value) {}
 	Short(String s) : value(parseShort(s, 10)) {}
 	byte byteValue() const {return (byte)value;}
-	short shortValue() const {return value;}
+	short shortValue() const {return (short)value;}
 	int intValue() const {return (int)value;}
 	long longValue() const {return (long)value;}
 	float floatValue() const {return (float)value;}
@@ -148,7 +148,7 @@ class Long : extends Number, implements Comparable<Long> {
 private:
 	long value;
 public:
-	static const long MIN_VALUE = 0x8000000000000000L;
+	static const long MIN_VALUE = (long)0x8000000000000000L;
 	static const long MAX_VALUE = 0x7fffffffffffffffL;
 	static String toString(long i, int radix=10);
 	static String toUnsignedString(long i, int radix=10);
@@ -160,13 +160,13 @@ public:
 	static Long valueOf(const String& s, int radix=10) {return Long::valueOf(parseLong(s, radix));}
 	static Long valueOf(long l) {return Long(l);}
 	static Long decode(const String& nm);
-	static jint hashCode(long value) { return (int)(value ^ (value >> 32)); }
+	static jint hashCode(long value) { return (jint)(value ^ (value >> 32)); }
 	static int compare(long x, long y) {return (x < y) ? -1 : ((x == y) ? 0 : 1);}
 
 	Long(Long&& o) : value(o.value) {}
 	Long(long value) : value(value) {}
 	byte byteValue() const {return (byte)value;}
-	short shortValue() const {return value;}
+	short shortValue() const {return (short)value;}
 	int intValue() const {return (int)value;}
 	long longValue() const {return (long)value;}
 	float floatValue() const {return (float)value;}

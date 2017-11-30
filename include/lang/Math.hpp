@@ -146,7 +146,7 @@ inline unsigned char *init_t8() {
 	for (int i=1; i < 256; ) {
 		int i0=i; i<<=1;
 		for (int j=0; j < i; ++j)
-			bits[i0+j]=bits[j]+1;
+			bits[i0+j]=(unsigned char)(bits[j]+1);
 	}
 	return bits;
 }
@@ -167,7 +167,7 @@ inline unsigned bitCount_t8(unsigned i) {
 	return cnt;
 }
 inline unsigned bitMask(unsigned n) {
-	return (1 << n) - 1;
+	return (unsigned)((1 << n) - 1);
 }
 
 #endif

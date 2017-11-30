@@ -15,7 +15,8 @@ GCC_VERSION:=$(shell gcc --version | awk '/^gcc/ {print $$4}')
 
 CC:=g++
 CPPFLAGS:=$(DEBUG) -I$(INC_DIR) -fPIC -std=c++11
-CPPFLAGS+=-Wall -Werror
+CPPFLAGS+=-Wall -Wconversion -Werror
+
 ifeq ($(HOST_OS),Linux)
 LDFLAGS:=-rdynamic -ldl
 endif

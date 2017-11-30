@@ -90,7 +90,7 @@ private:
 	}
 	void write(const char *s) const {
 		synchronized (*this) {
-			out.write(s,strlen(s));
+			out.write(s,(int)strlen(s));
 		}
 	}
 	void write(const String& s) const {
