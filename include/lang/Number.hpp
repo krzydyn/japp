@@ -95,6 +95,12 @@ public:
 	}
 	int compareTo(const Integer& b) { return compare(value,b.value); }
 
+	Integer operator+(int v) const {TRACE; return value+v;}
+	Integer operator+(Integer v) const {TRACE; return value+v.value;}
+	Integer& operator+=(int v) {TRACE; value+=v; return *this;}
+	Integer& operator+=(Integer v) {TRACE; value+=v.value; return *this;}
+
+	//cast operator
 	operator int() { return value; }
 };
 
@@ -142,6 +148,14 @@ public:
 		return false;
 	}
 	int compareTo(const Short& b) { return compare(value,b.value); }
+
+	Short operator+(short v) const {TRACE; return (short)(value+v);}
+	Short operator+(Short v) const {TRACE; return (short)(value+v.shortValue());}
+	Short& operator+=(short v) {TRACE; value=(short)(value+v); return *this;}
+	Short& operator+=(Short v) {TRACE; value=(short)(value+v.shortValue()); return *this;}
+
+	Integer operator+(int v) const {TRACE; return value+v;}
+	Integer operator+(Integer v) const {TRACE; return value+v.intValue();}
 };
 
 class Long : extends Number, implements Comparable<Long> {
@@ -180,6 +194,11 @@ public:
 		return false;
 	}
 	int compareTo(const Long& b) { return compare(value,b.value); }
+
+	Long operator+(long v) const {TRACE; return value+v;}
+	Long operator+(Long v) const {TRACE; return value+v.value;}
+	Long& operator+=(long v) {TRACE; value+=v; return *this;}
+	Long& operator+=(Long v) {TRACE; value+=v.value; return *this;}
 };
 
 } //namespace lang
