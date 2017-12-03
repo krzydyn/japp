@@ -5,7 +5,7 @@
 
 namespace io {
 
-class Flushable : Interface {
+interface Flushable : Interface {
 public:
 	virtual void flush() = 0;
 };

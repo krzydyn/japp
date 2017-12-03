@@ -92,11 +92,13 @@ public:
 	boolean operator!=(const std::nullptr_t&) const {return this != null; }
 
 	static const Class& getClass(const std::type_info& type);
+
 	class Lock {
 	private:
 		const Object& obj;
 		boolean locked=true;
 	public:
+		Lock(const Object* o) : Lock(*o) {}
 		Lock(const Object& o) : obj(o) {
 			if (obj.mtx == null) {
 				const_cast<Object&>(obj).mtx = new std::recursive_mutex;

@@ -2,6 +2,7 @@
 #include <io/File.hpp>
 #include <io/FileOutputStream.hpp>
 #include <io/FileInputStream.hpp>
+#include <io/Writer.hpp>
 
 static void test_nonexisting() {
 	io::File f("non-existing.txt");

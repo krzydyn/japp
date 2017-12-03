@@ -7,7 +7,7 @@ TOP_DIR?=.
 BUILD_DIR?=$(TOP_DIR)/build
 SOURCE_DIR?=$(PREFIX)
 INC_DIR?=../include
-JRELIB?=../src/build/jre.a
+JRELIB?=../build/jre.a
 DEBUG?=-g2
 
 HOST_OS:=$(shell uname -s)

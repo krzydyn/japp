@@ -102,7 +102,7 @@ public:
 		if (access&ACCESS_EXECUTE) perm |= S_IXUSR|S_IXGRP|S_IXOTH;
 		if (owneronly) perm &= S_IRWXU;
 		if (enable) perm = st.st_mode | perm;
-		else perm = st.st_mode & (~perm);
+		else perm = (mode_t)(st.st_mode & (~perm));
 		perm &= S_IRWXU | S_IRWXG | S_IRWXO;
 		return chmod(f.getPath().intern().c_str(), perm) == 0;
 	}

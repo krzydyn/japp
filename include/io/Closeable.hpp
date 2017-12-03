@@ -5,7 +5,7 @@
 
 namespace io {
 
-class Closeable : Interface {
+interface Closeable : Interface {
 public:
 	virtual void close() = 0;
 };

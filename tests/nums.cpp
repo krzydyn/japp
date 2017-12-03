@@ -6,5 +6,6 @@ int main() {
 	Short t2(1);
 	Integer t3(1);
 	Long t4(1);
+	Boolean::compare(true,false);
 	return 0;
 }
