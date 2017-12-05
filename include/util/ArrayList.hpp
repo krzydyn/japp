@@ -42,8 +42,8 @@ public:
 	}
 	~ArrayList() {TRACE; delete [] mVec; }
 
-	IteratorPtr<T> iterator() {TRACE;
-		return makeIterator<ArrayListIterator>(*this);
+	SharedIterator<T> iterator() {TRACE;
+		return makeShared<ArrayListIterator>(*this);
 	}
 	void clear() { mOffs=mSize=0; }
 	int size() const {return (int)mSize;}

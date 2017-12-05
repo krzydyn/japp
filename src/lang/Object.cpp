@@ -224,7 +224,7 @@ String Class::getName() const {TRACE;return demangle(type.name());}
 String Class::getCanonicalName() const {TRACE;return getName();}
 
 Class *Object::findClass(const std::type_info& type) {
-	for (IteratorPtr<Class*> i = classmap.iterator(); i->hasNext(); ) {
+	for (SharedIterator<Class*> i = classmap.iterator(); i->hasNext(); ) {
 		Class *c = i->next();
 		if (c->type == type) return c;
 	}

@@ -23,8 +23,6 @@ using jlong=long long;
 
 namespace lang {
 
-template<class T> using Ptr = std::shared_ptr<T>;
-
 class Class;
 class Object;
 class String;
@@ -115,6 +113,11 @@ public:
 		void unlock() { locked=false; }
 	};
 };
+
+template<class T> using Shared = std::shared_ptr<T>;
+template<class T, class... Args>
+Shared<T> makeShared(Args&&... args) {TRACE; return std::make_shared<T>(args...); }
+
 
 void registerArrayClass(const std::type_info& type);
 void checkArrayBounds(int i, int l);

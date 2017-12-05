@@ -46,6 +46,13 @@ char String::charAt(int index) const {TRACE;
 	return value[(unsigned)index];
 }
 
+void String::getChars(int srcBegin, int srcEnd, char *dst, int dstBegin) const {
+	if (srcBegin < 0) throw IndexOutOfBoundsException(srcBegin);
+	if ((unsigned)srcEnd > value.length()) throw IndexOutOfBoundsException(srcEnd);
+	if (srcBegin > srcEnd) throw IndexOutOfBoundsException(srcEnd - srcBegin);
+	memcpy(dst + dstBegin, value.c_str() + srcBegin, srcEnd - srcBegin);
+}
+
 String String::valueOf(const void *ptr) {TRACE; return Long::toHexString((unsigned long)ptr);}
 String String::valueHex(long l) {TRACE; return Long::toHexString(l); }
 

@@ -29,6 +29,9 @@ public:
 	}
 	virtual void write(const String& str, int off, int len) {
 		synchronized (lock) {
+			Shared<char> cbuf = makeShared<char>(len);
+			str.getChars(off, (off + len), cbuf.get(), 0);
+			write(cbuf.get(), 0, len);
 		}
 	}
 	Writer& append(const CharSequence& csq) {
@@ -36,8 +39,15 @@ public:
 		return *this;
 	}
 	Writer& append(const CharSequence& csq, int start, int end) {
+		write(csq.subSequence(start,end)->toString());
 		return *this;
 	}
+	Writer& append(char c) {
+		write((int)c);
+		return *this;
+	}
+	void flush() = 0;
+	void close() = 0;
 };
 
 } //namespace io

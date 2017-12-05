@@ -20,15 +20,13 @@ public:
 };
 
 template<class T>
-using IteratorPtr = Ptr<Iterator<T>>;
+using SharedIterator = Shared<Iterator<T>>;
 
-template<class T, class... Args>
-std::shared_ptr<T> makeIterator(Args&&... args) {TRACE; return std::make_shared<T>(args...); }
 template<class T>
 interface Iterable : Interface {
 public:
 	Iterable(){}
-	virtual IteratorPtr<T> iterator() = 0;
+	virtual SharedIterator<T> iterator() = 0;
 };
 
 template<class T>
@@ -38,30 +36,30 @@ public:
 	virtual int size() const = 0;
 	virtual boolean isEmpty() const final {return size()==0;}
 	virtual boolean contains(const T& v) const = 0;
-	virtual IteratorPtr<T> iterator() = 0;
+	virtual SharedIterator<T> iterator() = 0;
 	virtual Array<T> toArray() const {TRACE;
 		Array<T> a(size());
 		int ai=0;
-		for (IteratorPtr<T> i = const_cast<Collection<T>&>(*this).iterator(); i->hasNext(); ++ai) {
+		for (SharedIterator<T> i = const_cast<Collection<T>&>(*this).iterator(); i->hasNext(); ++ai) {
 			a[ai] = i->next();
 		}
 		return a;
 	}
 	virtual boolean add(const T& v) = 0;
 	virtual boolean remove(const T& v) = 0;
-	virtual boolean containsAll(const Collection<T>& c) const {
-		for (IteratorPtr<T> i = const_cast<Collection<T>&>(c).iterator(); i->hasNext(); ) {
+	virtual boolean containsAll(const Collection<T>& c) const {TRACE;
+		for (SharedIterator<T> i = const_cast<Collection<T>&>(c).iterator(); i->hasNext(); ) {
 			if (!contains(i->next())) return false;
 		}
 		return true;
 	}
 	virtual void addAll(const Collection<T>& c) {TRACE;
-		for (IteratorPtr<T> i = const_cast<Collection<T>&>(c).iterator(); i->hasNext(); ) {
+		for (SharedIterator<T> i = const_cast<Collection<T>&>(c).iterator(); i->hasNext(); ) {
 			add(i->next());
 		}
 	}
 	virtual void removeAll(const Collection<T>& c) {TRACE;
-		for (IteratorPtr<T> i = iterator(); i->hasNext(); ) {
+		for (SharedIterator<T> i = iterator(); i->hasNext(); ) {
 			if (c.contains(i->next())) i->remove();
 		}
 	}
@@ -106,7 +104,7 @@ public:
 
 	virtual boolean addAll(int index, const Collection<T>& c) {TRACE;
 		int ai=0;
-		for (IteratorPtr<T> i = const_cast<Collection<T>&>(c).iterator(); i->hasNext(); ++ai) {
+		for (SharedIterator<T> i = const_cast<Collection<T>&>(c).iterator(); i->hasNext(); ++ai) {
 			add(index+ai, i->next());
 		}
 		return true;
@@ -131,12 +129,12 @@ public:
 	virtual ~AbstractList() {}
 
 	AbstractList() {}
-	IteratorPtr<T> iterator() = 0;
+	SharedIterator<T> iterator() = 0;
 
 	String toString() const {TRACE;
 		StringBuilder s;
 		s.append("[");
-		IteratorPtr<T> i = const_cast<AbstractList<T>&>(*this).iterator();
+		SharedIterator<T> i = const_cast<AbstractList<T>&>(*this).iterator();
 		if (i->hasNext()) s.append(i->next());
 		while (i->hasNext()) {
 			s.append(",");

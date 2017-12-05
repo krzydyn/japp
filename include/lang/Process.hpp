@@ -68,7 +68,7 @@ public:
 	}
 	ProcessBuilder& environment(util::List<String> *envp) {
 		if (envp == null) return *this;
-		for (IteratorPtr<String> i=envp->iterator(); i->hasNext(); ) {
+		for (SharedIterator<String> i=envp->iterator(); i->hasNext(); ) {
 			String envstring = i->next();
 			int eqlsign = envstring.indexOf('=', ProcessEnvironment::MIN_NAME_LENGTH);
 			if (eqlsign != -1) env.put(envstring.substring(0,eqlsign), envstring.substring(eqlsign+1));

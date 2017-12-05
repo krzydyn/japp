@@ -19,7 +19,7 @@ interface CharSequence : Interface {
 public:
 	virtual int length() const = 0;
 	virtual char charAt(int index) const = 0;
-	//virtual const CharSequence& subSequence(int start, int end) const = 0;
+	virtual Shared<const CharSequence> subSequence(int start, int end) const = 0;
 	virtual String toString() const = 0;
 };
 
@@ -55,6 +55,7 @@ public:
 	int length() const { return (int)value.length(); }
 	boolean isEmpty() const { return value.length() == 0; }
 	char charAt(int index) const;
+	void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) const;
 
 	String operator+(const char *s) const {TRACE;
 		return value+s;
@@ -144,9 +145,9 @@ public:
 	String substring(int beginIndex, int endIndex) const {TRACE;
 		return value.substr((unsigned)beginIndex,(unsigned)(endIndex-beginIndex));
 	}
-	/*const CharSequence& subSequence(int beginIndex, int endIndex) const {
-		return substring(beginIndex, endIndex);
-	}*/
+	Shared<const CharSequence> subSequence(int beginIndex, int endIndex) const {
+		return makeShared<String>(substring(beginIndex, endIndex));
+	}
 	String concat(String str) {TRACE; return *this + str; }
 	String replace(char oldChar, char newChar) {TRACE;
 		if (oldChar != newChar) {
