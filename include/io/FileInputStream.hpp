@@ -11,12 +11,15 @@ class FileInputStream : extends InputStream {
 private:
 	//use pointer to impl. assign oparation while std::istream assign is protected
 	std::istream* in;
+	String fn;
 	boolean allocated = false;
 	boolean closed = true;
 	void move(FileInputStream* o) {
 		if (o==this) return ;
 		in = o->in; o->in = null;
+		fn = std::move(o->fn);
 		allocated = o->allocated; o->allocated = false;
+		closed = o->closed; o->closed = false;
 	}
 
 public:
@@ -34,7 +37,8 @@ public:
 		std::ifstream *fs = new std::ifstream();
 		in=fs; allocated=true;
 		fs->open(f.getPath().intern(), std::fstream::binary | std::fstream::in);
-		if (fs->bad()) throw IOException();
+		if (in->fail()) throw IOException(f.getPath()+": "+strerror(errno));
+		fn = f.getPath();
 		closed=false;
 	}
 
@@ -42,8 +46,8 @@ public:
 	int read() {
 		char c;
 		in->read(&c,sizeof(char));
-		if (in->bad()) throw IOException();
 		if (in->gcount()==0) return -1;
+		if (in->fail()) throw IOException(fn+": "+strerror(errno));
 		return c;
 	}
 	jint read(void *b, int off, int len) {
@@ -51,7 +55,7 @@ public:
 		if ((off < 0) || (len < 0) || ((off + len) < 0)) throw IndexOutOfBoundsException();
 		if (len == 0) return 0;
 		in->read((char*)b+off,len);
-		if (in->bad()) throw IOException();
+		if (in->fail()) throw IOException(fn+": "+strerror(errno));
 		return (jint)in->gcount();
 	}
 	void close() {

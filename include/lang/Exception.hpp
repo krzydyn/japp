@@ -46,6 +46,7 @@ public:
 	StackTraceElement(void *f) : fptr(f) {}
 	StackTraceElement(const String& methodName, const String& fileName, int lineNumber) :
    		methodName(methodName), fileName(fileName), lineNumber(lineNumber) {
+		fptr = null;
 	}
 
 	const String&  getMethodName() const { return methodName; }

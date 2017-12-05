@@ -11,6 +11,15 @@ static void test_nonexisting() {
 }
 static void test_write_read() {
 	io::File f = io::File("/tmp/test.txt");
+	try {
+		io::FileInputStream fis(f);
+		int r =fis.read();
+		System.out.printf("read %d\n", r);
+	}
+	catch (const io::IOException& e) {
+		e.printStackTrace();
+	}
+
 	io::FileOutputStream fos(f);
 	fos.write("test\n");
 	fos.close();

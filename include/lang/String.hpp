@@ -59,6 +59,9 @@ public:
 	String operator+(const char *s) const {TRACE;
 		return value+s;
 	}
+	String operator+(char *s) const {TRACE;
+		return value+s;
+	}
 	String operator+(const std::string& s) const {TRACE;
 		return value+s;
 	}
@@ -120,7 +123,7 @@ public:
 			for (int i = 0; i < length(); i++) {
 				h = 31 * h + value[(unsigned)i];
 			}
-			const_cast<String*>(this)->hash = h;
+			const_cast<jint&>(this->hash) = h;
 		}
 		return h;
 	}

@@ -37,7 +37,7 @@ public:
 		out=fs; allocated=true;
 		if (append) fs->open(f.getPath().intern(), std::fstream::binary | std::fstream::out | std::fstream::app);
 		else fs->open(f.getPath().intern(), std::fstream::binary | std::fstream::out | std::fstream::trunc);
-		if (fs->bad()) throw IOException();
+		if (fs->fail()) throw IOException(f.getPath()+":"+strerror(errno));
 		System.out.println("FileOutputStream allocated "+f.getPath());
 		fn = f.getPath();
 		closed=false;
@@ -47,11 +47,11 @@ public:
 	void write(int b) {
 		char c=(char)b;
 		out->write(&c,sizeof(char));
-		if (out->bad()) throw IOException();
+		if (out->fail()) throw IOException(fn+": "+strerror(errno));
 	}
 	void write(void *b, int off, int len) {
 		out->write((char*)b+off,len);
-		if (out->bad()) throw IOException();
+		if (out->fail()) throw IOException(fn+": "+strerror(errno));
 	}
 	void close() {
 		if (!closed) {

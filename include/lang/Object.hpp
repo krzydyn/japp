@@ -2,6 +2,7 @@
 #define __LANG_OBJECT_HPP
 
 #include <mutex>
+#include <memory> //shared_ptr
 
 #define interface class
 #define extends public
@@ -21,6 +22,8 @@ using jlong=long long;
 #define class(c) Object::getClass(typeid(c))
 
 namespace lang {
+
+template<class T> using Ptr = std::shared_ptr<T>;
 
 class Class;
 class Object;

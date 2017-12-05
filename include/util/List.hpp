@@ -2,7 +2,6 @@
 #define __UTIL_LIST_HPP
 
 #include <lang/String.hpp>
-#include <memory> //shared_ptr
 
 namespace util {
 
@@ -21,7 +20,7 @@ public:
 };
 
 template<class T>
-using IteratorPtr = std::shared_ptr<Iterator<T>>;
+using IteratorPtr = Ptr<Iterator<T>>;
 
 template<class T, class... Args>
 std::shared_ptr<T> makeIterator(Args&&... args) {TRACE; return std::make_shared<T>(args...); }
