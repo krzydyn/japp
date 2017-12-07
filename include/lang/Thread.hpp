@@ -42,7 +42,15 @@ public:
 	virtual void run() = 0;
 };
 
+class ThreadGroup;
 class Thread : extends Object, implements Runnable {
+public:
+	static const int MAX_PRIORITY = 10;
+	interface UncaughtExceptionHandler : Interface {
+	public:
+		virtual void uncaughtException(const Thread& t, const Throwable& e) = 0;
+	};
+
 private:
 #ifdef BACKTRACE
 	friend class CallTrace;
@@ -57,6 +65,7 @@ private:
 	int priority;
 	boolean daemon = false;
 	Runnable* target = null;
+	ThreadGroup *group = null;
 	long stackSize;
 	long tid;
 	volatile int threadStatus = NEW;
@@ -94,6 +103,7 @@ public:
 	int getPriority() const {return priority;}
 	void setName(const String& name);
 	String getName() const {return name;}
+	ThreadGroup& getThreadGroup() {return *group;}
 	void join(long millis=0);
 	void join(long millis, int nanos) {TRACE;
 		if (millis < 0) throw IllegalArgumentException("timeout value is negative");
@@ -138,6 +148,7 @@ public:
 	static void dumpStack() {
 		Throwable("Stack trace").fillInStackTrace().printStackTrace();
 	}
+	 static UncaughtExceptionHandler* getDefaultUncaughtExceptionHandler(){return null;}
 };
 
 } //namespace lang

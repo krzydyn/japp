@@ -45,6 +45,9 @@ const util::Map<String,String>& The_System::getenv() {
 	return env;
 }
 
+void The_System::arraycopy(const Object& src, int srcPos, Object& dest, int destPos, int length) {
+}
+
 } //namespace lang
 
 #ifdef INSTRUMENTATION

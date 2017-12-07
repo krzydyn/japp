@@ -172,11 +172,11 @@ void Thread::start() {
 	tid = threads.nextThreadNumber();
 	parent = &Thread::currentThread();
 	if (name.length() == 0) {
-		name += parent->getName() + "::";
+		//name += parent->getName() + "::";
 		name += "Thread-" + String::valueOf(tid);
 	}
 	else {
-		name = parent->getName() + "::" + name;
+		//name = parent->getName() + "::" + name;
 	}
 	pendingNameChange = true;
 	this->thread = new std::thread([=] {

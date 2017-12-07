@@ -1,7 +1,9 @@
 #include <lang/System.hpp>
 #include <lang/Thread.hpp>
+#include <lang/ThreadGroup.hpp>
 
 static void test_mainthread() {TRACE;
+	System.out.println("Main thread name is "+Thread::currentThread().getName());
 	if (!Thread::currentThread().getName().equals("main"))
 		System.err.println("main thread has wrong name");
 }

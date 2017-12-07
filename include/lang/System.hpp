@@ -33,6 +33,11 @@ public:
 	 */
 	static jlong nanoTime();
 	static void arraycopy(const Object& src, int srcPos, Object& dest, int destPos, int length);
+	template<class T>
+	static void arraycopy(const Array<T>& src, int srcPos, Array<T>& dest, int destPos, int length) {
+		//arraycopy(&src.a, srcPos*sizeof(T), dest.a, destPos*sizeof(T), length*sizeof(T));
+		for (int i=0; i < length; ++i) dest[destPos + i] = src[srcPos + i];
+	}
 	static int identityHashCode(const Object& o) {
 		throw UnsupportedOperationException();
 	}
