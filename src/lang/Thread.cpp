@@ -1,5 +1,6 @@
 #include <lang/System.hpp>
 #include <lang/Thread.hpp>
+#include <lang/ThreadGroup.hpp>
 #include <util/HashMap.hpp>
 #include <chrono>
 #include <thread>
@@ -25,7 +26,10 @@ void setNativeName(std::thread& thread, const String& name, boolean& pending) {
 	pthread_setname_np(thread.native_handle(), name.intern().c_str());
 	#endif
 }
-
+class MainThreadGroup : extends ThreadGroup {
+public:
+	MainThreadGroup() : ThreadGroup("main",null) {}
+};
 class MainThread : extends Thread {
 public:
 	MainThread() : Thread("main", RUNNABLE) {}
@@ -42,24 +46,34 @@ class Threads : extends Object {
 	boolean recursive=false; //guard for recursive trace call
 public:
 	long threadSeqNumber = 0;
+	long threadInitNumber = 0;
 	HashMap<std::thread::id,Thread*> thrmap;
-	MainThread main;
 	boolean ready=false;
+	MainThreadGroup maingroup;
+	MainThread *main;
 
-	Threads() : thrmap(), main() {
+	Threads() : thrmap() {
 		ready=true;
 		mainid = std::this_thread::get_id();
-		addThread(mainid, &main);
+		main = new MainThread();
+		addThread(mainid, main);
 	}
+
 	~Threads() {
 		removeThread(mainid);
 		ready=false;
 	}
-	long nextThreadNumber() {
+	long nextThreadNum() {
+		long n;
+		synchronized(*this) {
+			n = threadInitNumber++;
+		}
+		return n;
+	}
+	long nextThreadID() {
 		long tid;
 		synchronized(*this) {
-			tid = threadSeqNumber;
-			++threadSeqNumber;
+			tid = ++threadSeqNumber;
 		}
 		return tid;
 	}
@@ -89,10 +103,25 @@ public:
 		}
 		return t;
 	}
-} threads;
+};
+Threads threads __attribute__((init_priority(300))) ();
 } //anoymous namespace
 
 namespace lang {
+Thread::UncaughtExceptionHandler* Thread::defaultUncaughtExceptionHandler = null;
+
+void Thread::init() {
+	parent = &Thread::currentThread();
+	if (group == null) {
+		group = &parent->getThreadGroup();
+	}
+	if (group != null)
+		group->addUnstarted();
+	daemon = parent->isDaemon();
+	priority = parent->getPriority();
+	tid = threads.nextThreadID();
+}
+
 #ifdef BACKTRACE
 void Thread::tracePush(CallTrace *c) {
 	if (calltrace_size < BACKTRACE_SIZE)
@@ -169,8 +198,6 @@ void Thread::start() {
 		throw IllegalThreadStateException();
 	}
 
-	tid = threads.nextThreadNumber();
-	parent = &Thread::currentThread();
 	if (name.length() == 0) {
 		//name += parent->getName() + "::";
 		name += "Thread-" + String::valueOf(tid);
@@ -178,13 +205,19 @@ void Thread::start() {
 	else {
 		//name = parent->getName() + "::" + name;
 	}
+	parent = &Thread::currentThread();
+	if (group)
+		group->add(this);
 	pendingNameChange = true;
 	this->thread = new std::thread([=] {
 		std::thread::id thrid = std::this_thread::get_id();
 		threads.addThread(thrid, this);
 		try {
 			do { Thread::yield(); } while (threadStatus == NEW);
-			if (threadStatus == RUNNABLE) run();
+			if (threadStatus == RUNNABLE) {
+				setPriority(priority);
+				run();
+			}
 		} catch(const Throwable& e) {
 			e.printStackTrace(System.err);
 		} catch (const std::exception& e) {
@@ -212,7 +245,10 @@ Thread& Thread::currentThread() {
 	Thread *t = threads.getThread(id);
 	if (t == null) {
 		System.err.println("FATAL: thread not found: " + String::valueOf(id));
-		return threads.main;
+		if (threads.main == null) {
+			exit(-1);
+		}
+		return *threads.main;
 	}
 	return *t;
 }
@@ -224,6 +260,10 @@ void Thread::yield() noexcept {
 void Thread::sleep(long millis) {
 	Thread::currentThread().selfupdate();
 	std::this_thread::sleep_for(std::chrono::milliseconds(millis));
+}
+
+int Thread::activeCount() {
+	return currentThread().getThreadGroup().activeCount();
 }
 
 } //namespace lang

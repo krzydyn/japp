@@ -41,7 +41,7 @@ void __cxa_throw(void* thrown_exception, void* _tinfo, void (*dest)(void*)) {
 }
 
 namespace {
-ArrayList<Class*> classmap;
+ArrayList<Class*> classmap __attribute__((init_priority(200))) ();
 
 boolean initialize();
 static const boolean SET_TERMINATE = initialize();
@@ -234,7 +234,7 @@ void Object::registerClass(Class *c) {
 	Class *o = Object::findClass(c->type);
 	if (o == c) return ;
 	if (o) classmap.remove(o);
-	System.out.println("register Class " + c->getName());
+	//System.out.println("register Class " + c->getName());
 	classmap.add(c);
 }
 const Class& Object::getClass() const {TRACE;

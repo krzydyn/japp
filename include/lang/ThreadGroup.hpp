@@ -9,7 +9,8 @@ namespace lang {
 
 using namespace io;
 
-class ThreadGroup : extends Object {
+class ThreadGroup : extends Object, implements Thread::UncaughtExceptionHandler {
+friend class Thread;
 private:
 	ThreadGroup *parent;
 	String name;
@@ -27,6 +28,21 @@ private:
 	ThreadGroup() : parent(null) {
 		name = "system";
 		maxPriority = Thread::MAX_PRIORITY;
+	}
+
+	void add(Thread *t) {
+		synchronized (*this) {
+			if (destroyed) throw IllegalThreadStateException();
+			if (threads.length == 0) {
+				threads = Array<Thread*>(4);
+			}
+			else if (nthreads == threads.length) {
+				threads = Arrays::copyOf(threads, nthreads * 2);
+			}
+			threads[nthreads] = t;
+			++nthreads;
+			--nUnstartedThreads;
+		}
 	}
 
 	void add(ThreadGroup* g) {
@@ -54,6 +70,13 @@ private:
 			destroy();
 	}
 
+	void addUnstarted() {
+		synchronized (*this) {
+			if (destroyed) throw new IllegalThreadStateException();
+			nUnstartedThreads++;
+		}
+	}
+
 	int enumerate(Array<Thread*>& list, int n, boolean recurse) {
 		if (destroyed) return 0;
 		int nt = nthreads;
@@ -69,6 +92,13 @@ private:
 		return n;
 	}
 	void list(PrintStream& out, int indent) {
+	}
+
+protected:
+	ThreadGroup(const String& name, ThreadGroup *p) : parent(p) {
+		this->name = name;
+		maxPriority = 1;
+		vmAllowSuspension = false;
 	}
 
 public:

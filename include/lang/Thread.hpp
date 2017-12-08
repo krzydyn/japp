@@ -72,10 +72,15 @@ private:
 	Interruptible interruptor;
 	std::thread *thread = null;
 	boolean pendingNameChange = false;
+	UncaughtExceptionHandler* uncaughtExceptionHandler = null;
 	void selfupdate();
 
+	void init();
+
+	static UncaughtExceptionHandler* defaultUncaughtExceptionHandler;
 protected:
 	Thread(const String& name, int status) : name(name), threadStatus(status) {}
+	Thread(ThreadGroup& group,const String& name, int status) : name(name), group(&group), threadStatus(status) {}
 	void setId();
 
 public:
@@ -86,9 +91,12 @@ public:
 
 	//TODO suport lamba as target in constructor
 	Thread() {}
-	Thread(Runnable& target) : target(&target) {}
-	Thread(const String& name) : name(name) {}
-	Thread(Runnable& target, const String& name) : name(name), target(&target) {}
+	Thread(Runnable& target) : target(&target) {init();}
+	Thread(ThreadGroup& group, Runnable& target) : target(&target), group(&group) {init();}
+	Thread(const String& name) : name(name) {init();}
+	Thread(ThreadGroup& group, const String& name) : name(name), group(&group) {init();}
+	Thread(Runnable& target, const String& name) : name(name), target(&target) {init();}
+	Thread(ThreadGroup& group, Runnable& target, const String& name) : name(name), target(&target), group(&group) {init();}
 	~Thread();
 
 	void start();
@@ -133,7 +141,14 @@ public:
 
 	State getState() const { return (State)threadStatus; }
 
-	static int activeCount() {return 0;}
+	void setUncaughtExceptionHandler(UncaughtExceptionHandler* eh) {
+		uncaughtExceptionHandler = eh;
+	}
+	const UncaughtExceptionHandler* getUncaughtExceptionHandler() {
+		return uncaughtExceptionHandler != null ? uncaughtExceptionHandler : (const UncaughtExceptionHandler*)group;
+	}
+
+	static int activeCount();
 	static Thread& currentThread();
 	//static Map<Thread, StackTraceElement[]> getAllStackTraces() {}
 	static void yield() noexcept;
@@ -148,7 +163,10 @@ public:
 	static void dumpStack() {
 		Throwable("Stack trace").fillInStackTrace().printStackTrace();
 	}
-	 static UncaughtExceptionHandler* getDefaultUncaughtExceptionHandler(){return null;}
+	static void setDefaultUncaughtExceptionHandler(UncaughtExceptionHandler* eh) {
+		defaultUncaughtExceptionHandler = eh;
+	}
+	static UncaughtExceptionHandler* getDefaultUncaughtExceptionHandler(){return defaultUncaughtExceptionHandler;}
 };
 
 } //namespace lang
