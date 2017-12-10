@@ -10,7 +10,7 @@ namespace util {
 class Arrays final : extends Object {
 public:
 	template<class T>
-	static Array<T> copyOf(Array<T>& original, int newLength) {
+	static Array<T> copyOf(const Array<T>& original, int newLength) {
 		Array<T> copy(newLength);
 		System.arraycopy(original, 0, copy, 0, Math.min(original.length, newLength));
 		return copy;

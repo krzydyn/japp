@@ -13,7 +13,7 @@ class The_System final : Interface {
 private:
 	static Properties props;
 	static String lineSep;
-	static void arraycopy(void *src, int srcPos, void *dest, int destPos, int length);
+	static void arraycopy(const void *src, int srcPos, void *dest, int destPos, int length);
 public:
 	The_System(){}
 	~The_System(){}

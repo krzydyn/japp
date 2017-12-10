@@ -32,6 +32,7 @@ public:
 };
 class MainThread : extends Thread {
 public:
+	MainThread(ThreadGroup& g) : Thread(g, "main", RUNNABLE) {}
 	MainThread() : Thread("main", RUNNABLE) {}
 };
 
@@ -55,7 +56,7 @@ public:
 	Threads() : thrmap() {
 		ready=true;
 		mainid = std::this_thread::get_id();
-		main = new MainThread();
+		main = new MainThread(maingroup);
 		addThread(mainid, main);
 	}
 
@@ -104,7 +105,7 @@ public:
 		return t;
 	}
 };
-Threads threads __attribute__((init_priority(300))) ();
+Threads threads;
 } //anoymous namespace
 
 namespace lang {

@@ -56,6 +56,9 @@ public:
 	boolean isEmpty() const { return value.length() == 0; }
 	char charAt(int index) const;
 	void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) const;
+	Array<byte> getBytes() {
+		return Array<byte>((byte*)value.c_str(),(int)value.length());
+	}
 
 	String operator+(const char *s) const {TRACE;
 		return value+s;
@@ -86,6 +89,10 @@ public:
 	}
 	boolean equals(const char *str) const {TRACE;
 		return str==null ? value == "" : value == str;
+	}
+	boolean equals(const String& o) const {TRACE;
+		if (this == &o) return true;
+		return value == o.value;
 	}
 	boolean equals(const Object& o) const {TRACE;
 		if (this == &o) return true;
@@ -200,8 +207,8 @@ public:
 	static String valueOf(float n) {TRACE;return std::to_string(n); }
 	static String valueOf(double n) {TRACE;return std::to_string(n); }
 
-	static String valueOf(const void *ptr);
 	static String valueOf(const char *s) {TRACE;return s;}
+	static String valueOf(char *s) {TRACE;return valueOf((const char*)s);}
 	static String valueOf(const Object& obj) {TRACE; return obj.toString(); }
 	static String valueOf(const String& s) {TRACE;return s;}
 	template<class T, class std::enable_if<!std::is_base_of<Object,T>::value,Object>::type* = nullptr>

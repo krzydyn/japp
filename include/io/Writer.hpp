@@ -10,39 +10,42 @@ namespace io {
 class Writer : extends Object, implements Appendable, implements Closeable, implements Flushable {
 protected:
    	Object* lock;
-	Writer() {lock=this;}
+	Writer() {lock = this;}
 	Writer(Object* lock) {
 		if (lock == null) throw NullPointerException();
 		this->lock = lock;
 	}
 public:
 	virtual void write(int c) {
-		synchronized (lock) {
+		synchronized (*lock) {
+			Array<char> a(1);
+			a[0] = (char)c;
+			write(a, 0, 1);
 		}
 	}
 	virtual void write(const Array<char>& cbuf) {
 		write(cbuf, 0, cbuf.length);
 	}
-	virtual void write(const Array<char>& cbuf, int off, int len)=0;
+	virtual void write(const Array<char>& cbuf, int off, int len) = 0;
 	virtual void write(const String& str) {
 		write(str, 0, str.length());
 	}
 	virtual void write(const String& str, int off, int len) {
-		synchronized (lock) {
-			Shared<char> cbuf = makeShared<char>(len);
-			str.getChars(off, (off + len), cbuf.get(), 0);
-			write(cbuf.get(), 0, len);
+		synchronized (*lock) {
+			Array<char> cbuf(len);
+			str.getChars(off, (off + len), &cbuf[0], 0);
+			write(cbuf, 0, len);
 		}
 	}
-	Writer& append(const CharSequence& csq) {
+	virtual Writer& append(const CharSequence& csq) {
 		write(csq.toString());
 		return *this;
 	}
-	Writer& append(const CharSequence& csq, int start, int end) {
-		write(csq.subSequence(start,end)->toString());
+	virtual Writer& append(const CharSequence& csq, int start, int end) {
+		write(csq.subSequence(start, end)->toString());
 		return *this;
 	}
-	Writer& append(char c) {
+	virtual Writer& append(char c) {
 		write((int)c);
 		return *this;
 	}

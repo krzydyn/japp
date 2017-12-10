@@ -53,7 +53,6 @@ void String::getChars(int srcBegin, int srcEnd, char *dst, int dstBegin) const {
 	memcpy(dst + dstBegin, value.c_str() + srcBegin, srcEnd - srcBegin);
 }
 
-String String::valueOf(const void *ptr) {TRACE; return Long::toHexString((unsigned long)ptr);}
 String String::valueHex(long l) {TRACE; return Long::toHexString(l); }
 
 String String::format(const char *fmt, va_list& args) {TRACE;

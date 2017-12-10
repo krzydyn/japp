@@ -41,10 +41,14 @@ void __cxa_throw(void* thrown_exception, void* _tinfo, void (*dest)(void*)) {
 }
 
 namespace {
-ArrayList<Class*> classmap __attribute__((init_priority(200))) ();
+boolean classmap_init=false;
+class ClassList : public ArrayList<Class*> {
+public:
+	ClassList() { classmap_init=true; }
+} classmap;
 
 boolean initialize();
-static const boolean SET_TERMINATE = initialize();
+const boolean SET_TERMINATE = initialize();
 
 void terminate_hook();
 void signal_handle(int signum);
@@ -224,6 +228,7 @@ String Class::getName() const {TRACE;return demangle(type.name());}
 String Class::getCanonicalName() const {TRACE;return getName();}
 
 Class *Object::findClass(const std::type_info& type) {
+	if (classmap_init==false) return null;
 	for (SharedIterator<Class*> i = classmap.iterator(); i->hasNext(); ) {
 		Class *c = i->next();
 		if (c->type == type) return c;
@@ -231,6 +236,7 @@ Class *Object::findClass(const std::type_info& type) {
 	return null;
 }
 void Object::registerClass(Class *c) {
+	if (classmap_init==false) return ;
 	Class *o = Object::findClass(c->type);
 	if (o == c) return ;
 	if (o) classmap.remove(o);

@@ -31,6 +31,12 @@ public:
 		if (len == 0) return ;
 		for (int i = 0 ; i < len ; i++) write((int)((char*)b)[off + i]);
 	}
+	virtual void write(const Array<byte>& b) final {
+		write(&b[0], 0, b.length);
+	}
+	virtual void write(const Array<byte>& b, int off, int len) final {
+		write(&b[0], off, b.length);
+	}
 
 	void flush() {}
 	void close() {}

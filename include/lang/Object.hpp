@@ -157,6 +157,11 @@ public:
 		checkArrayBounds(l, l+1);
 		init(); a = new T[l];
 	}
+	Array(T* v, int l) : length(l) {
+		checkArrayBounds(l, l+1);
+		init(); a = new T[l];
+		for (int i=0; i < l; ++i) a[i]=v[i];
+	}
 	~Array() { delete [] a; }
 	T& operator[](int i) {
 		checkArrayBounds(i, length);

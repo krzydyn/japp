@@ -1,14 +1,15 @@
 #ifndef __SYNCQUEUE_HPP
 #define __SYNCQUEUE_HPP
 
+#include <lang/Exception.hpp>
 #include <atomic>
 #include <queue>
 #include <mutex>
 #include <condition_variable>
 
-class SyncQueueException : extends std::runtime_error {
+class SyncQueueException : extends Exception {
 public:
-	SyncQueueException() : std::runtime_error("The SyncQueue has been stopped.") {}
+	SyncQueueException() : Exception("The SyncQueue has been stopped.") {}
 };
 
 template<class T>

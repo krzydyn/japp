@@ -16,10 +16,10 @@ public:
 	InputStream() {}
 
 	virtual int read() = 0;
-	virtual int read(const void *b, int len) {
+	virtual jint read(const void *b, int len) {
 		return read(b, 0, len);
 	}
-	virtual int read(const void *b, int off, int len) {
+	virtual jint read(const void *b, int off, int len) {
 		if (b == null) throw NullPointerException();
 		if ((off < 0) || (len < 0) || ((off + len) < 0)) throw IndexOutOfBoundsException();
 		if (len == 0) return 0;

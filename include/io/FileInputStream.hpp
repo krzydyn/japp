@@ -50,12 +50,12 @@ public:
 		if (in->fail()) throw IOException(fn+": "+strerror(errno));
 		return c;
 	}
-	jint read(void *b, int off, int len) {
+	jint read(const void *b, int off, int len) {
 		if (b == null) throw NullPointerException();
 		if ((off < 0) || (len < 0) || ((off + len) < 0)) throw IndexOutOfBoundsException();
 		if (len == 0) return 0;
 		in->read((char*)b+off,len);
-		if (in->fail()) throw IOException(fn+": "+strerror(errno));
+		if (in->bad()) throw IOException(fn+": "+strerror(errno));
 		return (jint)in->gcount();
 	}
 	void close() {

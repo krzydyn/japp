@@ -30,6 +30,7 @@ public:
 		}
 	}
 
+	using OutputStream::write;
 	void write(int b) {TRACE;
 		synchronized (*this) {
 			out.write(b);

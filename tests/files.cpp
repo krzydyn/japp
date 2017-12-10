@@ -2,7 +2,7 @@
 #include <io/File.hpp>
 #include <io/FileOutputStream.hpp>
 #include <io/FileInputStream.hpp>
-#include <io/Writer.hpp>
+#include <io/OutputStreamWriter.hpp>
 
 static void test_nonexisting() {
 	io::File f("non-existing.txt");
@@ -11,6 +11,7 @@ static void test_nonexisting() {
 }
 static void test_write_read() {
 	io::File f = io::File("/tmp/test.txt");
+	f.unlink();
 	try {
 		io::FileInputStream fis(f);
 		int r =fis.read();
@@ -21,16 +22,18 @@ static void test_write_read() {
 	}
 
 	io::FileOutputStream fos(f);
-	fos.write("test\n");
+	String testdata("test ĄąĆćĘę\n");
+	fos.write(testdata.getBytes());
 	fos.close();
 
 	io::FileInputStream fis(f);
 	char buf[100];
-	int l = fis.read(buf,sizeof(buf));
-	if (l != 5) System.out.println("err: l != 5 " + String::valueOf(l));
-	if (memcmp(buf,"test\n",5) != 0) System.out.println("err: !test");
+	jint l = fis.read(buf,sizeof(buf));
+	if (l != testdata.length()) System.out.printf("err: %d != %d\n", l, testdata.length());
+	buf[l]=0;
+	if (!testdata.equals(String::valueOf(buf))) System.out.println("err: !equals");
 
-	if (!f.unlink()) System.out.println("err: can't delete file");
+	//if (!f.unlink()) System.out.println("err: can't delete file");
 }
 static void test_list() {
 	io::File f("/");

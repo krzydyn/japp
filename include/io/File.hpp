@@ -120,7 +120,7 @@ private:
 
 public:
 	/* -- Constructors -- */
-	File() {} // need for array list
+	File() {}
 	File(const String& path) {
 		if (&path == null) throw NullPointerException();
 		this->path = fs.normalize(path);
