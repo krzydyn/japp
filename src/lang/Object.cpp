@@ -41,11 +41,11 @@ void __cxa_throw(void* thrown_exception, void* _tinfo, void (*dest)(void*)) {
 }
 
 namespace {
-boolean classmap_init=false;
-class ClassList : public ArrayList<Class*> {
-public:
-	ClassList() { classmap_init=true; }
-} classmap;
+//classmap lazy initialization
+ArrayList<Class*>& classmap() {
+	static ArrayList<Class*> a;
+	return a;
+}
 
 boolean initialize();
 const boolean SET_TERMINATE = initialize();
@@ -228,30 +228,34 @@ String Class::getName() const {TRACE;return demangle(type.name());}
 String Class::getCanonicalName() const {TRACE;return getName();}
 
 Class *Object::findClass(const std::type_info& type) {
-	if (classmap_init==false) return null;
-	for (SharedIterator<Class*> i = classmap.iterator(); i->hasNext(); ) {
+	ArrayList<Class*>& cm = classmap();
+	synchronized(cm) {
+	for (SharedIterator<Class*> i = cm.iterator(); i->hasNext(); ) {
 		Class *c = i->next();
 		if (c->type == type) return c;
+	}
 	}
 	return null;
 }
 void Object::registerClass(Class *c) {
-	if (classmap_init==false) return ;
-	Class *o = Object::findClass(c->type);
-	if (o == c) return ;
-	if (o) classmap.remove(o);
-	//System.out.println("register Class " + c->getName());
-	classmap.add(c);
+	ArrayList<Class*>& cm = classmap();
+	synchronized(cm) {
+		Class *o = Object::findClass(c->type);
+		if (o == c) return ;
+		if (o) cm.remove(o);
+		cm.add(c);
+	}
 }
 const Class& Object::getClass() const {TRACE;
-	const std::type_info& type = typeid(*this);
-	Class *c = Object::findClass(type);
-	if (!c) Object::registerClass(c=new Class(type));
-	return *c;
+	return getClass(typeid(*this));
 }
 const Class& Object::getClass(const std::type_info& type) {
-	Class *c = Object::findClass(type);
-	if (!c) Object::registerClass(c=new Class(type));
+	Class *c;
+	ArrayList<Class*>& cm = classmap();
+	synchronized(cm) {
+		c = Object::findClass(type);
+		if (!c) Object::registerClass(c=new Class(type));
+	}
 	return *c;
 }
 
@@ -263,8 +267,11 @@ String Object::toString() const {
 }
 
 void registerArrayClass(const std::type_info& type) {
-	Class *c = Object::findClass(type);
-	if (!c) Object::registerClass(new ArrayClass(type));
+	ArrayList<Class*>& cm = classmap();
+	synchronized(cm) {
+		Class *c = Object::findClass(type);
+		if (!c) Object::registerClass(new ArrayClass(type));
+	}
 }
 void checkArrayBounds(int i, int l) {
 	if (i < 0 || i >= l) throw IndexOutOfBoundsException(i);
