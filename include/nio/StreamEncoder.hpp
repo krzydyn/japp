@@ -3,23 +3,29 @@
 
 #include <io/OutputStream.hpp>
 #include <io/Writer.hpp>
+#include <nio/charset/Charset.hpp>
 
 namespace nio {
 
-class Charset {
-};
+using namespace charset;
 
 class StreamEncoder : extends io::Writer {
 private:
 	static const int DEFAULT_BYTE_BUFFER_SIZE = 8192;
-	volatile boolean isOpen = true;
+	volatile boolean isOpened = true;
 	io::OutputStream *out;
 	Charset cs;
-	StreamEncoder(io::OutputStream& out, Object* lock, const Charset& cs) : io::Writer(lock),
+	StreamEncoder(io::OutputStream& out, Object* lock, const charset::Charset& cs) : io::Writer(lock),
 		out(&out), cs(cs) {
 	}
+	const String& encodingName() {
+		return cs.name();
+	}
+	boolean isOpen() { return isOpened; }
 public:
 	static StreamEncoder forOutputStreamWriter(io::OutputStream& out, Object* lock, const String& charsetName);
+	static StreamEncoder forOutputStreamWriter(io::OutputStream& out, Object* lock, const Charset& cs);
+	static StreamEncoder forOutputStreamWriter(io::OutputStream& out, Object* lock, const CharsetEncoder& enc);
 
 	StreamEncoder(StreamEncoder&& se);
 
@@ -30,8 +36,17 @@ public:
 			out->write(&cbuf[0], off, len);
 		}
 	}
-	void flush(){}
-	void close(){}
+	void flush() {
+		if (out != null) out->flush();
+	}
+	void close() {
+		if (out != null) out->close();
+	}
+
+	const String& getEncoding() {
+		if (isOpen()) return encodingName();
+		return (const String&)null_ref;
+	}
 };
 
 } //namespace nio

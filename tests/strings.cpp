@@ -1,6 +1,7 @@
+#include <lang/Exception.hpp>
 #include <lang/String.hpp>
 #include <lang/System.hpp>
-#include <lang/Exception.hpp>
+#include <lang/Thread.hpp>
 
 void test_formatString() {TRACE;
 	String s = String::format("%d %.2f", 10, 1.1);
@@ -25,6 +26,7 @@ void test_String() {TRACE;
 }
 
 int main(int argc, const char *argv[]) {TRACE;
+	System.out.println(Thread::currentThread().getName());
 	test_formatString();
 	try {
 		test_String();

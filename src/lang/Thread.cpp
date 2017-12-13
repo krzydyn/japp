@@ -51,13 +51,12 @@ public:
 	HashMap<std::thread::id,Thread*> thrmap;
 	boolean ready=false;
 	MainThreadGroup maingroup;
-	MainThread *main;
+	MainThread main;
 
-	Threads() : thrmap() {
+	Threads() : thrmap(), main(maingroup) {
 		ready=true;
 		mainid = std::this_thread::get_id();
-		main = new MainThread(maingroup);
-		addThread(mainid, main);
+		addThread(mainid, &main);
 	}
 
 	~Threads() {
@@ -246,10 +245,10 @@ Thread& Thread::currentThread() {
 	Thread *t = threads.getThread(id);
 	if (t == null) {
 		System.err.println("FATAL: thread not found: " + String::valueOf(id));
-		if (threads.main == null) {
+		if (threads.ready == false) {
 			exit(-1);
 		}
-		return *threads.main;
+		return threads.main;
 	}
 	return *t;
 }
