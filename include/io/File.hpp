@@ -122,13 +122,13 @@ public:
 	/* -- Constructors -- */
 	File() {}
 	File(const String& path) {
-		if (&path == null) throw NullPointerException();
+		if (null_ref == path) throw NullPointerException();
 		this->path = fs.normalize(path);
 		this->prefixLength = fs.prefixLength(this->path);
 	}
 	File(const String& parent, const String& child) {
-		if (&child == null) throw NullPointerException();
-		if (&parent != null) {
+		if (null_ref == child) throw NullPointerException();
+		if (null_ref != parent) {
 			if (parent.equals("")) {
 				this->path = fs.resolve(fs.getDefaultParent(),
 				fs.normalize(child));
@@ -141,8 +141,8 @@ public:
 		this->prefixLength = fs.prefixLength(this->path);
 	}
 	File(const File& parent, const String& child) {
-		if (&child == null) throw NullPointerException();
-		if (&parent != null) {
+		if (null_ref == child) throw NullPointerException();
+		if (null_ref != parent) {
 			if (parent.path.equals("")) {
 				this->path = fs.resolve(fs.getDefaultParent(),
 				fs.normalize(child));
@@ -167,7 +167,7 @@ public:
 		if (index < prefixLength) {
 			if ((prefixLength > 0) && (path.length() > prefixLength))
 				return path.substring(0, prefixLength);
-			return ""; //originaly null
+			return (String&)null_ref; //originaly null
 		}
 		return path.substring(0, index);
 	}

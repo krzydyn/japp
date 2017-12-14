@@ -89,8 +89,10 @@ public:
 	virtual void wait(long timeout, int nanos) final {}
 	virtual void wait() final {wait(0); }
 
-	boolean operator==(const std::nullptr_t&) const {return this == null; }
-	boolean operator!=(const std::nullptr_t&) const {return this != null; }
+	boolean operator==(const std::nullptr_t&) const {return this == null;}
+	boolean operator!=(const std::nullptr_t&) const {return this != null;}
+	boolean operator==(const Object& o) const {return this == &o;}
+	boolean operator!=(const Object& o) const {return this != &o;}
 
 	static const Class& getClass(const std::type_info& type);
 
