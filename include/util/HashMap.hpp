@@ -18,7 +18,7 @@ private:
 public:
 	MapEntry(MapEntry&& o) { move(o); }
 	MapEntry(const MapEntry &o) : key(o.key), value(o.value) {}
-	MapEntry& operator=(MapEntry&& o) { move(o);  return *this;}
+	MapEntry& operator=(MapEntry&& o) { move(o); return *this;}
 	MapEntry& operator=(const MapEntry& o) { key = o.key; value = o.value; return *this;}
 
 	MapEntry() {}
@@ -124,6 +124,7 @@ public:
 				return l.get(i).getValue();
 			}
 		}
+		std::cout << "key not found: " << String::valueOf(k).intern() << ", return null_ref" << std::endl;
 		return (const V&)null_ref;
 	}
 	V& get(const K& k) {TRACE;
@@ -134,6 +135,7 @@ public:
 				return l.get(i).getRef();
 			}
 		}
+		std::cout << "key not found: " << String::valueOf(k).intern() << ", return null_ref" << std::endl;
 		return (V&)null_ref;
 	}
 

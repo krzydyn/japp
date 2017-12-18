@@ -72,7 +72,7 @@ public:
 	void add(int i,const T& v) {TRACE;
 		if (mSize >= mCapa) ensureCapa(mSize+1);
 		if (i == -1) {
-			mVec[(mOffs+mSize)%mCapa]=v;
+			mVec[(mOffs+mSize)%mCapa] = v;
 			++mSize;
 		   	return ;
 	   	}
@@ -81,12 +81,12 @@ public:
 		unsigned ii;
 		if (2*j < mSize) {
 			mOffs = (mOffs + mCapa - 1)%mCapa;
-			for (ii=0; ii < j; ++ii) mVec[(mOffs+ii)%mCapa]=mVec[(mOffs+ii+1)%mCapa];
+			for (ii=0; ii < j; ++ii) mVec[(mOffs+ii)%mCapa]=std::move(mVec[(mOffs+ii+1)%mCapa]);
 		}
 		else {
-			for (ii=mSize; ii > j; --ii) mVec[(mOffs+ii)%mCapa]=mVec[(mOffs+ii-1)%mCapa];
+			for (ii=mSize; ii > j; --ii) mVec[(mOffs+ii)%mCapa]=std::move(mVec[(mOffs+ii-1)%mCapa]);
 		}
-		mVec[(mOffs+j)%mCapa]=v; ++mSize;
+		mVec[(mOffs+j)%mCapa] = v; ++mSize;
 	}
 	int indexOf(const T& v,int start=0) const {TRACE;
 		for (unsigned i=(unsigned)start; i < mSize; ++i ) {
@@ -102,7 +102,7 @@ public:
 		for (unsigned i=0; i<mSize; ++i) {
 			//copy elements not existing on c
 			if (!c.contains(mVec[(mOffs+i)%mCapa])) {
-				if (d!=i) mVec[(mOffs+d)%mCapa]=mVec[(mOffs+i)%mCapa];
+				if (d!=i) mVec[(mOffs+d)%mCapa] = std::move(mVec[(mOffs+i)%mCapa]);
 				++d;
 			}
 		}
@@ -112,19 +112,19 @@ public:
 		if (i==-1) throw IndexOutOfBoundsException(i);
 		unsigned j = (unsigned)i;
 		if (j >= mSize) throw IndexOutOfBoundsException(i);
-		T v=mVec[(mOffs+j)%mCapa]; --mSize;
+		T v=std::move(mVec[(mOffs+j)%mCapa]); --mSize;
 		if (j < mSize - j) {
 			for (; j > 0; --j) {
-				mVec[(mOffs+j)%mCapa]=mVec[(mOffs+j-1)%mCapa];
+				mVec[(mOffs+j)%mCapa]=std::move(mVec[(mOffs+j-1)%mCapa]);
 			}
 			++mOffs;
 		}
 		else {
-			for (; j < mSize; ++j) mVec[(mOffs+j)%mCapa]=mVec[(mOffs+j+1)%mCapa];
+			for (; j < mSize; ++j) mVec[(mOffs+j)%mCapa]=std::move(mVec[(mOffs+j+1)%mCapa]);
 		}
 		return v;
 	}
-
+#if WITH_SORTING
 	void comboSort() {TRACE;
 		int gap = mSize;
 		boolean swapped=false;
@@ -169,6 +169,7 @@ public:
 		if (l < j) qsort(l, j);
 		if (i < h) qsort(i, h);
 	}
+#endif
 
 private:
 	class ArrayListIterator : extends Iterator<T> {

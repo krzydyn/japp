@@ -35,8 +35,17 @@ private:
 	}
 	static Charset* lookup(const String& charsetName);
 
-	const String canonName;
-	const Array<String>& aliases;
+	String canonName;
+	Array<String> aliases;
+
+	void copy(const Charset& o) {
+		canonName = o.canonName;
+		aliases = o.aliases;
+	}
+	void move(const Charset& o) {
+		canonName = std::move(o.canonName);
+		aliases = std::move(o.aliases);
+	}
 
 protected:
 	Charset(const String& canonicalName, const Array<String>& aliases) : canonName(canonicalName), aliases(aliases) {
@@ -57,18 +66,23 @@ public:
 		return defCharset;
 	}
 
-	Charset(const Charset& cs) : canonName(cs.canonName), aliases(cs.aliases) {
+	Charset(){}
+	Charset(const Charset& o) : canonName(o.canonName), aliases(o.aliases) {TRACE;
 	}
-	const String& name() const {
+	Charset& operator=(const Charset& o) { copy(o); return *this; }
+	Charset& operator=(Charset&& o) { move(o); return *this; }
+
+
+	const String& name() const {TRACE;
 		return canonName;
 	}
 
-	int compareTo(const Charset& that) const final {
+	int compareTo(const Charset& that) const final {TRACE;
 		return name().compareToIgnoreCase(that.name());
 	}
 };
 
-class CharsetEncoder {
+class CharsetEncoder : extends Object {
 private:
 	static const int ST_RESET   = 0;
 	static const int ST_CODING  = 1;
@@ -86,9 +100,9 @@ protected:
 	CharsetEncoder(const Charset& cs, float averageBytesPerChar, float maxBytesPerChar, const Array<byte>& replacement) :
    			chset(cs), averageBytesPerChar(averageBytesPerChar), maxBytesPerChar(maxBytesPerChar)	{
 		replaceWith(replacement);
-	}
+	}TRACE;
 	CharsetEncoder(Charset cs, float averageBytesPerChar, float maxBytesPerChar) :
-			CharsetEncoder(cs, averageBytesPerChar, maxBytesPerChar, Array<byte>((byte)'?')) {
+			CharsetEncoder(cs, averageBytesPerChar, maxBytesPerChar, Array<byte>((byte)'?')) {TRACE;
 	}
 public:
 	const Charset& charset() const { return chset; }

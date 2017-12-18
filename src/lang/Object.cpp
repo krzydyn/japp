@@ -156,7 +156,11 @@ void terminate_hook() {
 	std::_Exit(EXIT_FAILURE);
 }
 
+String name_NullRef = "null_ref";
+
 class NullRef : extends Object {
+public:
+	String toString() { return name_NullRef; }
 } nullObject;
 
 class ArrayClass : extends Class {

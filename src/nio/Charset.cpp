@@ -5,7 +5,7 @@ namespace nio {
 namespace charset {
 
 namespace {
-HashMap<String,Charset*> charsetmap;
+HashMap<String,Charset> charsetmap;
 
 class FastCharsetProvider : extends CharsetProvider {
 private:
@@ -27,16 +27,17 @@ private:
 	HashMap<String,String> aliasMap;
 
 	const String& canonicalize(const String& csn) {
+		std::cout << "fast::canonicalize " << csn.intern() << std::endl;
 		String& acn = aliasMap.get(csn);
 		return (acn != null_ref) ? acn : csn;
 	}
 	Charset* lookup(const String& charsetName) {TRACE;
 		const String& csn = canonicalize(toLower(charsetName));
 		std::cout << "fast::Lookup " << csn.intern() << std::endl;
-		return null;
+		return (Charset*)&null_ref;
 	}
 public:
-	Charset *charsetForName(const String& charsetName) {TRACE;
+	Charset* charsetForName(const String& charsetName) {TRACE;
 		std::cout << "fast::charsetForName " << charsetName.intern() << std::endl;
 		return lookup(charsetName);
 	}
@@ -53,8 +54,9 @@ Charset Charset::defCharset = Charset::forName("UTF-8");
 
 Charset* Charset::lookup(const String& charsetName) {
 	std::cout << "Charset::lookup " << charsetName.intern() << std::endl;
-	Charset *cs = charsetmap.get(charsetName);
-	if (cs == null) cs = standardProvider.charsetForName(charsetName);
+	Charset* cs = &charsetmap.get(charsetName);
+	if (*cs == null_ref) cs = standardProvider.charsetForName(charsetName);
+	if (*cs == null_ref) return null;
 	return cs;
 }
 

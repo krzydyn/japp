@@ -3,6 +3,7 @@
 
 #include <mutex>
 #include <memory> //shared_ptr
+#include <iostream>
 
 #define interface class
 #define extends public
@@ -89,8 +90,13 @@ public:
 	virtual void wait(long timeout, int nanos) final {}
 	virtual void wait() final {wait(0); }
 
-	boolean operator==(const std::nullptr_t&) const {return this == null;}
-	boolean operator!=(const std::nullptr_t&) const {return this != null;}
+	boolean operator==(const std::nullptr_t&) const {
+		std::cout << "this = " << (void*)this << ", null_ref = " << (void*)&null_ref << std::endl;
+		boolean b = (this == null || this == (void*)&null_ref);
+		std::cout << "this is null_ptr = " << b << std::endl;
+		return b;
+	}
+	boolean operator!=(const std::nullptr_t&) const {return this != null && this != &null_ref;}
 	boolean operator==(const Object& o) const {return this == &o;}
 	boolean operator!=(const Object& o) const {return this != &o;}
 
@@ -115,6 +121,11 @@ public:
 		void unlock() { locked=false; }
 	};
 };
+
+inline boolean operator==(const void *ptr, const Object& o) {
+	if (ptr == null) return o == null;
+	return o == *(const Object *)ptr;
+}
 
 template<class T> using Shared = std::shared_ptr<T>;
 template<class T, class... Args>

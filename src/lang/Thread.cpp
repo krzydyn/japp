@@ -57,6 +57,7 @@ public:
 		ready=true;
 		mainid = std::this_thread::get_id();
 		addThread(mainid, &main);
+		System.out.println("registerd mainid " + String::valueOf(mainid));
 	}
 
 	~Threads() {
@@ -104,7 +105,12 @@ public:
 		return t;
 	}
 };
-Threads threads;
+
+//threads lazy initialization
+Threads& threads() {
+	static Threads t;
+	return t;
+}
 } //anoymous namespace
 
 namespace lang {
@@ -119,7 +125,7 @@ void Thread::init() {
 		group->addUnstarted();
 	daemon = parent->isDaemon();
 	priority = parent->getPriority();
-	tid = threads.nextThreadID();
+	tid = threads().nextThreadID();
 }
 
 #ifdef BACKTRACE
@@ -138,7 +144,7 @@ CallTrace *Thread::tracePop() {
 
 void CallTrace::add() {
 	std::thread::id id = std::this_thread::get_id();
-	t = threads.getThread(id);
+	t = threads().getThread(id);
 	if (t!=null) t->tracePush(this);
 }
 CallTrace::~CallTrace() {
@@ -211,7 +217,7 @@ void Thread::start() {
 	pendingNameChange = true;
 	this->thread = new std::thread([=] {
 		std::thread::id thrid = std::this_thread::get_id();
-		threads.addThread(thrid, this);
+		threads().addThread(thrid, this);
 		try {
 			do { Thread::yield(); } while (threadStatus == NEW);
 			if (threadStatus == RUNNABLE) {
@@ -227,7 +233,7 @@ void Thread::start() {
 		}
 		System.out.println(getName() + " terminated");
 		threadStatus = TERMINATED;
-		threads.removeThread(thrid);
+		threads().removeThread(thrid);
 	});
 	threadStatus = RUNNABLE;
 }
@@ -242,13 +248,13 @@ void Thread::selfupdate() {
 // static functions
 Thread& Thread::currentThread() {
 	std::thread::id id = std::this_thread::get_id();
-	Thread *t = threads.getThread(id);
+	Thread *t = threads().getThread(id);
 	if (t == null) {
 		System.err.println("FATAL: thread not found: " + String::valueOf(id));
-		if (threads.ready == false) {
+		if (threads().ready == false) {
 			exit(-1);
 		}
-		return threads.main;
+		return threads().main;
 	}
 	return *t;
 }
