@@ -1,8 +1,9 @@
 #ifndef __LANG_STRING_HPP
 #define __LANG_STRING_HPP
 
-#include <lang/Object.hpp>
+#include <lang/Comparable.hpp>
 #include <string>
+#include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <cstdarg>
@@ -23,7 +24,7 @@ public:
 	virtual String toString() const = 0;
 };
 
-class String final : extends Object, implements CharSequence {
+class String final : extends Object, implements CharSequence, implements Comparable<String> {
 private:
 	std::string value;
 	long hash = 0;
@@ -181,16 +182,32 @@ public:
 		}
 		return String(*this);
 	}
+	int compareTo(const String& anotherString) const {
+		return value.compare(anotherString.value);
+	}
+	int compareToIgnoreCase(const String& str) const {
+		return compareTo(str);
+	}
 	boolean matches(String regex) {TRACE;
 		//TODO return Pattern.matches(regex, this);
 		return false;
 	}
-	String toLowerCase(Locale locale) const {TRACE; return *this; }
+	String toLowerCase(Locale locale) const {TRACE;
+		std::string s(value);
+		std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+		return s;
+   	}
 	String toLowerCase() const {TRACE;
 		return toLowerCase(Locale::getDefault());
 	}
-	String toUpperCase(Locale locale) const {TRACE; return *this; }
-	String toUpperCase() const {TRACE; return *this; }
+	String toUpperCase(Locale locale) const {TRACE;
+		std::string s(value);
+		std::transform(s.begin(), s.end(), s.begin(), ::toupper);
+		return s;
+	}
+	String toUpperCase() const {TRACE;
+		return toUpperCase(Locale::getDefault());
+	}
 	String trim() const {TRACE; return *this; }
 	String toString() const {
 		return *this;

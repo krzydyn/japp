@@ -35,16 +35,23 @@ static void test_write_read() {
 
 	//if (!f.unlink()) System.out.println("err: can't delete file");
 }
-static void test_list() {
-	io::File f("/");
+static void test_filelist() {
+	io::File f("/tmp");
 	Array<String> a = f.list();
 	for (int i=0; i < a.length; ++i)
 		System.out.println(a[i]);
 }
 
+static void test_writer() {
+	io::File f = io::File("/tmp/test.txt");
+	io::FileOutputStream fos(f);
+	io::OutputStreamWriter wr(fos);
+}
+
 int main() {
 	test_nonexisting();
 	test_write_read();
-	test_list();
+	test_filelist();
+	test_writer();
 	return 0;
 }

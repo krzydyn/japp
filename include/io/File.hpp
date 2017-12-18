@@ -1,17 +1,10 @@
 #ifndef __IO_FILE_HPP
 #define __IO_FILE_HPP
 
-#include <lang/Exception.hpp>
+#include <io/IOException.hpp>
 #include <util/ArrayList.hpp>
 
 namespace io {
-
-class IOException : extends Exception {
-public:
-	IOException() : Exception() {}
-	IOException(const String& msg) : Exception(msg) {}
-	IOException(const String& msg, Throwable *c) : Exception(msg, c) {}
-};
 
 class File;
 class FileSystem : extends Object {

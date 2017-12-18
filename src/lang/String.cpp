@@ -5,6 +5,14 @@
 
 namespace lang {
 
+namespace {
+	Locale defaultLocale;
+}
+
+Locale Locale::getDefault() {
+	return defaultLocale;
+}
+
 const char *String::emptystr="";
 
 void String::copystr(String *d, const char *s) {TRACE;

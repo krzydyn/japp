@@ -1,6 +1,7 @@
 #ifndef __LANG_NUMBER_HPP
 #define __LANG_NUMBER_HPP
 
+#include <lang/Comparable.hpp>
 #include <lang/Exception.hpp>
 
 namespace lang {
@@ -8,12 +9,6 @@ namespace lang {
 class NumberFormatException : extends Exception {
 public:
 	using Exception::Exception;
-};
-
-template<class T>
-interface Comparable : Interface {
-public:
-	virtual int compareTo(const T& o) = 0;
 };
 
 class Number : extends Object {
@@ -54,7 +49,7 @@ public:
 		}
 		return false;
 	}
-	int compareTo(const Boolean& b) { return compare(value,b.value); }
+	int compareTo(const Boolean& b) const { return compare(value,b.value); }
 	operator int() const { return value?1:0; }
 };
 
@@ -94,7 +89,7 @@ public:
 		}
 		return false;
 	}
-	int compareTo(const Integer& b) { return compare(value,b.value); }
+	int compareTo(const Integer& b) const { return compare(value,b.value); }
 	operator int() const { return value; }
 
 	Integer operator+(int v) const {TRACE; return value+v;}
@@ -147,7 +142,7 @@ public:
 		}
 		return false;
 	}
-	int compareTo(const Short& b) { return compare(value,b.value); }
+	int compareTo(const Short& b) const { return compare(value,b.value); }
 	operator short() const { return value; }
 
 	Short operator+(short v) const {TRACE; return (short)(value+v);}
@@ -194,7 +189,7 @@ public:
 		}
 		return false;
 	}
-	int compareTo(const Long& b) { return compare(value,b.value); }
+	int compareTo(const Long& b) const { return compare(value,b.value); }
 	operator long() const { return value; }
 
 	Long operator+(long v) const {TRACE; return value+v;}

@@ -8,14 +8,15 @@
 namespace nio {
 
 using namespace charset;
+using namespace io;
 
-class StreamEncoder : extends io::Writer {
+class StreamEncoder : extends Writer {
 private:
 	static const int DEFAULT_BYTE_BUFFER_SIZE = 8192;
 	volatile boolean isOpened = true;
-	io::OutputStream *out;
+	OutputStream *out;
 	Charset cs;
-	StreamEncoder(io::OutputStream& out, Object* lock, const charset::Charset& cs) : io::Writer(lock),
+	StreamEncoder(OutputStream& out, Object* lock, const Charset& cs) : Writer(lock),
 		out(&out), cs(cs) {
 	}
 	const String& encodingName() {
@@ -23,9 +24,9 @@ private:
 	}
 	boolean isOpen() { return isOpened; }
 public:
-	static StreamEncoder forOutputStreamWriter(io::OutputStream& out, Object* lock, const String& charsetName);
-	static StreamEncoder forOutputStreamWriter(io::OutputStream& out, Object* lock, const Charset& cs);
-	static StreamEncoder forOutputStreamWriter(io::OutputStream& out, Object* lock, const CharsetEncoder& enc);
+	static StreamEncoder forOutputStreamWriter(OutputStream& out, Object* lock, const String& charsetName);
+	static StreamEncoder forOutputStreamWriter(OutputStream& out, Object* lock, const Charset& cs);
+	static StreamEncoder forOutputStreamWriter(OutputStream& out, Object* lock, const CharsetEncoder& enc);
 
 	StreamEncoder(StreamEncoder&& se);
 

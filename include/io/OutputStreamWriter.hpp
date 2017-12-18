@@ -1,15 +1,11 @@
 #ifndef __IO_OUTPUTSTREAMWRITER_HPP
 #define __IO_OUTPUTSTREAMWRITER_HPP
 
-#include <lang/Exception.hpp>
 #include <nio/StreamEncoder.hpp>
 
 namespace io {
 
 using namespace nio::charset;
-
-class UnsupportedEncodingException : extends Exception {
-};
 
 class OutputStreamWriter : extends Writer {
 private:
