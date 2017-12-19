@@ -27,7 +27,7 @@ public:
 	String getSimpleName() const;
 	String getCanonicalName() const;
 	boolean isInstance(const Object& obj) const {
-		//return instanceOf<typename(obj)>(this);
+		//return instanceof<typename(obj)>(this);
 		return false;
 	}
 	virtual boolean isAssignableFrom(const Class& cls) const {return false;}

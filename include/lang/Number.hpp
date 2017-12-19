@@ -44,7 +44,7 @@ public:
 	String toString() const { return toString(value); }
 	jint hashCode() {return Boolean::hashCode(value);}
 	boolean equals(const Object& o) const {
-		if (instanceOf<Boolean>(&o)) {
+		if (instanceof<Boolean>(&o)) {
 			return value == ((const Boolean&)o).booleanValue();
 		}
 		return false;
@@ -84,7 +84,7 @@ public:
 	double doubleValue() const {return (double)value;}
 	String toString() { return toString(value); }
 	boolean equals(const Object& o) const {
-		if (instanceOf<Integer>(&o)) {
+		if (instanceof<Integer>(&o)) {
 			return value == ((const Integer&)o).shortValue();
 		}
 		return false;
@@ -137,7 +137,7 @@ public:
 	String toString() { return toString(value); }
 	jint hashCode() const { return Short::hashCode(value); }
 	boolean equals(const Object& o) const {
-		if (instanceOf<Short>(&o)) {
+		if (instanceof<Short>(&o)) {
 			return value == ((const Short&)o).shortValue();
 		}
 		return false;
@@ -184,7 +184,7 @@ public:
 	String toString() { return toString(value); }
 	jint hashCode() const { return Long::hashCode(value); }
 	boolean equals(const Object& o) const {
-		if (instanceOf<Long>(&o)) {
+		if (instanceof<Long>(&o)) {
 			return value == ((const Long&)o).longValue();
 		}
 		return false;

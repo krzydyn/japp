@@ -15,7 +15,7 @@ private:
 	static const int DEFAULT_BYTE_BUFFER_SIZE = 8192;
 	volatile boolean isOpened = true;
 	OutputStream *out;
-	Charset cs;
+	const Charset& cs;
 	StreamEncoder(OutputStream& out, Object* lock, const Charset& cs) : Writer(lock),
 		out(&out), cs(cs) {
 	}

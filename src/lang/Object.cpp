@@ -33,7 +33,7 @@ void __cxa_throw(void* thrown_exception, void* _tinfo, void (*dest)(void*)) {
 	}
 	//std::printf("throw...%p\n", thrown_exception);
 	const Object *o = (const Object *)thrown_exception;
-	if (instanceOf<Throwable>(o)) {
+	if (instanceof<Throwable>(o)) {
 		((Throwable*)o)->fillInStackTrace();
 	}
 	old_handler(thrown_exception, tinfo, dest);
@@ -56,6 +56,7 @@ boolean initialize() {
 	(void)SET_TERMINATE;
 	std::set_terminate(terminate_hook);
 	signal(SIGFPE, signal_handle);
+	signal(SIGABRT, signal_handle);
 	//signal(SIGSEGV, signal_handle);
 	return true;
 }

@@ -186,9 +186,9 @@ public:
 	}
 };
 
-//usage if: (instanceOf<Integer>(objPtr)) {...}
+//usage if: (instanceof<Integer>(objPtr)) {...}
 template<class Base, class T>
-inline bool instanceOf(const T *ptr) {
+inline bool instanceof(const T *ptr) {
 	return dynamic_cast<const Base*>(ptr) != null;
 }
 

@@ -5,7 +5,12 @@ namespace nio {
 namespace charset {
 
 namespace {
-HashMap<String,Charset> charsetmap;
+
+class UTF_8 : extends Charset {
+public:
+	UTF_8() : Charset("UTF-8",Array<String>()) {}
+	String historicalName() { return "UTF8"; }
+};
 
 class FastCharsetProvider : extends CharsetProvider {
 private:
@@ -26,37 +31,40 @@ private:
 
 	HashMap<String,String> aliasMap;
 
-	const String& canonicalize(const String& csn) {
+	const String& canonicalize(const String& csn) const {
 		std::cout << "fast::canonicalize " << csn.intern() << std::endl;
-		String& acn = aliasMap.get(csn);
+		const String& acn = aliasMap.get(csn);
 		return (acn != null_ref) ? acn : csn;
 	}
-	Charset* lookup(const String& charsetName) {TRACE;
+	const Charset& lookup(const String& charsetName) const {TRACE;
 		const String& csn = canonicalize(toLower(charsetName));
 		std::cout << "fast::Lookup " << csn.intern() << std::endl;
-		return (Charset*)&null_ref;
+		return (Charset&)null_ref;
 	}
 public:
-	Charset* charsetForName(const String& charsetName) {TRACE;
+	FastCharsetProvider() {
+	}
+	const Charset& charsetForName(const String& charsetName) const {TRACE;
 		std::cout << "fast::charsetForName " << charsetName.intern() << std::endl;
 		return lookup(charsetName);
 	}
-	SharedIterator<Charset> charsets() {TRACE;
+	SharedIterator<Charset> charsets() const {TRACE;
 		return null;
 	}
 };
 
-FastCharsetProvider standardCharsets;
+class StandardCharsets : extends FastCharsetProvider {
+};
+
+StandardCharsets the_standardProvider;
 }
 
-CharsetProvider& Charset::standardProvider = standardCharsets;
-Charset Charset::defCharset = Charset::forName("UTF-8");
+const CharsetProvider& Charset::standardProvider = the_standardProvider;
+const Charset& Charset::defCharset = Charset::forName("UTF-8");
 
-Charset* Charset::lookup(const String& charsetName) {
+const Charset& Charset::lookup(const String& charsetName) {
 	std::cout << "Charset::lookup " << charsetName.intern() << std::endl;
-	Charset* cs = &charsetmap.get(charsetName);
-	if (*cs == null_ref) cs = standardProvider.charsetForName(charsetName);
-	if (*cs == null_ref) return null;
+	const Charset& cs = standardProvider.charsetForName(charsetName);
 	return cs;
 }
 

@@ -57,7 +57,7 @@ public:
 		ready=true;
 		mainid = std::this_thread::get_id();
 		addThread(mainid, &main);
-		System.out.println("registerd mainid " + String::valueOf(mainid));
+		//System.out.println("registerd mainid " + String::valueOf(mainid));
 	}
 
 	~Threads() {
@@ -109,6 +109,7 @@ public:
 //threads lazy initialization
 Threads& threads() {
 	static Threads t;
+	The_System::currentTimeMillis();
 	return t;
 }
 } //anoymous namespace

@@ -97,7 +97,7 @@ public:
 	}
 	boolean equals(const Object& o) const {TRACE;
 		if (this == &o) return true;
-		if (!instanceOf<String>(&o)) return false;
+		if (!instanceof<String>(&o)) return false;
 		return value == ((const String&)o).value;
 	}
 	boolean equalsIgnoreCase(const String& s) const {
