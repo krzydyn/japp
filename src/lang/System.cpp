@@ -9,11 +9,22 @@
 using namespace std::chrono;
 
 namespace {
-io::FileInputStream std_fin(std::cin);
-io::FileOutputStream std_fout(std::cout);
-io::FileOutputStream std_ferr(std::cerr);
-io::PrintStream std_out(std_fout);
-io::PrintStream std_err(std_ferr);
+io::InputStream& std_in() {
+	static io::FileInputStream stream(std::cin);
+	return stream;
+}
+io::PrintStream& std_out() {
+	static io::FileOutputStream fstream(std::cout);
+	static io::PrintStream stream(fstream);
+	std::cout << "std_out init" << std::endl;
+	return stream;
+}
+io::PrintStream& std_err() {
+	static io::FileOutputStream fstream(std::cerr);
+	static io::PrintStream stream(fstream);
+	std::cout << "std_err init" << std::endl;
+	return stream;
+}
 
 HashMap<String,String> env;
 auto nano_start = high_resolution_clock::now();
@@ -24,9 +35,9 @@ const The_System System;
 const The_Math Math;
 
 Properties The_System::props;
-io::InputStream& The_System::in = std_fin;
-io::PrintStream& The_System::out = std_out;
-io::PrintStream& The_System::err = std_err;
+io::InputStream& The_System::in = std_in();
+io::PrintStream& The_System::out = std_out();
+io::PrintStream& The_System::err = std_err();
 
 jlong The_System::currentTimeMillis() {
 	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();

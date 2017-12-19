@@ -202,6 +202,10 @@ Throwable& Throwable::fillInStackTrace() {
 	return *this;
 }
 void Throwable::printStackTrace() const {TRACE;
+	if (&System.err == null) {
+		std::cerr << "System.err not initialized yet" << std::endl;
+		return ;
+	}
 	printStackTrace(System.err);
 }
 void Throwable::printStackTrace(io::PrintStream& s) const {TRACE;

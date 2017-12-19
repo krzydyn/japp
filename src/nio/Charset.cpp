@@ -57,10 +57,18 @@ class StandardCharsets : extends FastCharsetProvider {
 };
 
 StandardCharsets the_standardProvider;
+const Charset& getDefaultCharset() {
+	try {
+		return Charset::forName("UTF-8");
+	} catch(const Exception& e) {
+		e.printStackTrace();
+		exit(1);
+	}
+}
 }
 
 const CharsetProvider& Charset::standardProvider = the_standardProvider;
-const Charset& Charset::defCharset = Charset::forName("UTF-8");
+const Charset& Charset::defCharset = getDefaultCharset();
 
 const Charset& Charset::lookup(const String& charsetName) {
 	std::cout << "Charset::lookup " << charsetName.intern() << std::endl;
