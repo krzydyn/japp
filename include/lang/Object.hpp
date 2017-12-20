@@ -109,6 +109,10 @@ public:
 	public:
 		Lock(const Object* o) : Lock(*o) {}
 		Lock(const Object& o) : obj(o) {
+			if (&o == null) {
+				locked=false;
+				return ;
+			}
 			if (obj.mtx == null) {
 				const_cast<Object&>(obj).mtx = new std::recursive_mutex;
 			}
