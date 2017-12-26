@@ -31,13 +31,13 @@ void __cxa_throw(void* thrown_exception, void* _tinfo, void (*dest)(void*)) {
 	if (!old_handler) {
 		old_handler = (cxa_throw_type)dlsym(RTLD_NEXT, "__cxa_throw");
 	}
-	//std::printf("throw...%p\n", thrown_exception);
+	std::printf("throw...%p\n", thrown_exception);
 	const Object *o = (const Object *)thrown_exception;
 	if (instanceof<Throwable>(o)) {
 		((Throwable*)o)->fillInStackTrace();
 	}
 	old_handler(thrown_exception, tinfo, dest);
-	_Exit(-1);
+	std::_Exit(EXIT_FAILURE);
 }
 
 namespace {
@@ -56,7 +56,7 @@ boolean initialize() {
 	(void)SET_TERMINATE;
 	std::set_terminate(terminate_hook);
 	signal(SIGFPE, signal_handle);
-	signal(SIGABRT, signal_handle);
+	//signal(SIGABRT, signal_handle);
 	//signal(SIGSEGV, signal_handle);
 	return true;
 }
@@ -77,13 +77,12 @@ String getSimpleBinaryName() { return ""; }
 //TODO https://github.com/CyberGrandChallenge/binutils/blob/master/binutils/addr2line.c
 //     osx(atos): sprintf(addr2line_cmd,"atos -o %.256s %p", program_name, addr);
 //     linux:     sprintf(addr2line_cmd,"addr2line -f -p -e %.256s %p", program_name, addr);
-Array<StackTraceElement>& captureStackTrace(Array<StackTraceElement>& stackTrace, const int skip=3) {
+Array<StackTraceElement>& captureStackTrace(Array<StackTraceElement>& stackTrace, const int skip) {
 	const int depth = 50;
 	void *trace[depth];
 	int got = ::backtrace(trace, depth);
-	printf("::backtrace = %d\n",got);
+	System.out.printf("::backtrace = %d\n",got);
 	if (got <= skip) {
-		//System.err.println("no backtrace");
 		return stackTrace;
 	}
 
@@ -122,7 +121,7 @@ void signal_handle(int signum) {
 	System.err.println("Received signal " + String::valueOf(signum));
 	if (signum == SIGFPE) throw ArithmeticException("SIGFPE");
 	Array<StackTraceElement> st;
-	captureStackTrace(st);
+	captureStackTrace(st, 5);
 	for (int i=0; i < st.length; ++i) {
 		System.err.println(st[i].toString());
 	}
@@ -141,27 +140,28 @@ void terminate_hook() {
 			e.printStackTrace();
 		} catch (const std::exception& e) {
 			Array<StackTraceElement> st;
-			Throwable t(e.what());
-			t.setStackTrace(captureStackTrace(st,6));
+			Throwable t(Object::getClass(typeid(e)).getName() + ":" + e.what());
+			t.setStackTrace(captureStackTrace(st,3));
 			t.printStackTrace();
 		} catch (...) {
 			Array<StackTraceElement> st;
 			Throwable t;
-			t.setStackTrace(captureStackTrace(st,6));
+			t.setStackTrace(captureStackTrace(st,3));
 			t.printStackTrace();
 		}
 	}
 	else {
-		System.err.println("Terminated, no exception");
+		System.out.println("Terminated, no exception");
 	}
 	std::_Exit(EXIT_FAILURE);
+	//std::abort();
 }
 
-String name_NullRef = "null_ref";
+String name_NullObj = "null_obj";
 
-class NullRef : extends Object {
+class NullObj : extends Object {
 public:
-	String toString() { return name_NullRef; }
+	String toString() const { return name_NullObj; }
 } nullObject;
 
 class ArrayClass : extends Class {
@@ -174,7 +174,8 @@ public:
 
 namespace lang {
 
-Object& null_ref = nullObject;
+Object& Object::null_obj = nullObject;
+long Object::null_val = 0;
 
 Throwable::Throwable(const String& msg, Throwable *c) : detailMessage(msg), cause(c) {
 	threadInfo = Thread::currentThread().getName();
@@ -190,27 +191,23 @@ Throwable& Throwable::initCause(const Throwable *cause) {
 String Throwable::toString() const {
 	String s = getClass().getName();
 	String message = getLocalizedMessage();
-	return (message != null) ? (s + ": " + message) : s;
+	return (message != null) ? (s + ": " + message) : (s + ": null msg");
 }
 Throwable& Throwable::fillInStackTrace() {
 	(void)captureStackTrace;
 #ifdef BACKTRACE
 	captureStack2(stackTrace);
 #else
-	captureStackTrace(stackTrace);
+	captureStackTrace(stackTrace, 3);
 #endif
 	return *this;
 }
 void Throwable::printStackTrace() const {TRACE;
-	if (&System.err == null) {
-		std::cerr << "System.err not initialized yet" << std::endl;
-		return ;
-	}
 	printStackTrace(System.err);
 }
 void Throwable::printStackTrace(io::PrintStream& s) const {TRACE;
 	synchronized(s) {
-	s.println("Exception in thread \"" + threadInfo + "\" " + this->toString());
+	s.println("[T]Exception in thread \"" + threadInfo + "\" " + this->toString());
 	for (int i=0; i < stackTrace.length; ++i) {
 		s.print("\tat ");
 		s.println(stackTrace[i].toString());

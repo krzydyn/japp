@@ -176,19 +176,29 @@ Thread& Thread::operator=(Thread&& o) {
 	priority = o.priority;
 	daemon = o.daemon;
 	tid = o.tid;
+
 	threadStatus = o.threadStatus; o.threadStatus = TERMINATED;
 	target = o.target; o.target = null;
 	name = std::move(o.name);
 	thread = o.thread; o.thread = null;
 	return *this;
 }
+// Executing the destructor for a joinable thread results in calling std::terminate.
 Thread::~Thread() {
 	if (thread == null) return ;
-	System.out.println(getName() + " destructor");
+	try {
 	if (thread != null) {
-		thread->join();
+		join();
 		delete thread;
+		if (instanceof<RunFunction>(target)) {
+			System.err.println("delete RunFunction");
+			delete target;
+		}
 	}
+	}catch(...) {
+		System.err.println("Exeption in ~Thread()");
+	}
+	System.out.println(getName() + " destructor");
 }
 void Thread::setPriority(int newPriority) {
 	setNativePriority(*thread, newPriority);
@@ -200,6 +210,15 @@ void Thread::setName(const String& name) {
 		setNativeName(*thread, name, pendingNameChange);
 	}
 }
+/*
+ *
+ * []	Capture nothing (or, a scorched earth strategy?)
+ * [&]	Capture any referenced variable by reference
+ * [=]	Capture any referenced variable by making a copy
+ * [=, &foo]	Capture any referenced variable by making a copy, but capture variable foo by reference
+ * [bar]	Capture bar by making a copy; don't copy anything else
+ * [this]	Capture the this pointer of the enclosing class
+ */
 void Thread::start() {
 	if (threadStatus != NEW) {
 		throw IllegalThreadStateException();
@@ -212,34 +231,37 @@ void Thread::start() {
 	else {
 		//name = parent->getName() + "::" + name;
 	}
-	parent = &Thread::currentThread();
-	if (group)
-		group->add(this);
+	if (group) group->add(this);
 	pendingNameChange = true;
-	this->thread = new std::thread([=] {
+	this->thread = new std::thread([&] {
 		std::thread::id thrid = std::this_thread::get_id();
 		threads().addThread(thrid, this);
 		try {
 			do { Thread::yield(); } while (threadStatus == NEW);
+
 			if (threadStatus == RUNNABLE) {
 				setPriority(priority);
 				run();
 			}
 		} catch(const Throwable& e) {
-			e.printStackTrace(System.err);
+			e.printStackTrace();
 		} catch (const std::exception& e) {
-			Throwable(e.what()).fillInStackTrace().printStackTrace();
+			Throwable t(Object::getClass(typeid(e)).getName() + ":" + e.what());
+			t.fillInStackTrace().printStackTrace();
 		} catch (...) {
 			Throwable().fillInStackTrace().printStackTrace();
 		}
-		System.out.println(getName() + " terminated");
 		threadStatus = TERMINATED;
+		System.out.println(getName() + " terminated");
 		threads().removeThread(thrid);
 	});
 	threadStatus = RUNNABLE;
+	if (daemon) thread->detach();
 }
 void Thread::join(long millis) {TRACE;
-	if (isAlive()) thread->join();
+	if (thread->joinable()) {
+		thread->join();
+	}
 }
 void Thread::selfupdate() {
 	if (!thread) return ;
@@ -252,10 +274,7 @@ Thread& Thread::currentThread() {
 	Thread *t = threads().getThread(id);
 	if (t == null) {
 		System.err.println("FATAL: thread not found: " + String::valueOf(id));
-		if (threads().ready == false) {
-			exit(-1);
-		}
-		return threads().main;
+		std::_Exit(EXIT_FAILURE);
 	}
 	return *t;
 }

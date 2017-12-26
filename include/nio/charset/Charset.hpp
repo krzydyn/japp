@@ -83,9 +83,9 @@ public:
 	virtual String displayName() const { return pName; }
 	virtual boolean isRegistered() const final { return !pName.startsWith("X-") && !pName.startsWith("x-"); }
 	virtual boolean contains(const Charset& cs) const = 0;
-	virtual CharsetDecoder* newDecoder() = 0;
-	virtual CharsetEncoder* newEncoder() = 0;
-	virtual boolean canEncode() { return true; }
+	virtual CharsetDecoder* newDecoder() const = 0;
+	virtual CharsetEncoder* newEncoder() const = 0;
+	virtual boolean canEncode() const { return true; }
 	//public final CharBuffer decode(ByteBuffer bb)
 	//public final ByteBuffer encode(CharBuffer cb)
 	//public final ByteBuffer encode(String str)

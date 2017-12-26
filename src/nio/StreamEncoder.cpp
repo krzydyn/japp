@@ -4,10 +4,12 @@
 namespace nio {
 
 StreamEncoder StreamEncoder::forOutputStreamWriter(OutputStream& out, Object* lock, const String& charsetName) {
-	String csn = charsetName;
-	if (csn == null_ref) {
+	String csn;
+	if (charsetName == null_obj) {
+		if (Charset::defaultCharset() == null_obj) throw UnsupportedEncodingException(null_obj.toString());
 		csn = Charset::defaultCharset().name();
 	}
+	else csn = charsetName;
 	try {
 		if (Charset::isSupported(csn))
 			return StreamEncoder(out, lock, Charset::forName(csn));

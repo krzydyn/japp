@@ -18,6 +18,7 @@ public:
 	The_System(){}
 	~The_System(){}
 
+	static void static_init();
 	static io::PrintStream& err;
 	static io::PrintStream& out;
 	static io::InputStream& in;

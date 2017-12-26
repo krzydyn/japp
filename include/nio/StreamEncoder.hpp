@@ -46,7 +46,9 @@ public:
 
 	const String& getEncoding() {
 		if (isOpen()) return encodingName();
-		return (const String&)null_ref;
+		return (const String&)null_obj;
+	}
+	void flushBuffer() {
 	}
 };
 

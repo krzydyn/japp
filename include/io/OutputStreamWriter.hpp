@@ -11,12 +11,17 @@ class OutputStreamWriter : extends Writer {
 private:
 	nio::StreamEncoder se;
 
+protected:
+	void flushBuffer() {
+		se.flushBuffer();
+	}
+
 public:
 	OutputStreamWriter(OutputStream& out, const String& charsetName) : Writer(&out),
 		se(nio::StreamEncoder::forOutputStreamWriter(out, this, charsetName)) {
 	}
 	OutputStreamWriter(OutputStream& out) : Writer(&out),
-		se(nio::StreamEncoder::forOutputStreamWriter(out, this, "")) {
+		se(nio::StreamEncoder::forOutputStreamWriter(out, this, (const String&)null_obj)) {
 	}
 	OutputStreamWriter(OutputStream& out, const Charset& cs) : Writer(&out),
 		se(nio::StreamEncoder::forOutputStreamWriter(out, this, cs)) {

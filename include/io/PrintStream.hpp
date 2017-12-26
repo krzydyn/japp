@@ -20,6 +20,7 @@ public:
 	PrintStream(OutputStream& o) : out(o) {}
 
 	void flush() {TRACE;
+		if (this == null) {std::cerr << "NULL" << std::endl;return ;}
 		synchronized (*this) {
 			out.flush();
 		}
@@ -48,7 +49,7 @@ public:
 	}
 	void print(const Object& s) const {TRACE; write(s.toString());}
 	void print(const String& s) const {TRACE; write(s);}
-	template<class T, class std::enable_if<!std::is_base_of<Object,T>::value,Object>::type* = nullptr>
+	template<class T, class std::enable_if<!std::is_base_of<Object,T>::value,Object>::type* = null>
 	void print(const T& v) const {TRACE; write(String::valueOf(v)); }
 
 	void println() {TRACE; newLine(); }
@@ -83,18 +84,21 @@ public:
 		return *this;
 	}
 
-private:
+protected:
 	void newLine() const {
+		if (this == null) {std::cerr << "NULL" << std::endl;return ;}
 		synchronized (*this) {
 			out.write('\n');
 		}
 	}
 	void write(const char *s) const {
+		if (this == null) {std::cerr << "NULL" << s;return ;}
 		synchronized (*this) {
 			out.write(s,(int)strlen(s));
 		}
 	}
 	void write(const String& s) const {
+		if (this == null) {std::cerr << "NULL" << s.intern();return ;}
 		synchronized (*this) {
 			out.write(s.intern().c_str(),s.length());
 		}

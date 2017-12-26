@@ -45,7 +45,7 @@ build-tests: build-src
 .PHONY: run run-tests
 run: run-tests
 run-tests:
-	$(MAKE) PREFIX=$(@:run-%=%) -f $(@:run-%=%)/Makefile run
+	-$(MAKE) PREFIX=$(@:run-%=%) -f $(@:run-%=%)/Makefile run
 
 
 #instaling binutils on mac:

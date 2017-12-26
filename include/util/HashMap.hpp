@@ -124,8 +124,9 @@ public:
 				return l.get(i).getValue();
 			}
 		}
-		std::cout << "key not found: " << String::valueOf(k).intern() << ", return null_ref" << std::endl;
-		return (const V&)null_ref;
+		//std::cerr << "key(const) not found: " << String::valueOf(k).intern() << ", return null_obj" << std::endl;
+		if (sizeof(V) <= sizeof(void*))  return (const V&)null_val;
+		return (const V&)null_obj;
 	}
 	V& get(const K& k) {TRACE;
 		unsigned hc = util::hash_code(k)%mapsize;
@@ -135,8 +136,9 @@ public:
 				return l.get(i).getRef();
 			}
 		}
-		std::cout << "key not found: " << String::valueOf(k).intern() << ", return null_ref" << std::endl;
-		return (V&)null_ref;
+		//std::cerr << "key not found: " << String::valueOf(k).intern() << ", return null_obj" << std::endl;
+		throw NullPointerException("key not found: " + String::valueOf(k));
+		return (V&)null_obj;
 	}
 
 	const V& put(const K& k, const V& v) {TRACE;
@@ -161,7 +163,7 @@ public:
 				return l.removeAt(i).getValue();
 			}
 		}
-		return *((V*)&null_ref);
+		return *((V*)&null_obj);
 	}
 	void clear() {TRACE;
 		for (unsigned i=0; i < mapsize; ++i) map[i].clear();

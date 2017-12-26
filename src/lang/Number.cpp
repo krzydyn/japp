@@ -46,13 +46,13 @@ String Integer::toString(jint v, int radix) {
 	int s = 0;
 	if (v < 0) {s=1;v=-v;}
 	std::stringstream stream;
-	stream << base((unsigned)radix) << (unsigned)v;
+	stream << base((unsigned)radix) << (unsigned long)v;
 	return s ? "-" + stream.str() : stream.str();
 }
 String Integer::toUnsignedString(jint v, int radix) {
 	if (radix <= 0) throw ArithmeticException();
 	std::stringstream stream;
-	stream << base((unsigned)radix) << (unsigned)v;
+	stream << base((unsigned)radix) << (unsigned long)v;
 	return stream.str();
 }
 

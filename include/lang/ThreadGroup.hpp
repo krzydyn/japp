@@ -178,12 +178,12 @@ public:
 				ueh->uncaughtException(t, e);
 			}
 			else {
-				System.err.print("Exception in thread \""+ t.getName() + "\" ");
+				System.err.print("[G]Exception in thread \""+ t.getName() + "\" ");
 				e.printStackTrace(System.err);
 			}
 		}
 	}
-	String toString() {
+	String toString() const {
 		return getClass().getName() + "[name=" + getName() + ",maxpri=" + maxPriority + "]";
 	}
 };

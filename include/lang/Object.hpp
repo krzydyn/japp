@@ -28,7 +28,6 @@ class Class;
 class Object;
 class String;
 
-extern Object& null_ref;
 
 class Interface {
 protected:
@@ -70,6 +69,8 @@ protected:
 	virtual void finalize() {}
 	virtual Object& clone() const;
 public:
+	static Object& null_obj;
+	static long null_val;
 	static Class *findClass(const std::type_info& type);
 	static void registerClass(Class *c);
 	Object(const Object& o) {}
@@ -91,12 +92,10 @@ public:
 	virtual void wait() final {wait(0); }
 
 	boolean operator==(const std::nullptr_t&) const {
-		std::cout << "this = " << (void*)this << ", null_ref = " << (void*)&null_ref << std::endl;
-		boolean b = (this == null || this == (void*)&null_ref);
-		std::cout << "this is null_ptr = " << b << std::endl;
+		boolean b = (this == null || this == (void*)&null_obj);
 		return b;
 	}
-	boolean operator!=(const std::nullptr_t&) const {return this != null && this != &null_ref;}
+	boolean operator!=(const std::nullptr_t&) const {return this != null && this != &null_obj;}
 	boolean operator==(const Object& o) const {return this == &o;}
 	boolean operator!=(const Object& o) const {return this != &o;}
 
@@ -110,6 +109,7 @@ public:
 		Lock(const Object* o) : Lock(*o) {}
 		Lock(const Object& o) : obj(o) {
 			if (&o == null) {
+				std::cerr << "Lock: obj is null" << std::endl;
 				locked=false;
 				return ;
 			}
@@ -119,6 +119,7 @@ public:
 			obj.mtx->lock();
 		}
 		~Lock() {
+			if (&obj == null) return ;
 			obj.mtx->unlock();
 		}
 		operator boolean () const { return locked; }

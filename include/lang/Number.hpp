@@ -82,7 +82,7 @@ public:
 	long longValue() const {return (long)value;}
 	float floatValue() const {return (float)value;}
 	double doubleValue() const {return (double)value;}
-	String toString() { return toString(value); }
+	String toString() const { return toString(value); }
 	boolean equals(const Object& o) const {
 		if (instanceof<Integer>(&o)) {
 			return value == ((const Integer&)o).shortValue();
@@ -134,7 +134,7 @@ public:
 	long longValue() const {return (long)value;}
 	float floatValue() const {return (float)value;}
 	double doubleValue() const {return (double)value;}
-	String toString() { return toString(value); }
+	String toString() const { return toString(value); }
 	jint hashCode() const { return Short::hashCode(value); }
 	boolean equals(const Object& o) const {
 		if (instanceof<Short>(&o)) {
@@ -181,7 +181,7 @@ public:
 	long longValue() const {return (long)value;}
 	float floatValue() const {return (float)value;}
 	double doubleValue() const {return (double)value;}
-	String toString() { return toString(value); }
+	String toString() const { return toString(value); }
 	jint hashCode() const { return Long::hashCode(value); }
 	boolean equals(const Object& o) const {
 		if (instanceof<Long>(&o)) {

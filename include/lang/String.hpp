@@ -2,11 +2,12 @@
 #define __LANG_STRING_HPP
 
 #include <lang/Comparable.hpp>
-#include <string>
 #include <algorithm>
+#include <cstdarg>
 #include <iostream>
 #include <sstream>
-#include <cstdarg>
+#include <string>
+#include <thread>
 
 namespace lang {
 
@@ -52,6 +53,7 @@ public:
 	String(const char *s, int offset, int count);
 
 	const std::string& intern() const {TRACE; return value; }
+	const char *cstr() const { return value.c_str(); }
 
 	int length() const { return (int)value.length(); }
 	boolean isEmpty() const { return value.length() == 0; }
@@ -228,6 +230,11 @@ public:
 	static String valueOf(char *s) {TRACE;return valueOf((const char*)s);}
 	static String valueOf(const Object& obj) {TRACE; return obj.toString(); }
 	static String valueOf(const String& s) {TRACE;return s;}
+	static String valueOf(const std::thread::id& id) {TRACE;
+		std::stringstream s;
+		s << id;
+		return s.str();
+	}
 	template<class T, class std::enable_if<!std::is_base_of<Object,T>::value,Object>::type* = nullptr>
 	static String valueOf(const T& t) {TRACE;return className(typeid(t)) + "@" + valueHex((long)&t); }
 

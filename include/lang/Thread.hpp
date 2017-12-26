@@ -4,8 +4,10 @@
 #include <lang/Class.hpp>
 #include <lang/String.hpp>
 #include <lang/Exception.hpp>
-#include <mutex>
 #include <condition_variable>
+#include <functional>
+#include <mutex>
+
 
 namespace std { class thread; }
 namespace lang {
@@ -78,6 +80,14 @@ private:
 	void init();
 
 	static UncaughtExceptionHandler* defaultUncaughtExceptionHandler;
+
+	class RunFunction : extends Runnable {
+	private:
+		std::function<void()> func;
+	public:
+		RunFunction(std::function<void()> f) : func(f) {}
+		void run() { func(); }
+	};
 protected:
 	Thread(const String& name, int status) : name(name), threadStatus(status) {}
 	Thread(ThreadGroup& group,const String& name, int status) : name(name), group(&group), threadStatus(status) {}
@@ -89,7 +99,6 @@ public:
 	Thread& operator=(const Thread& other) = delete;
 	Thread& operator=(Thread&& o);
 
-	//TODO suport lamba as target in constructor
 	Thread() {}
 	Thread(Runnable& target) : target(&target) {init();}
 	Thread(ThreadGroup& group, Runnable& target) : target(&target), group(&group) {init();}
@@ -97,6 +106,7 @@ public:
 	Thread(ThreadGroup& group, const String& name) : name(name), group(&group) {init();}
 	Thread(Runnable& target, const String& name) : name(name), target(&target) {init();}
 	Thread(ThreadGroup& group, Runnable& target, const String& name) : name(name), target(&target), group(&group) {init();}
+	Thread(std::function<void()> f) : target(new RunFunction(f)) {init();}
 	~Thread();
 
 	void start();
@@ -119,6 +129,9 @@ public:
 		if (nanos >= 500000 || (nanos != 0 && millis == 0)) ++millis;
 		join(millis);
 	}
+	/**
+	 * when program ends, it is not waiting for end of daemon threads
+	 */
 	void setDaemon(boolean on) {TRACE;
 		checkAccess();
 		if (isAlive()) throw IllegalThreadStateException();
