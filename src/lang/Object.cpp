@@ -107,7 +107,6 @@ Array<StackTraceElement>& captureStackTrace(Array<StackTraceElement>& stackTrace
 		else {
 			stackTrace[i] = StackTraceElement(addr, "", 0);
 		}
-
 	}
 	return stackTrace;
 }
@@ -121,11 +120,10 @@ void signal_handle(int signum) {
 	System.err.println("Received signal " + String::valueOf(signum));
 	if (signum == SIGFPE) throw ArithmeticException("SIGFPE");
 	Array<StackTraceElement> st;
-	captureStackTrace(st, 5);
+	captureStackTrace(st, 3);
 	for (int i=0; i < st.length; ++i) {
 		System.err.println(st[i].toString());
 	}
-	//Throwable().fillInStackTrace().printStackTrace();
 	terminate_hook();
 }
 [[noreturn]]
