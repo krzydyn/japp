@@ -47,13 +47,19 @@ public:
 class ThreadGroup;
 class Thread : extends Object, implements Runnable {
 public:
+	static const int MIN_PRIORITY = 1;
+	static const int NORM_PRIORITY = 5;
 	static const int MAX_PRIORITY = 10;
+
 	interface UncaughtExceptionHandler : Interface {
 	public:
 		virtual void uncaughtException(const Thread& t, const Throwable& e) = 0;
 	};
 
 private:
+	std::thread *thread = null;
+	void selfupdate();
+
 #ifdef BACKTRACE
 	friend class CallTrace;
 	#define BACKTRACE_SIZE 2048
@@ -68,26 +74,26 @@ private:
 	boolean daemon = false;
 	Runnable* target = null;
 	ThreadGroup *group = null;
+
 	long stackSize;
 	long tid;
 	volatile int threadStatus = NEW;
-	Interruptible interruptor;
-	std::thread *thread = null;
+
+	Interruptible blocker;
 	boolean pendingNameChange = false;
 	UncaughtExceptionHandler* uncaughtExceptionHandler = null;
-	void selfupdate();
-
-	void init();
 
 	static UncaughtExceptionHandler* defaultUncaughtExceptionHandler;
 
-	class RunFunction : extends Runnable {
+	class RunnableFunction : extends Runnable {
 	private:
 		std::function<void()> func;
 	public:
-		RunFunction(std::function<void()> f) : func(f) {}
+		RunnableFunction(std::function<void()> f) : func(f) {}
 		void run() { func(); }
 	};
+	void init();
+
 protected:
 	Thread(const String& name, int status) : name(name), threadStatus(status) {}
 	Thread(ThreadGroup& group,const String& name, int status) : name(name), group(&group), threadStatus(status) {}
@@ -106,7 +112,7 @@ public:
 	Thread(ThreadGroup& group, const String& name) : name(name), group(&group) {init();}
 	Thread(Runnable& target, const String& name) : name(name), target(&target) {init();}
 	Thread(ThreadGroup& group, Runnable& target, const String& name) : name(name), target(&target), group(&group) {init();}
-	Thread(std::function<void()> f) : target(new RunFunction(f)) {init();}
+	Thread(std::function<void()> f) : target(new RunnableFunction(f)) {init();}
 	~Thread();
 
 	void start();

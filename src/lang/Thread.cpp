@@ -49,20 +49,16 @@ public:
 	long threadSeqNumber = 0;
 	long threadInitNumber = 0;
 	HashMap<std::thread::id,Thread*> thrmap;
-	boolean ready=false;
 	MainThreadGroup maingroup;
 	MainThread main;
 
 	Threads() : thrmap(), main(maingroup) {
-		ready=true;
 		mainid = std::this_thread::get_id();
 		addThread(mainid, &main);
-		//System.out.println("registerd mainid " + String::valueOf(mainid));
 	}
 
 	~Threads() {
 		removeThread(mainid);
-		ready=false;
 	}
 	long nextThreadNum() {
 		long n;
@@ -79,7 +75,6 @@ public:
 		return tid;
 	}
 	void addThread(std::thread::id id, Thread* t) {
-		if (!ready) return;
 		synchronized(thrmap) {
 			if (recursive) return; //ignore self tracing
 			CallLock cl(recursive);
@@ -87,7 +82,6 @@ public:
 		}
 	}
 	void removeThread(std::thread::id id) {
-		if (ready) return;
 		synchronized(thrmap) {
 			if (recursive) return; //ignore self tracing
 			CallLock cl(recursive);
@@ -95,7 +89,6 @@ public:
 		}
 	}
 	Thread* getThread(std::thread::id id) {
-		if (!ready) return null; //ignore self tracing
 		Thread *t = null;
 		synchronized(thrmap) {
 			if (recursive) return null; //ignore self tracing
@@ -109,7 +102,6 @@ public:
 //threads lazy initialization
 Threads& threads() {
 	static Threads t;
-	The_System::currentTimeMillis();
 	return t;
 }
 } //anoymous namespace
@@ -187,14 +179,13 @@ Thread& Thread::operator=(Thread&& o) {
 Thread::~Thread() {
 	if (thread == null) return ;
 	try {
-	if (thread != null) {
 		join();
 		delete thread;
-		if (instanceof<RunFunction>(target)) {
-			System.err.println("delete RunFunction");
+		thread = null;
+		if (instanceof<RunnableFunction>(target)) {
+			System.err.println("delete RunnableFunction");
 			delete target;
 		}
-	}
 	}catch(...) {
 		System.err.println("Exeption in ~Thread()");
 	}
@@ -225,11 +216,7 @@ void Thread::start() {
 	}
 
 	if (name.length() == 0) {
-		//name += parent->getName() + "::";
 		name += "Thread-" + String::valueOf(tid);
-	}
-	else {
-		//name = parent->getName() + "::" + name;
 	}
 	if (group) group->add(this);
 	pendingNameChange = true;

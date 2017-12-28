@@ -23,21 +23,23 @@
 // http://blog.bigpixel.ro/2010/09/stack-unwinding-stack-trace-with-gcc/
 // readelf --debug-dump=decodedline  a.out
 
+extern "C" {
 typedef void (*cxa_throw_type) (void *, struct type_info *, void (*) (void *));
-extern "C"
 void __cxa_throw(void* thrown_exception, void* _tinfo, void (*dest)(void*)) {
 	static cxa_throw_type old_handler=null;
 	struct type_info* tinfo = (struct type_info*) _tinfo;
 	if (!old_handler) {
 		old_handler = (cxa_throw_type)dlsym(RTLD_NEXT, "__cxa_throw");
 	}
-	std::printf("throw...%p\n", thrown_exception);
 	const Object *o = (const Object *)thrown_exception;
 	if (instanceof<Throwable>(o)) {
-		((Throwable*)o)->fillInStackTrace();
+		Throwable* ex = (Throwable*)o;
+		if (ex->getStackTrace().length == 0)
+			ex->fillInStackTrace();
 	}
 	old_handler(thrown_exception, tinfo, dest);
 	std::_Exit(EXIT_FAILURE);
+}
 }
 
 namespace {
@@ -101,7 +103,11 @@ Array<StackTraceElement>& captureStackTrace(Array<StackTraceElement>& stackTrace
 			if (path.rfind('/') != std::string::npos) path = path.substr(path.rfind('/')+1);
 			if (info.dli_sname == null) info.dli_sname="";
 			std::string func = demangle(info.dli_sname);
-			std::string offs = "+" + std::to_string((long)trace[i+skip] - (long)info.dli_saddr);
+			std::string offs;
+			if (info.dli_saddr != 0)
+				offs = "+" + std::to_string((long)trace[i+skip] - (long)info.dli_saddr);
+			else
+				offs = "";
 			stackTrace[i] = StackTraceElement(func+offs+" "+path+addr, "", 0);
 		}
 		else {
@@ -118,9 +124,13 @@ void captureStack2(Array<StackTraceElement>& stackTrace) {
 #endif
 void signal_handle(int signum) {
 	System.err.println("Received signal " + String::valueOf(signum));
-	if (signum == SIGFPE) throw ArithmeticException("SIGFPE");
 	Array<StackTraceElement> st;
 	captureStackTrace(st, 3);
+	if (signum == SIGFPE) {
+		ArithmeticException ex("SIGFPE");
+		ex.setStackTrace(st);
+		throw ex;
+	}
 	for (int i=0; i < st.length; ++i) {
 		System.err.println(st[i].toString());
 	}
