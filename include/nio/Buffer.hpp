@@ -1,15 +1,24 @@
 #ifndef __NIO_BUFFER_HPP
 #define __NIO_BUFFER_HPP
 
-#include <lang/Comparable.hpp>
-//#include <lang/Exception.hpp>
-#include <io/Appendable.hpp>
-#include <io/Readable.hpp>
+#include <lang/Exception.hpp>
 
 namespace nio {
 
 class InvalidMarkException : extends IllegalStateException {
 	using IllegalStateException::IllegalStateException;
+};
+
+class BufferOverflowException : extends RuntimeException {
+	using RuntimeException::RuntimeException;
+};
+
+class BufferUnderflowException : extends RuntimeException {
+	using RuntimeException::RuntimeException;
+};
+
+class ReadOnlyBufferException : extends UnsupportedOperationException {
+	using UnsupportedOperationException::UnsupportedOperationException;
 };
 
 class Buffer : extends Object {
@@ -20,6 +29,7 @@ private:
 	int mLimit;
 	int mCapacity;
 
+protected:
 	Buffer(int mark, int pos, int lim, int cap) : mCapacity(cap) {
 		if (cap < 0) throw IllegalArgumentException("Negative capacity: " + String::valueOf(cap));
 		limit(lim);
@@ -29,6 +39,45 @@ private:
 			this->mMark = mark;
 		}
 	}
+
+	int nextGetIndex() {
+		if (mPosition >= mLimit) throw BufferUnderflowException();
+		return mPosition++;
+	}
+	int nextGetIndex(int nb) {
+		if (mLimit - mPosition < nb) throw BufferUnderflowException();
+		int p = mPosition;
+		mPosition += nb;
+		return p;
+	}
+
+	int nextPutIndex() {
+		if (mPosition >= mLimit) throw BufferOverflowException();
+		return mPosition++;
+	}
+	int nextPutIndex(int nb) {
+		if (mLimit - mPosition < nb) throw BufferOverflowException();
+		int p = mPosition;
+		mPosition += nb;
+		return p;
+	}
+
+	int checkIndex(int i) const {
+		if ((i < 0) || (i >= mLimit)) throw IndexOutOfBoundsException();
+		return i;
+	}
+	int checkIndex(int i, int nb) const {
+		if ((i < 0) || (nb > mLimit - i)) throw IndexOutOfBoundsException();
+		return i;
+	}
+	int markValue() const {return mMark;}
+	void truncate() {
+		mMark = -1;
+		mPosition = 0;
+		mLimit = 0;
+		mCapacity = 0;
+	}
+	void discardMark() {mMark = -1;}
 
 public:
 	int capacity() const { return mCapacity; }
@@ -82,20 +131,9 @@ public:
 	}
 	virtual boolean isReadOnly() const = 0;
 	virtual boolean hasArray() const = 0;
-	virtual Object array() const = 0;
+	virtual Object& array() = 0;
 	virtual int arrayOffset() const = 0;
 	virtual boolean isDirect() const = 0;
-};
-
-class CharBuffer : extends Buffer,
-	implements Comparable<CharBuffer>, implements Appendable, implements CharSequence, implements Readable
-{
-private:
-	Array<char> hb;
-public:
-	static CharBuffer& allocate(int capacity);
-
-	virtual CharBuffer& put(int index, char c) = 0;
 };
 
 } //namespace nio

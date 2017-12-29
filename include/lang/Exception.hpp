@@ -79,7 +79,7 @@ public:
 	Throwable& operator=(Throwable&& o) {move(&o); return *this;}
 	~Throwable() {}
 
-	Throwable() : Throwable("", null) {}
+	Throwable(){}
 	Throwable(const String& msg, Throwable *c=null);
 
 	virtual const String& getMessage() const {return detailMessage;}
@@ -115,6 +115,10 @@ public:
 	using Error::Error;
 };
 
+class RuntimeException : extends Exception {
+public:
+	using Exception::Exception;
+};
 class ArithmeticException : extends Exception {
 public:
 	using Exception::Exception;
@@ -135,6 +139,7 @@ public:
 class IndexOutOfBoundsException : extends Exception {
 public:
 	using Exception::Exception;
+	IndexOutOfBoundsException() {}
 	IndexOutOfBoundsException(int i) : Exception("Index "+String::valueOf(i)) {}
 };
 

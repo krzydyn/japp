@@ -42,7 +42,7 @@ public:
 	Boolean(const String& s) : value(parseBoolean(s)) {}
 	boolean booleanValue() const {return value;}
 	String toString() const { return toString(value); }
-	jint hashCode() {return Boolean::hashCode(value);}
+	jint hashCode() const {return Boolean::hashCode(value);}
 	boolean equals(const Object& o) const {
 		if (instanceof<Boolean>(&o)) {
 			return value == ((const Boolean&)o).booleanValue();

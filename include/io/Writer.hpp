@@ -1,7 +1,7 @@
 #ifndef __IO_WRITER_HPP
 #define __IO_WRITER_HPP
 
-#include <io/Appendable.hpp>
+#include <lang/Appendable.hpp>
 #include <io/Closeable.hpp>
 #include <io/Flushable.hpp>
 

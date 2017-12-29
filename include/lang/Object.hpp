@@ -81,6 +81,7 @@ public:
 
 	Object() {}
 	virtual const Class& getClass() const final;
+	virtual jint hashCode() final {return ((const Object*)this)->hashCode();}
 	virtual jint hashCode() const {return (jint)this;}
 
 	virtual boolean equals(const Object& obj) const {return this == &obj;}
@@ -205,9 +206,9 @@ inline bool instanceof(const T *ptr) {
 
 } //namespace lang
 
-#define synchronized(m) for(Object::Lock __lck(m); __lck; __lck.unlock())
-
 using namespace lang;
+
+#define synchronized(m) for(Object::Lock __lck(m); __lck; __lck.unlock())
 
 //template<class T, class std::enable_if<std::is_base_of<Object,T>::value,Object>::type* = nullptr>
 //using classT = typename(T)::theclass;

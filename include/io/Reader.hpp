@@ -1,9 +1,9 @@
 #ifndef __IO_READER_HPP
 #define __IO_READER_HPP
 
-#include <io/Readable.hpp>
 #include <io/Closeable.hpp>
-#include <nio/Buffer.hpp>
+#include <lang/Readable.hpp>
+#include <nio/CharBuffer.hpp>
 
 namespace io {
 
@@ -29,10 +29,10 @@ public:
 		return n;
 	}
 	virtual int read() {
-		char ch;
-		if (read(&ch, 0, 1) == -1)
+		Array<char> ch(1);
+		if (read(ch, 0, 1) == -1)
 			return -1;
-		return ch;
+		return ch[0];
 	}
 	virtual int read(Array<char>& cbuf) {
 		return read(cbuf, 0, cbuf.length);
@@ -40,13 +40,13 @@ public:
 	virtual int read(Array<char>& cbuf, int off, int len) = 0;
 	virtual long skip(long n) {
 		if (n < 0L) throw IllegalArgumentException("skip value is negative");
-		int nn = (int) Math.min(n, maxSkipBufferSize);
+		int nn = (int) Math.min(n, (long)maxSkipBufferSize);
 		long r = n;
 		synchronized (lock) {
 			if (skipBuffer.length < nn)
 				skipBuffer = Array<char>(nn);
 			while (r > 0) {
-				int nc = read(skipBuffer, 0, (int)Math.min(r, nn));
+				int nc = read(skipBuffer, 0, (int)Math.min(r, (long)nn));
 				if (nc == -1) break;
 				r -= nc;
 			}

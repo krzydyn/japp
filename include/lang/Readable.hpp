@@ -1,17 +1,19 @@
-#ifndef __IO_READABLE_HPP
-#define __IO_READABLE_HPP
+#ifndef __LANG_READABLE_HPP
+#define __LANG_READABLE_HPP
+
+#include <lang/Object.hpp>
 
 namespace nio {
 class CharBuffer;
 }
 
-namespace io {
+namespace lang {
 
 interface Readable : Interface {
 public:
 	virtual int read(nio::CharBuffer& cb) = 0;
 };
 
-} //namespace io
+} //namespace lang
 
 #endif

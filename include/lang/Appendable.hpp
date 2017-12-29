@@ -1,14 +1,11 @@
-#ifndef __IO_APPENDABLE_HPP
-#define __IO_APPENDABLE_HPP
+#ifndef __LANG_APPENDABLE_HPP
+#define __LANG_APPENDABLE_HPP
 
 #include <lang/Object.hpp>
 
 namespace lang {
-	class CharSequence;
-}
 
-namespace io {
-
+class CharSequence;
 interface Appendable : Interface {
 public:
 	virtual Appendable& append(const CharSequence& csq) = 0;
@@ -16,6 +13,6 @@ public:
 	virtual Appendable& append(char c) = 0;
 };
 
-} //namespace io
+} //namespace lang
 
 #endif
