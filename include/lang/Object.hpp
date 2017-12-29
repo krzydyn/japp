@@ -139,9 +139,10 @@ Shared<T> makeShared(Args&&... args) {TRACE; return std::make_shared<T>(args...)
 
 void registerArrayClass(const std::type_info& type);
 void checkArrayBounds(int i, int l);
+
 template<class T>
 class Array : extends Object {
-private:
+protected:
 	T *a;
 	void init() { registerArrayClass(typeid(*this)); }
 
@@ -189,6 +190,11 @@ public:
 		checkArrayBounds(i, length);
 		return a[i];
 	}
+};
+template<class T>
+class BufArray : extends Array<T> {
+	using Array<T>::Array;
+	~BufArray() { this->a=null;}
 };
 
 //usage if: (instanceof<Integer>(objPtr)) {...}

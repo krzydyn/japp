@@ -3,10 +3,14 @@
 
 #include <io/Readable.hpp>
 #include <io/Closeable.hpp>
+#include <nio/Buffer.hpp>
 
 namespace io {
 
 class Reader : extends Object, implements Readable, implements Closeable {
+private:
+	static const int maxSkipBufferSize = 8192;
+	Array<char> skipBuffer;
 protected:
 	Object *lock;
 	Reader() { lock=this; }
@@ -17,14 +21,49 @@ protected:
 
 public:
 	int read(nio::CharBuffer& target) {
-		/*
 		int len = target.remaining();
-		char[] cbuf = new char[len];
+		Array<char> cbuf(len);
 		int n = read(cbuf, 0, len);
 		if (n > 0)
 			target.put(cbuf, 0, n);
-		return n;*/
-		return 0;
+		return n;
+	}
+	virtual int read() {
+		char ch;
+		if (read(&ch, 0, 1) == -1)
+			return -1;
+		return ch;
+	}
+	virtual int read(Array<char>& cbuf) {
+		return read(cbuf, 0, cbuf.length);
+	}
+	virtual int read(Array<char>& cbuf, int off, int len) = 0;
+	virtual long skip(long n) {
+		if (n < 0L) throw IllegalArgumentException("skip value is negative");
+		int nn = (int) Math.min(n, maxSkipBufferSize);
+		long r = n;
+		synchronized (lock) {
+			if (skipBuffer.length < nn)
+				skipBuffer = Array<char>(nn);
+			while (r > 0) {
+				int nc = read(skipBuffer, 0, (int)Math.min(r, nn));
+				if (nc == -1) break;
+				r -= nc;
+			}
+		}
+		return n - r;
+	}
+	virtual boolean ready() {
+		return false;
+	}
+	virtual boolean markSupported() {
+		return false;
+	}
+	virtual void mark(int readAheadLimit) {
+		throw IOException("mark() not supported");
+	}
+	virtual void reset() {
+		throw IOException("reset() not supported");
 	}
 };
 

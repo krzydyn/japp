@@ -2,6 +2,7 @@
 #define __NIO_BUFFER_HPP
 
 #include <lang/Comparable.hpp>
+//#include <lang/Exception.hpp>
 #include <io/Appendable.hpp>
 #include <io/Readable.hpp>
 
@@ -91,6 +92,10 @@ class CharBuffer : extends Buffer,
 {
 private:
 	Array<char> hb;
+public:
+	static CharBuffer& allocate(int capacity);
+
+	virtual CharBuffer& put(int index, char c) = 0;
 };
 
 } //namespace nio

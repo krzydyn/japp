@@ -3,6 +3,10 @@
 
 #include <lang/Object.hpp>
 
+namespace lang {
+	class CharSequence;
+}
+
 namespace io {
 
 interface Appendable : Interface {

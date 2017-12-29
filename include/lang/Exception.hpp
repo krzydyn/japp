@@ -117,29 +117,24 @@ public:
 
 class ArithmeticException : extends Exception {
 public:
-	ArithmeticException() : Exception() {}
-	ArithmeticException(const String& msg) : Exception(msg) {}
+	using Exception::Exception;
 };
 class NullPointerException : extends Exception {
 public:
-	NullPointerException() : Exception() {}
-	NullPointerException(const String& msg) : Exception(msg) {}
+	using Exception::Exception;
 };
 class CloneNotSupportedException : extends Exception {
 public:
-	CloneNotSupportedException() : Exception() {}
-	CloneNotSupportedException(const String& msg) : Exception(msg) {}
+	using Exception::Exception;
 };
 class UnsupportedOperationException : extends Exception {
 public:
-	UnsupportedOperationException() : Exception() {}
-	UnsupportedOperationException(const String& msg) : Exception(msg) {}
+	using Exception::Exception;
 };
 
 class IndexOutOfBoundsException : extends Exception {
 public:
-	IndexOutOfBoundsException() : Exception() {}
-	IndexOutOfBoundsException(const String& msg) : Exception(msg) {}
+	using Exception::Exception;
 	IndexOutOfBoundsException(int i) : Exception("Index "+String::valueOf(i)) {}
 };
 
@@ -150,16 +145,12 @@ public:
 
 class IllegalArgumentException : extends Exception {
 public:
-	IllegalArgumentException() : Exception() {}
-	IllegalArgumentException(const String& msg) : Exception(msg) {}
-	IllegalArgumentException(const String& msg, Throwable *c) : Exception(msg, c) {}
+	using Exception::Exception;
 };
 
 class IllegalStateException : extends Exception {
 public:
-	IllegalStateException() : Exception() {}
-	IllegalStateException(const String& msg) : Exception(msg) {}
-	IllegalStateException(const String& msg, Throwable *c) : Exception(msg, c) {}
+	using Exception::Exception;
 };
 
 } //namespace lang
