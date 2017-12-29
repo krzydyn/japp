@@ -41,8 +41,8 @@ void test_filelist() {
 	io::File f("/tmp");
 	Array<String> a = f.list();
 	for (int i=0; i < a.length; ++i)
-		System.out.println(a[i]);
-	System.out.printf("Fouind %d files in %s\n", a.length, f.getPath().cstr());
+		System.out.println("\t"+a[i]);
+	System.out.printf("Found %d files in %s\n", a.length, f.getPath().cstr());
 }
 
 void test_writer() {
