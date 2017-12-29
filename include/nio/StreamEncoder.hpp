@@ -19,16 +19,21 @@ private:
 	StreamEncoder(OutputStream& out, Object* lock, const Charset& cs) : Writer(lock),
 		out(&out), cs(cs) {
 	}
-	const String& encodingName() {
+	const String& encodingName() const {
 		return cs.name();
 	}
-	boolean isOpen() { return isOpened; }
+	boolean isOpen() const { return isOpened; }
+
 public:
 	static StreamEncoder forOutputStreamWriter(OutputStream& out, Object* lock, const String& charsetName);
 	static StreamEncoder forOutputStreamWriter(OutputStream& out, Object* lock, const Charset& cs);
 	static StreamEncoder forOutputStreamWriter(OutputStream& out, Object* lock, const CharsetEncoder& enc);
 
 	StreamEncoder(StreamEncoder&& se);
+	const String& getEncoding() const {
+		if (isOpen()) return encodingName();
+		return (const String&)null_obj;
+	}
 
 	using Writer::write;
 	void write(const Array<char>& cbuf, int off, int len) {
@@ -44,10 +49,6 @@ public:
 		if (out != null) out->close();
 	}
 
-	const String& getEncoding() {
-		if (isOpen()) return encodingName();
-		return (const String&)null_obj;
-	}
 	void flushBuffer() {
 	}
 };

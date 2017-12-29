@@ -1,8 +1,10 @@
 #ifndef __IO_READER_HPP
 #define __IO_READER_HPP
 
-#include <io/Closeable.hpp>
+#include <lang/Math.hpp>
 #include <lang/Readable.hpp>
+#include <io/Closeable.hpp>
+#include <io/IOException.hpp>
 #include <nio/CharBuffer.hpp>
 
 namespace io {

@@ -29,7 +29,7 @@ public:
 	OutputStreamWriter(OutputStream& out, const CharsetEncoder& enc) : Writer(&out),
 		se(nio::StreamEncoder::forOutputStreamWriter(out, this, enc)) {
 	}
-	const String& getEncoding() {
+	const String& getEncoding() const {
 		return se.getEncoding();
 	}
 	using Writer::write;

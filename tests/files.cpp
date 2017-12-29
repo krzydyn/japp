@@ -3,7 +3,7 @@
 #include <io/FileOutputStream.hpp>
 #include <io/FileInputStream.hpp>
 #include <io/OutputStreamWriter.hpp>
-#include <io/Reader.hpp>
+#include <io/InputStreamReader.hpp>
 
 void test_nonexisting() {
 	io::File f("non-existing.txt");
@@ -55,10 +55,15 @@ void test_writer() {
 	wr.write(testdata);
 }
 
+void test_reader() {
+	io::InputStreamReader r(System.in);
+}
+
 int main() {
 	test_nonexisting();
 	test_write_read();
 	test_filelist();
 	test_writer();
+	test_reader();
 	return 0;
 }
