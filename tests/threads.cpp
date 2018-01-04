@@ -49,7 +49,7 @@ void test_thread() {TRACE;
 		e.printStackTrace();
 	}
 
-	Thread([]() {
+	Thread([]{
 			System.out.println("inline func");
 	}).start();
 }

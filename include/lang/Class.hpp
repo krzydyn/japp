@@ -1,7 +1,7 @@
 #ifndef __LANG_CLASS_HPP
 #define __LANG_CLASS_HPP
 
-#include <lang/String.hpp>
+#include <lang/Object.hpp>
 #include <typeinfo>
 
 namespace lang {
@@ -13,16 +13,13 @@ private:
 protected:
 	Class(const std::type_info& t) : type(t) {}
 public:
-	String toString() const {
-		String c = isInterface() ? "interface " : (isPrimitive() ? "" : "class ");
-		return c + getName();
-	}
+	String toString() const;
 	/*
 	 * Returns a string describing this {@code Class}, including
 	 * information about modifiers and type parameters.
 	 * @since 1.8
 	 */
-	String toGenericString() const {return toString();}
+	String toGenericString() const;
 	String getName() const;
 	String getSimpleName() const;
 	String getCanonicalName() const;

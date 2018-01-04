@@ -12,6 +12,7 @@
 
 using boolean=bool;
 using byte=unsigned char;
+using jchar=unsigned short;
 using jint=long;
 using jlong=long long;
 
@@ -204,11 +205,20 @@ inline bool instanceof(const T *ptr) {
 	return dynamic_cast<const Base*>(ptr) != null;
 }
 
+class Finalizer {
+private:
+	std::function<void()> finalize;
+public:
+	Finalizer(std::function<void()> f) : finalize(f) {}
+	~Finalizer() { finalize(); }
+};
+#define Finalize(lambda) Finalizer UNIQUE_NAME(fin)(lambda)
+
 } //namespace lang
 
 using namespace lang;
 
-#define synchronized(m) for(Object::Lock __lck(m); __lck; __lck.unlock())
+#define synchronized(m) for(Object::Lock UNIQUE_NAME(lck)(m); UNIQUE_NAME(lck); UNIQUE_NAME(lck).unlock())
 
 //template<class T, class std::enable_if<std::is_base_of<Object,T>::value,Object>::type* = nullptr>
 //using classT = typename(T)::theclass;

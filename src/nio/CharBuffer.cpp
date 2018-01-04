@@ -19,14 +19,52 @@ int static_equals(char x, char y) {
 }
 
 namespace nio {
+class HeapCharBuffer : extends CharBuffer {
+protected:
+	int ix(int i) const {return i + mOffset;}
+	String toString(int start, int end) const {
+		return String(&hb[0], start + mOffset, end - start);
+	}
+public:
+	HeapCharBuffer(int cap, int lim) : CharBuffer(-1, 0, lim, cap, 0) {}
+	HeapCharBuffer(Array<char>& buf, int off, int len) : CharBuffer(-1, off, off + len, buf.length, buf, 0) {}
+
+	char get() { return hb[ix(nextGetIndex())]; }
+	char get(int i) const { return hb[ix(checkIndex(i))]; }
+
+	boolean isDirect() const {return false;}
+	boolean isReadOnly() const {return false;}
+
+	CharBuffer& put(char x) {
+		hb[ix(nextPutIndex())] = x;
+		return *this;
+	}
+	CharBuffer& put(int i, char x) {
+		hb[ix(checkIndex(i))] = x;
+		return *this;
+	}
+
+	Shared<CharSequence> subSequence(int start, int end) const {
+		return null;
+	}
+};
+
+
+Shared<CharBuffer> CharBuffer::allocate(int capacity) {
+	if (capacity < 0) throw IllegalArgumentException();
+	return makeShared<HeapCharBuffer>(capacity, capacity);
+}
+Shared<CharBuffer> CharBuffer::wrap(Array<char>& array, int offset, int length) {
+	return makeShared<HeapCharBuffer>(array, offset, length);
+}
 
 int CharBuffer::read(CharBuffer& target) {
 	int targetRemaining = target.remaining();
 	int thisRemaining = remaining();
 	if (thisRemaining == 0) return -1;
 	int n = Math.min(thisRemaining, targetRemaining);
-
-	RestoreLimit reslim(limit(), this); // restore limit on function end
+	int l = limit();
+	Finalize([&]{limit(l);});
 	if (targetRemaining < thisRemaining) limit(position() + n);
 	if (n > 0) target.put(*this);
 	return n;
@@ -90,44 +128,6 @@ int CharBuffer::compareTo(const CharBuffer& o) const {
 		if (cmp != 0) return cmp;
 	}
 	return remaining() - o.remaining();
-}
-
-class HeapCharBuffer : extends CharBuffer {
-protected:
-	int ix(int i) const {return i + mOffset;}
-	String toString(int start, int end) const {
-		return String(&hb[0], start + mOffset, end - start);
-	}
-public:
-	HeapCharBuffer(int cap, int lim) : CharBuffer(-1, 0, lim, cap, 0) {
-	}
-
-	char get() { return hb[ix(nextGetIndex())]; }
-	char get(int i) const { return hb[ix(checkIndex(i))]; }
-
-	boolean isDirect() const {return false;}
-	boolean isReadOnly() const {return false;}
-
-	CharBuffer& put(char x) {
-		hb[ix(nextPutIndex())] = x;
-		return *this;
-	}
-	CharBuffer& put(int i, char x) {
-		hb[ix(checkIndex(i))] = x;
-		return *this;
-	}
-	
-
-	Shared<CharSequence> subSequence(int start, int end) const {
-		return null;
-	}
-};
-
-RestoreLimit::~RestoreLimit() {buf->limit(l);}
-
-Shared<CharBuffer> CharBuffer::allocate(int capacity) {
-	if (capacity < 0) throw IllegalArgumentException();
-	return makeShared<HeapCharBuffer>(capacity, capacity);
 }
 
 } //namespace nio

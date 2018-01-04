@@ -30,6 +30,15 @@ private:
 	int mCapacity;
 
 protected:
+	void move(Buffer& o) {
+		mMark = o.mMark; o.mMark=-1;
+		mPosition = o.mPosition; o.mPosition=0;
+		mLimit = o.mLimit; o.mLimit=0;
+		mCapacity = o.mCapacity; o.mCapacity=0;
+	}
+	Buffer(){}
+	Buffer(Buffer&&o) {move(o);}
+	Buffer& operator=(Buffer&&o) {move(o);return *this;}
 	Buffer(int mark, int pos, int lim, int cap) : mCapacity(cap) {
 		if (cap < 0) throw IllegalArgumentException("Negative capacity: " + String::valueOf(cap));
 		limit(lim);

@@ -46,7 +46,8 @@ create-$(BUILD_DIR):
 
 .PHONY: $(RUN_TESTS)
 $(RUN_TESTS):
-	@printf "$(TRM_WHI)Runnig $(@:run-%=%)...$(TRM_END)\n"
+	@printf "====================================\n"
+	@printf "$(TRM_WHI)Execute binary $(@:run-%=%)...$(TRM_END)\n"
 	-@$(BUILD_DIR)/$(@:run-%=%)
 	@printf "\r$(TRM_WHI)Test $(@:run-%=%) $(TRM_GRE)[OK]$(TRM_END)\n"
 

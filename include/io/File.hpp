@@ -104,11 +104,6 @@ private:
 		this->path = fs.resolve(parent.path, child);
 		this->prefixLength = parent.prefixLength;
 	}
-	boolean isInvalid() const {
-		if (status == 0)
-			const_cast<int&>(status) = (path.indexOf('\u0000') < 0) ? PathStatus::CHECKED : PathStatus::INVALID;
-		return status == PathStatus::INVALID;
-	}
 	int getPrefixLength() const {return prefixLength;}
 
 public:
@@ -172,6 +167,11 @@ public:
 	const String& getPath() const { return path; }
 
 	/* -- Path operations -- */
+	boolean isInvalid() const {
+		if (status == 0)
+			const_cast<int&>(status) = (path.indexOf('\u0000') < 0) ? PathStatus::CHECKED : PathStatus::INVALID;
+		return status == PathStatus::INVALID;
+	}
 	boolean isAbsolute() const { return fs.isAbsolute(*this); }
 	String getAbsolutePath() const { return fs.resolve(*this); }
 	File getAbsoluteFile() const {
@@ -294,7 +294,7 @@ public:
 		}
 	}
 	boolean renameTo(const File& dest) {
-		//if (dest == null) throw NullPointerException();
+		if (dest == null_obj) throw NullPointerException();
 		if (isInvalid() || dest.isInvalid()) return false;
 		return fs.rename(*this, dest);
 	}

@@ -3,14 +3,17 @@
 #include <io/FileOutputStream.hpp>
 #include <io/FileInputStream.hpp>
 #include <io/OutputStreamWriter.hpp>
-#include <io/InputStreamReader.hpp>
+#include <io/FileReader.hpp>
 
 void test_nonexisting() {
+	System.out.println(__FUNCTION__);
 	io::File f("non-existing.txt");
 	if (f.exists()) System.out.println("err: exists");
 	else System.out.println("ok: file not exits");
 }
 void test_write_read() {
+	System.out.println(__FUNCTION__);
+	String testdata("test1 ĄąĆćĘę");
 	io::File f = io::File("/tmp/test.txt");
 	f.unlink();
 	try {
@@ -23,21 +26,20 @@ void test_write_read() {
 	}
 
 	io::FileOutputStream fos(f);
-	String testdata("test1 ĄąĆćĘę\n");
 	fos.write(testdata.getBytes());
 	fos.close();
 
 	io::FileInputStream fis(f);
 	char buf[100];
-	jint l = fis.read(buf,sizeof(buf));
+	int l = fis.read(buf,sizeof(buf));
 	if (l != testdata.length()) System.out.printf("err: %d != %d\n", l, testdata.length());
 	buf[l]=0;
 	if (!testdata.equals(String::valueOf(buf))) System.out.println("err: !equals");
 
-	//if (!f.unlink()) System.out.println("err: can't delete file");
+	if (!f.unlink()) System.out.println("err: can't delete file");
 }
 void test_filelist() {
-	System.out.println("test_filelist");
+	System.out.println(__FUNCTION__);
 	io::File f("/tmp");
 	Array<String> a = f.list();
 	for (int i=0; i < a.length; ++i)
@@ -46,17 +48,39 @@ void test_filelist() {
 }
 
 void test_writer() {
-	System.out.println("test_writer");
+	System.out.println(__FUNCTION__);
+	String testdata("test2 ĄąĆćĘę");
 	io::File f = io::File("/tmp/test.txt");
 	io::FileOutputStream fos(f);
 	io::OutputStreamWriter wr(fos);
-	String testdata("test2 ĄąĆćĘę\n");
 	System.out.printf("testdata.length = %d\n", testdata.length());
 	wr.write(testdata);
+	if (!f.unlink()) System.out.println("err: can't delete file");
 }
 
 void test_reader() {
-	io::InputStreamReader r(System.in);
+	System.out.println(__FUNCTION__);
+	String testdata("test3 ĄąĆćĘę");
+	io::File f = io::File("/tmp/test.txt");
+	try {
+		io::FileInputStream fis(f);
+	}
+	catch (const io::IOException& e) {
+		e.printStackTrace();
+	}
+	io::FileOutputStream fos(f);
+	fos.write(testdata.getBytes());
+	fos.close();
+
+	io::FileInputStream fis(f);
+	io::InputStreamReader isr(fis);
+	Array<char> buf(100);
+	int r = isr.read(buf);
+	buf[r]=0;
+	System.out.printf("isr.read[%d]: %s\n", r, &buf[0]);
+
+	System.out.println("FileReader...");
+	io::FileReader fr("/tmp/test.txt");
 }
 
 int main() {

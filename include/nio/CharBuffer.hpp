@@ -8,35 +8,33 @@
 
 namespace nio {
 
-class CharBuffer;
-class RestoreLimit {
-	int l;
-	CharBuffer *buf;
-public:
-	RestoreLimit(int l, CharBuffer *b) : l(l), buf(b) {}
-	~RestoreLimit();
-};
-
 class CharBuffer : extends Buffer,
-	implements Comparable<CharBuffer>, implements Appendable, implements CharSequence, implements Readable
-{
+		implements Comparable<CharBuffer>,
+		implements Appendable,
+		implements CharSequence,
+		implements Readable {
 protected:
 	Array<char> hb;
 	int mOffset;
 	boolean mIsReadOnly = false;
 
-	CharBuffer(int mark, int pos, int lim, int cap, int offset) :
+	CharBuffer(int mark, int pos, int lim, int cap, int offset = 0) :
 		Buffer(mark, pos, lim, cap), mOffset(offset) {
 		hb = Array<char>(cap);
 	}
-	CharBuffer(int mark, int pos, int lim, int cap) : Buffer(mark, pos, lim, cap), mOffset(0) {
+	CharBuffer(int mark, int pos, int lim, int cap, Array<char>& hb, int offset = 0) :
+			Buffer(mark, pos, lim, cap), mOffset(offset) {
+		this->hb = std::move(hb);
 	}
 
 	virtual String toString(int start, int end) const = 0;
 
 public:
 	static Shared<CharBuffer> allocate(int capacity);
-
+	static Shared<CharBuffer> wrap(Array<char>& array, int offset, int length);
+	static Shared<CharBuffer> wrap(Array<char>& array) {
+		return wrap(array, 0, array.length);
+	}
 	virtual int read(CharBuffer& target);
 	//virtual Shared<CharBuffer> slice() const = 0;
 	//virtual Shared<CharBuffer> duplicate() const = 0;

@@ -7,16 +7,17 @@ namespace io {
 
 class IOException : extends Exception {
 public:
-	IOException() : Exception() {}
-	IOException(const String& msg) : Exception(msg) {}
-	IOException(const String& msg, Throwable *c) : Exception(msg, c) {}
+	using Exception::Exception;
 };
 
 class UnsupportedEncodingException : extends IOException {
 public:
-	UnsupportedEncodingException() : IOException() {}
-	UnsupportedEncodingException(const String& msg) : IOException(msg) {}
-	UnsupportedEncodingException(const String& msg, Throwable *c) : IOException(msg, c) {}
+	using IOException::IOException;
+};
+
+class FileNotFoundException : extends IOException {
+public:
+	using IOException::IOException;
 };
 
 } //namespace io

@@ -99,6 +99,45 @@ public:
 
 };
 
+class Byte : extends Number, implements Comparable<Byte> {
+private:
+	byte value;
+public:
+	static const int SIZE = 8;
+	static const byte MIN_VALUE = -128;
+	static const byte MAX_VALUE = 127;
+	static String toString(byte s) { return Integer::toString((int)s, 10); }
+	static Byte valueOf(byte b) { return Byte(b); }
+	static byte parseByte(const String& s, int radix=10) {
+		int i = Integer::parseInt(s, radix);
+		if (i < MIN_VALUE || i > MAX_VALUE)
+			throw NumberFormatException("Value out of range. Value:\"" + s + "\" Radix:" + radix);
+		return (byte)i;
+	}
+	static jint hashCode(byte value) {return (jint)value;}
+	static int compare(byte x, byte y) {return x - y;}
+
+	Byte(Byte&& o) : value(o.value) {}
+	Byte(byte value) : value(value) {}
+	Byte(String s) : value(parseByte(s, 10)) {}
+	byte byteValue() const {return (byte)value;}
+	short shortValue() const {return (short)value;}
+	int intValue() const {return (int)value;}
+	long longValue() const {return (long)value;}
+	float floatValue() const {return (float)value;}
+	double doubleValue() const {return (double)value;}
+	String toString() const { return toString(value); }
+	jint hashCode() const { return Byte::hashCode(value); }
+	boolean equals(const Object& o) const {
+		if (instanceof<Byte>(&o)) {
+			return value == ((const Byte&)o).byteValue();
+		}
+		return false;
+	}
+	int compareTo(const Byte& b) const { return compare(value,b.value); }
+	operator byte() const { return value; }
+};
+
 class Short : extends Number, implements Comparable<Short> {
 private:
 	short value;

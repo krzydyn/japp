@@ -229,6 +229,11 @@ void Throwable::printStackTrace(io::PrintStream& s) const {TRACE;
 	}
 }
 
+String Class::toString() const {
+	String c = isInterface() ? "interface " : (isPrimitive() ? "" : "class ");
+	return c + getName();
+}
+String Class::toGenericString() const {return toString();}
 String Class::getSimpleName() const {TRACE;
 	String simpleName = getSimpleBinaryName();
 	if (simpleName.isEmpty()) { // top level class

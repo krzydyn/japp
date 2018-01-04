@@ -57,12 +57,18 @@ public:
 		return r;
 	}
 
-	template<class T>
-	inline static const T& min(const T& a, const T& b) {
-		return a < b ? a : b;
+	inline static long min(int a, long b) {
+		return min((long)a, b);
+	}
+	inline static long min(long a, int b) {
+		return min(a, (long)b);
 	}
 
 	//return value is faster then return const ref !!!
+	template<class T>
+	inline static const T min(const T& a, const T& b) {
+		return a < b ? a : b;
+	}
 	template<class T>
 	inline static T max(const T& a, const T& b) {
 		return a < b ? b : a;

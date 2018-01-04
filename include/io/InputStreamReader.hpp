@@ -24,6 +24,9 @@ public:
 	int read(Array<char>& cbuf, int off, int len) {
 		return sd.read(cbuf, off, len);
 	}
+	boolean ready() {
+		return sd.ready();
+	}
 
 	void close() {
 		sd.close();

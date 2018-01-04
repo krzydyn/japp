@@ -9,15 +9,15 @@ namespace io {
 
 class FileInputStream : extends InputStream {
 private:
-	//use pointer to impl. assign oparation while std::istream assign is protected
+	//use pointer, assign oparation in std::istream is protected
 	std::istream* in;
-	String fn;
+	String path;
 	boolean allocated = false;
 	boolean closed = true;
 	void move(FileInputStream* o) {
 		if (o==this) return ;
 		in = o->in; o->in = null;
-		fn = std::move(o->fn);
+		path = std::move(o->path);
 		allocated = o->allocated; o->allocated = false;
 		closed = o->closed; o->closed = false;
 	}
@@ -33,12 +33,20 @@ public:
 	}
 
 	FileInputStream(std::istream& s) : in(&s), allocated(false) {}
-	FileInputStream(const io::File& f) {
+	FileInputStream(const String& name) : FileInputStream(io::File(name)) {}
+	FileInputStream(const io::File& file) {
+		if (file.getPath() == null_obj) {
+			throw NullPointerException();
+		}
+		if (file.isInvalid()) {
+			throw FileNotFoundException("Invalid file path");
+		}
+		System.out.println("FileInputStream "+file.getPath());
 		std::ifstream *fs = new std::ifstream();
 		in=fs; allocated=true;
-		fs->open(f.getPath().intern(), std::fstream::binary | std::fstream::in);
-		if (in->fail()) throw IOException(f.getPath()+": "+strerror(errno));
-		fn = f.getPath();
+		fs->open(file.getPath().intern(), std::fstream::binary | std::fstream::in);
+		if (in->fail()) throw IOException(file.getPath()+": "+strerror(errno));
+		path = file.getPath();
 		closed=false;
 	}
 
@@ -47,16 +55,20 @@ public:
 		char c;
 		in->read(&c,sizeof(char));
 		if (in->gcount()==0) return -1;
-		if (in->fail()) throw IOException(fn+": "+strerror(errno));
+		if (in->fail()) throw IOException(path+": "+strerror(errno));
 		return c;
 	}
-	jint read(const void *b, int off, int len) {
+	int read(void *b, int off, int len) {
 		if (b == null) throw NullPointerException();
 		if ((off < 0) || (len < 0) || ((off + len) < 0)) throw IndexOutOfBoundsException();
 		if (len == 0) return 0;
 		in->read((char*)b+off,len);
-		if (in->bad()) throw IOException(fn+": "+strerror(errno));
-		return (jint)in->gcount();
+		if (in->bad()) throw IOException(path+": "+strerror(errno));
+		return (int)in->gcount();
+	}
+	long skip(long n) {
+		in->ignore(n);
+		return (int)in->gcount();
 	}
 	void close() {
 		if (!closed) {
@@ -64,6 +76,7 @@ public:
 			System.out.println("FileInputStream closed");
 		}
 	}
+	String toString() const { return InputStream::toString()+":"+path; }
 };
 
 } //namespace io
