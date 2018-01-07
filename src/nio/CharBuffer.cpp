@@ -23,24 +23,28 @@ class HeapCharBuffer : extends CharBuffer {
 protected:
 	int ix(int i) const {return i + mOffset;}
 	String toString(int start, int end) const {
-		return String(&hb[0], start + mOffset, end - start);
+		return String(&(*hb)[0], start + mOffset, end - start);
 	}
 public:
 	HeapCharBuffer(int cap, int lim) : CharBuffer(-1, 0, lim, cap, 0) {}
 	HeapCharBuffer(Array<char>& buf, int off, int len) : CharBuffer(-1, off, off + len, buf.length, buf, 0) {}
 
-	char get() { return hb[ix(nextGetIndex())]; }
-	char get(int i) const { return hb[ix(checkIndex(i))]; }
+	Shared<CharBuffer> slice() {
+		return makeShared<HeapCharBuffer>(*hb, position() + mOffset, remaining());
+	}
+
+	char get() { return (*hb)[ix(nextGetIndex())]; }
+	char get(int i) const { return (*hb)[ix(checkIndex(i))]; }
 
 	boolean isDirect() const {return false;}
 	boolean isReadOnly() const {return false;}
 
 	CharBuffer& put(char x) {
-		hb[ix(nextPutIndex())] = x;
+		(*hb)[ix(nextPutIndex())] = x;
 		return *this;
 	}
 	CharBuffer& put(int i, char x) {
-		hb[ix(checkIndex(i))] = x;
+		(*hb)[ix(checkIndex(i))] = x;
 		return *this;
 	}
 
@@ -48,7 +52,6 @@ public:
 		return null;
 	}
 };
-
 
 Shared<CharBuffer> CharBuffer::allocate(int capacity) {
 	if (capacity < 0) throw IllegalArgumentException();

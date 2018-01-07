@@ -37,6 +37,7 @@ public:
 		return ch[0];
 	}
 	virtual int read(Array<char>& cbuf) {
+		Log.log("cbuf.len=%d", cbuf.length);
 		return read(cbuf, 0, cbuf.length);
 	}
 	virtual int read(Array<char>& cbuf, int off, int len) = 0;

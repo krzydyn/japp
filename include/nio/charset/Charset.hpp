@@ -131,9 +131,6 @@ public:
 	}
 };
 
-class CharsetDecoder : extends Object {
-};
-
 }} //namespace io::charset
 
 #endif

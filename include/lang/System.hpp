@@ -76,8 +76,18 @@ public:
 		throw UnsupportedOperationException();
 	}
 };
-
 extern const The_System System;
+
+class The_Log {
+private:
+	void format(const char *fmt, va_list& args) const;
+
+public:
+	const The_Log& log(const String& s) const;
+	const The_Log& log(const String& fmt...) const;
+	const The_Log& log(const char *fmt...) const;
+};
+extern const The_Log Log;
 
 } //namespace lang
 

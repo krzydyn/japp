@@ -117,6 +117,7 @@ const Charset& getDefaultCharset() {
 namespace lang {
 
 const The_System System;
+const The_Log Log;
 const The_Math Math;
 
 Properties The_System::props;

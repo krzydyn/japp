@@ -4,7 +4,8 @@
 #include <lang/System.hpp>
 #include <io/InputStream.hpp>
 #include <io/Reader.hpp>
-#include <nio/charset/Charset.hpp>
+#include <nio/CharBuffer.hpp>
+#include <nio/charset/CharsetDecoder.hpp>
 
 namespace nio {
 
@@ -17,7 +18,7 @@ private:
 	volatile boolean isOpened = true;
 	int leftoverChar = -1;
 	const Charset& cs;
-	//CharsetDecoder decoder;
+	CharsetDecoder* decoder;
 	//ByteBuffer bb;
 
 	InputStream *in;
@@ -42,8 +43,16 @@ private:
 		return inReady();
 	}
 	int implRead(Array<char>& cbuf, int off, int end) {
-		System.out.printf("off = %d, end=%d\n",off,end);
-		//TODO Shared<CharBuffer> cb = CharBuffer::wrap(cbuf, off, end - off);
+		Log.log("cbuf.len=%d off = %d, end=%d",cbuf.length,off,end);
+		Shared<CharBuffer> cb = CharBuffer::wrap(cbuf, off, end - off);
+		Log.log("cbuf.len=%d off = %d, end=%d",cbuf.length,off,end);
+		if (cb->position() != 0) cb = cb->slice();
+		boolean eof = false;
+		for (;;) {
+			eof = true;
+			//TODO CoderResult cr = decoder.decode(bb, cb, eof);
+			if (eof) break;
+		}
 		return in->read(&cbuf[0], off, end - off);
 	}
 	void implClose() {

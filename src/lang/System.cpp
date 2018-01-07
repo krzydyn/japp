@@ -10,6 +10,28 @@ auto nano_start = high_resolution_clock::now();
 
 namespace lang {
 
+void The_Log::format(const char *fmt, va_list& args) const {
+	System.out.println(String::format(fmt,args));
+}
+const The_Log& The_Log::log(const String& s) const {
+	System.out.println(s);
+	return *this;
+}
+const The_Log& The_Log::log(const String& fmt...) const {
+	va_list args;
+	va_start(args, fmt);
+	format(fmt.intern().c_str(),args);
+	va_end(args);
+	return *this;
+}
+const The_Log& The_Log::log(const char *fmt...) const {
+	va_list args;
+	va_start(args, fmt);
+	format(fmt,args);
+	va_end(args);
+	return *this;
+}
+
 jlong The_System::currentTimeMillis() {
 	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }

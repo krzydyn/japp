@@ -13,18 +13,26 @@ class CharBuffer : extends Buffer,
 		implements Appendable,
 		implements CharSequence,
 		implements Readable {
+private:
+	boolean alloc=false;
 protected:
-	Array<char> hb;
+	Array<char>* hb;
 	int mOffset;
 	boolean mIsReadOnly = false;
 
 	CharBuffer(int mark, int pos, int lim, int cap, int offset = 0) :
 		Buffer(mark, pos, lim, cap), mOffset(offset) {
-		hb = Array<char>(cap);
+		hb = new Array<char>(cap);
+		alloc=true;
 	}
 	CharBuffer(int mark, int pos, int lim, int cap, Array<char>& hb, int offset = 0) :
 			Buffer(mark, pos, lim, cap), mOffset(offset) {
-		this->hb = std::move(hb);
+		this->hb = &hb;
+	}
+	~CharBuffer() {
+		if (alloc) {
+			delete hb;
+		}
 	}
 
 	virtual String toString(int start, int end) const = 0;
@@ -36,7 +44,7 @@ public:
 		return wrap(array, 0, array.length);
 	}
 	virtual int read(CharBuffer& target);
-	//virtual Shared<CharBuffer> slice() const = 0;
+	virtual Shared<CharBuffer> slice() = 0;
 	//virtual Shared<CharBuffer> duplicate() const = 0;
 	//virtual Shared<CharBuffer> asReadOnlyBuffer() const = 0;
 	boolean isReadOnly() const { return mIsReadOnly; }
@@ -58,11 +66,11 @@ public:
 		return put(src, 0, src.length());
 	}
 	virtual boolean hasArray() const {
-		return hb.length > 0 && !isReadOnly();
+		return hb->length > 0 && !isReadOnly();
 	}
 	virtual Array<char>& array() {
 		if (isReadOnly()) throw ReadOnlyBufferException();
-		return hb;
+		return *hb;
 	}
 	virtual int arrayOffset() const {
 		if (isReadOnly()) throw ReadOnlyBufferException();
