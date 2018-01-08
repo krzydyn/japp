@@ -41,6 +41,8 @@ public:
 	}
 };
 
+const ByteOrder ByteOrder::LITTLE_ENDIAN = ByteOrder(0);
+const ByteOrder ByteOrder::BIG_ENDIAN = ByteOrder(1);
 
 Shared<ByteBuffer> ByteBuffer::allocateDirect(int capacity) {
 	return allocate(capacity);

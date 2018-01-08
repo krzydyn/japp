@@ -4,6 +4,7 @@
 #include <lang/System.hpp>
 #include <io/InputStream.hpp>
 #include <io/Reader.hpp>
+#include <nio/ByteBuffer.hpp>
 #include <nio/CharBuffer.hpp>
 #include <nio/charset/CharsetDecoder.hpp>
 
@@ -19,7 +20,7 @@ private:
 	int leftoverChar = -1;
 	const Charset& cs;
 	CharsetDecoder* decoder;
-	//ByteBuffer bb;
+	Shared<ByteBuffer> bb;
 
 	InputStream *in;
 	//ReadableByteChannel *ch;
@@ -27,6 +28,7 @@ private:
 	StreamDecoder(InputStream& in, Object* lock, const Charset& cs) : Reader(lock),
 		cs(cs), in(&in) {
 		System.out.println("StreamDecoder created "+in.toString());
+		bb = ByteBuffer::allocateDirect(DEFAULT_BYTE_BUFFER_SIZE);
 	}
 	const String& encodingName() const {
 		return cs.name();
@@ -42,6 +44,14 @@ private:
 	boolean implReady() {
 		return inReady();
 	}
+	int readBytes() {
+		int lim = bb->limit();
+		int pos = bb->position();
+		int rem = (pos <= lim ? lim - pos : 0);
+		int n = in->read(bb->array(), bb->arrayOffset() + pos, rem);
+		if (n < 0) return n;
+		return bb->remaining();
+	}
 	int implRead(Array<char>& cbuf, int off, int end) {
 		Log.log("cbuf.len=%d off = %d, end=%d",cbuf.length,off,end);
 		Shared<CharBuffer> cb = CharBuffer::wrap(cbuf, off, end - off);
@@ -49,11 +59,30 @@ private:
 		if (cb->position() != 0) cb = cb->slice();
 		boolean eof = false;
 		for (;;) {
-			eof = true;
-			//TODO CoderResult cr = decoder.decode(bb, cb, eof);
-			if (eof) break;
+			nio::CoderResult cr = decoder->decode(*bb, *cb, eof);
+			if (cr.isUnderflow()) {
+				if (eof) break;
+				if (!cb->hasRemaining()) break;
+				if (cb->position() > 0 && !inReady()) break;
+				int n = readBytes();
+				if (n < 0) {
+					eof = true;
+					if (cb->position() == 0 && !bb->hasRemaining()) break;
+					decoder->reset();
+				}
+				continue;
+			}
+			if (cr.isOverflow()) {
+				break;
+			}
+			cr.throwException();
 		}
-		return in->read(&cbuf[0], off, end - off);
+		if (eof) decoder->reset();
+
+		if (cb->position() == 0) {
+			if (eof) return -1;
+		}
+		return cb->position();
 	}
 	void implClose() {
 		if (in != null) in->close();
