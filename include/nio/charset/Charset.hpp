@@ -2,20 +2,20 @@
 #define __NIO_CHARSET_HPP
 
 #include <lang/Comparable.hpp>
-#include <lang/Exception.hpp>
 #include <lang/String.hpp>
+#include <lang/Exception.hpp>
 
 namespace nio {
 namespace charset {
 
 class UnsupportedCharsetException : extends IllegalArgumentException {
-public:
-	UnsupportedCharsetException() : IllegalArgumentException() {}
-	UnsupportedCharsetException(const String& msg) : IllegalArgumentException(msg) {}
+	using IllegalArgumentException::IllegalArgumentException;
 };
 
 class IllegalCharsetNameException : extends IllegalArgumentException {
+	using IllegalArgumentException::IllegalArgumentException;
 };
+
 
 class Charset;
 class CharsetEncoder;
@@ -83,8 +83,8 @@ public:
 	virtual String displayName() const { return pName; }
 	virtual boolean isRegistered() const final { return !pName.startsWith("X-") && !pName.startsWith("x-"); }
 	virtual boolean contains(const Charset& cs) const = 0;
-	virtual CharsetDecoder* newDecoder() const = 0;
-	virtual CharsetEncoder* newEncoder() const = 0;
+	virtual Shared<CharsetDecoder> newDecoder() const = 0;
+	virtual Shared<CharsetEncoder> newEncoder() const = 0;
 	virtual boolean canEncode() const { return true; }
 	//public final CharBuffer decode(ByteBuffer bb)
 	//public final ByteBuffer encode(CharBuffer cb)

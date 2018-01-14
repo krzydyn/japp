@@ -2,6 +2,7 @@
 #define __NIO_BUFFER_HPP
 
 #include <lang/Exception.hpp>
+#include <lang/System.hpp>
 
 namespace nio {
 
@@ -47,6 +48,7 @@ protected:
 			if (mark > pos) throw IllegalArgumentException("mark > position");
 			this->mMark = mark;
 		}
+		Log.log("Buffer: pos=%d, lim=%d, cap=%d",pos,lim,cap);
 	}
 
 	int nextGetIndex() {

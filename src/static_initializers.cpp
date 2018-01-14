@@ -3,7 +3,7 @@
 #include <io/File.hpp>
 #include <io/FileInputStream.hpp>
 #include <io/FileOutputStream.hpp>
-#include <nio/charset/Charset.hpp>
+#include <nio/charset/CharsetDecoder.hpp>
 #include <chrono>
 #include <cstdlib>
 
@@ -31,6 +31,17 @@ HashMap<String,String>& get_env() {
 }
 
 using namespace nio::charset;
+class UTF8_CharsetDecoder : extends CharsetDecoder {
+public:
+	//CharsetDecoder(Charset *cs, float averageCharsPerByte, float maxCharsPerByte) :
+	UTF8_CharsetDecoder(const Charset *cs) : CharsetDecoder(cs, 1.0f, 1.0f) {
+	}
+	nio::CoderResult decodeLoop(nio::ByteBuffer& in, nio::CharBuffer& out) {
+		Log.log("decodeLoop");
+		return nio::CoderResult::UNDERFLOW;
+	}
+};
+
 class UTF_8 : extends Charset {
 public:
 	UTF_8() : Charset("UTF-8",Array<String>()) {}
@@ -38,10 +49,11 @@ public:
 	boolean contains(const Charset& cs) const {
 		return true;
 	}
-	CharsetDecoder* newDecoder() const {
-		return null;
+	Shared<CharsetDecoder> newDecoder() const {
+		return makeShared<UTF8_CharsetDecoder>(this);
+		//return null;
 	}
-	CharsetEncoder* newEncoder() const {
+	Shared<CharsetEncoder> newEncoder() const {
 		return null;
 	}
 };

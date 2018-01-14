@@ -140,7 +140,14 @@ class IndexOutOfBoundsException : extends Exception {
 public:
 	using Exception::Exception;
 	IndexOutOfBoundsException() {}
-	IndexOutOfBoundsException(int i) : Exception("Index "+String::valueOf(i)) {}
+	IndexOutOfBoundsException(int i) : Exception("Index " + String::valueOf(i)) {}
+};
+
+class StringIndexOutOfBoundsException : extends IndexOutOfBoundsException {
+public:
+	using IndexOutOfBoundsException::IndexOutOfBoundsException;
+	StringIndexOutOfBoundsException(int i) :
+	   IndexOutOfBoundsException("String index out of range: " + String::valueOf(i)) {}
 };
 
 class IllegalThreadStateException : extends Exception {

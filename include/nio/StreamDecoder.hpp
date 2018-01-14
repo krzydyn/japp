@@ -13,22 +13,28 @@ namespace nio {
 using namespace charset;
 using namespace io;
 
+class ReadableByteChannel;
+
 class StreamDecoder : extends Reader {
 private:
 	static const int DEFAULT_BYTE_BUFFER_SIZE = 8192;
 	volatile boolean isOpened = true;
 	int leftoverChar = -1;
 	const Charset& cs;
-	CharsetDecoder* decoder;
+	Shared<CharsetDecoder> decoder;
 	Shared<ByteBuffer> bb;
 
 	InputStream *in;
-	//ReadableByteChannel *ch;
+	ReadableByteChannel *ch = null;
 
-	StreamDecoder(InputStream& in, Object* lock, const Charset& cs) : Reader(lock),
-		cs(cs), in(&in) {
+	StreamDecoder(InputStream& in, Object* lock, const Charset& cs) :
+		StreamDecoder(in, lock, cs.newDecoder()) {
+	}
+	StreamDecoder(InputStream& in, Object* lock, Shared<CharsetDecoder> dec) : Reader(lock),
+			cs(dec->charset()), decoder(dec), in(&in) {
+		bb = ByteBuffer::allocate(DEFAULT_BYTE_BUFFER_SIZE);
+		bb->flip();
 		System.out.println("StreamDecoder created "+in.toString());
-		bb = ByteBuffer::allocateDirect(DEFAULT_BYTE_BUFFER_SIZE);
 	}
 	const String& encodingName() const {
 		return cs.name();
@@ -55,11 +61,17 @@ private:
 	int implRead(Array<char>& cbuf, int off, int end) {
 		Log.log("cbuf.len=%d off = %d, end=%d",cbuf.length,off,end);
 		Shared<CharBuffer> cb = CharBuffer::wrap(cbuf, off, end - off);
-		Log.log("cbuf.len=%d off = %d, end=%d",cbuf.length,off,end);
+		Log.log("1: cb.len=%d pos = %d, len=%d",cb->length(),cb->position(),cb->limit());
+		// Ensure that cb[0] == cbuf[off]
 		if (cb->position() != 0) cb = cb->slice();
+		Log.log("2: cb.len=%d pos = %d, len=%d",cb->length(),cb->position(),cb->limit());
+
 		boolean eof = false;
 		for (;;) {
+			Log.log("calling decode ...");
 			nio::CoderResult cr = decoder->decode(*bb, *cb, eof);
+			Log.log("CoderResult = %s", cr.toString().cstr());
+			Log.log("cb %s",cb->toString().cstr());
 			if (cr.isUnderflow()) {
 				if (eof) break;
 				if (!cb->hasRemaining()) break;

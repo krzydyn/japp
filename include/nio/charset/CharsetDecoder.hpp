@@ -2,18 +2,27 @@
 #define __NIO_CHARSET_CHARSETDECODER_HPP
 
 #include <lang/String.hpp>
+#include <nio/ByteBuffer.hpp>
+#include <nio/CharBuffer.hpp>
 #include <nio/CoderResult.hpp>
 #include <nio/charset/Charset.hpp>
+#include <nio/charset/CodingErrorAction.hpp>
+
+namespace {
+const char* stateNames[] = { "RESET", "CODING", "CODING_END", "FLUSHED" };
+}
 
 namespace nio {
 namespace charset {
 
 class CharsetDecoder : extends Object {
 private:
-	Charset *mCharset;
+	const Charset *mCharset;
 	const float mAverageCharsPerByte;
 	const float mMaxCharsPerByte;
 	String mReplacement;
+	CodingErrorAction mMalformedInputAction = CodingErrorAction::REPORT;
+	CodingErrorAction mUnmappableCharacterAction = CodingErrorAction::REPORT;
 
 	// Internal states
 	static const int ST_RESET   = 0;
@@ -23,37 +32,63 @@ private:
 
 	int state = ST_RESET;
 
-	CharsetDecoder(Charset *cs, float averageCharsPerByte, float maxCharsPerByte, const String& replacement) :
+	CharsetDecoder(const Charset *cs, float averageCharsPerByte, float maxCharsPerByte, const String& replacement) :
 			mCharset(cs),
 			mAverageCharsPerByte(averageCharsPerByte),
 			mMaxCharsPerByte(maxCharsPerByte) {
 			replaceWith(replacement);
 	}
 
+	void throwIllegalStateException(int from, int to) {
+		Log.log("throwIllegalStateException");
+		throw IllegalStateException(String("Current state = ") + stateNames[from] + ", new state = " + stateNames[to]);
+	}
+
 protected:
-	CharsetDecoder(Charset *cs, float averageCharsPerByte, float maxCharsPerByte) :
-        CharsetDecoder(cs, averageCharsPerByte, maxCharsPerByte, "\uFFFD") {
-    }
+	CharsetDecoder(const Charset *cs, float averageCharsPerByte, float maxCharsPerByte) :
+		CharsetDecoder(cs, averageCharsPerByte, maxCharsPerByte, "\uFFFD") {
+	}
 
 	virtual void implReplaceWith(const String& newReplacement) {}
 	virtual void implReset() {}
+	virtual CoderResult decodeLoop(ByteBuffer& in, CharBuffer& out) = 0;
 
 public:
-	Charset& charset() { return *mCharset; }
+	const Charset& charset() const { return *mCharset; }
 	const String& replacement() { return mReplacement; }
 	virtual CharsetDecoder& replaceWith(const String& newReplacement) final {
 		mReplacement = newReplacement;
-        implReplaceWith(newReplacement);
+		implReplaceWith(newReplacement);
 		return *this;
 	}
+	const CodingErrorAction& malformedInputAction() { return mMalformedInputAction; }
 	virtual CharsetDecoder& reset() final {
-        implReset();
+		implReset();
 		state = ST_RESET;
 		return *this;
 	}
 
-	::nio::CoderResult decode(ByteBuffer& in, CharBuffer& out, boolean endOfInput) {
-		//out.put(in);
+	virtual float averageCharsPerByte() final { return mAverageCharsPerByte; }
+	virtual float maxCharsPerByte() final { return mMaxCharsPerByte; }
+
+	CoderResult decode(ByteBuffer& in, CharBuffer& out, boolean endOfInput) {
+		int newState = endOfInput ? ST_END : ST_CODING;
+		if ((state != ST_RESET) && (state != ST_CODING) && !(endOfInput && (state == ST_END)))
+			throwIllegalStateException(state, newState);
+		state = newState;
+		Log.log("decode in: %s", in.toString().cstr());
+		for (;;) {
+			CoderResult cr = decodeLoop(in, out);
+			if (cr.isOverflow()) return cr;
+			if (cr.isUnderflow()) {
+				if (endOfInput && in.hasRemaining()) {
+					cr = CoderResult::malformedForLength(in.remaining());
+				}
+				else {
+					return cr;
+				}
+			}
+		}
 		out.flip();
 		return CoderResult::UNDERFLOW;
 	}

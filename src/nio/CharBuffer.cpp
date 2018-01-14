@@ -23,7 +23,7 @@ class HeapCharBuffer : extends CharBuffer {
 protected:
 	int ix(int i) const {return i + mOffset;}
 	String toString(int start, int end) const {
-		return String(&(*hb)[0], start + mOffset, end - start);
+		return String(*hb, start + mOffset, end - start);
 	}
 public:
 	HeapCharBuffer(int cap, int lim) : CharBuffer(-1, 0, lim, cap, 0) {}
@@ -58,6 +58,7 @@ Shared<CharBuffer> CharBuffer::allocate(int capacity) {
 	return makeShared<HeapCharBuffer>(capacity, capacity);
 }
 Shared<CharBuffer> CharBuffer::wrap(Array<char>& array, int offset, int length) {
+	Log.log("wrap: arr.len=%d offs=%d len=%d", array.length, offset, length);
 	return makeShared<HeapCharBuffer>(array, offset, length);
 }
 

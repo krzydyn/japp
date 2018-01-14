@@ -84,8 +84,8 @@ private:
 
 public:
 	const The_Log& log(const String& s) const;
-	const The_Log& log(const String& fmt...) const;
 	const The_Log& log(const char *fmt...) const;
+	const The_Log& log(const String& fmt...) const;
 };
 extern const The_Log Log;
 

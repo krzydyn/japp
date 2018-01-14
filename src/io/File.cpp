@@ -131,8 +131,8 @@ public:
 	virtual boolean unlink(File f) const {
 		int r = ::unlink(f.getPath().intern().c_str());
 		if (r == -1) {
-			String emsg(std::strerror(errno));
-			System.err.println("unlink error: "+emsg+"("+errno+") "+f.getPath());
+			r = errno;
+			Log.log("unlink '%s': %s(%d)", f.getPath().cstr(), std::strerror(r), r);
 		}
 		return r == 0;
 	}

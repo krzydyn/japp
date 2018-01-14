@@ -281,6 +281,7 @@ const Class& Object::getClass(const std::type_info& type) {
 Object& Object::clone() const {TRACE;
 	throw CloneNotSupportedException();
 }
+String Object::toString() {return ((const Object*)this)->toString();}
 String Object::toString() const {
 	return getClass().getName() + "@" + Integer::toHexString(hashCode());
 }

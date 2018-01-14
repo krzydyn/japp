@@ -17,17 +17,17 @@ const The_Log& The_Log::log(const String& s) const {
 	System.out.println(s);
 	return *this;
 }
-const The_Log& The_Log::log(const String& fmt...) const {
-	va_list args;
-	va_start(args, fmt);
-	format(fmt.intern().c_str(),args);
-	va_end(args);
-	return *this;
-}
 const The_Log& The_Log::log(const char *fmt...) const {
 	va_list args;
 	va_start(args, fmt);
 	format(fmt,args);
+	va_end(args);
+	return *this;
+}
+const The_Log& The_Log::log(const String& fmt...) const {
+	va_list args;
+	va_start(args, fmt);
+	format(fmt.intern().c_str(),args);
 	va_end(args);
 	return *this;
 }

@@ -86,6 +86,7 @@ public:
 	virtual jint hashCode() const {return (jint)this;}
 
 	virtual boolean equals(const Object& obj) const {return this == &obj;}
+	virtual String toString() final;
 	virtual String toString() const;
 	virtual void notify() final {}
 	virtual void notifyAll() final {}

@@ -49,8 +49,7 @@ public:
 	explicit String(const std::nullptr_t&) {TRACE;copystr(this, (const char *)0); }
 
 	String() : value(emptystr) {}
-	String(const String& s, int offset, int count);
-	String(const char *s, int offset, int count);
+	String(const Array<char>& s, int offset, int count);
 
 	const std::string& intern() const {TRACE; return value; }
 	const char *cstr() const { return value.c_str(); }
