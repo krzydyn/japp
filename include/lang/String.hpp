@@ -240,7 +240,7 @@ public:
 	static String format(String fmt, ...) {TRACE;
 		va_list args;
 		va_start(args, fmt);
-		String s = format(fmt.intern().c_str(), args);
+		String s = format(fmt.cstr(), args);
 		va_end(args);
 		return s;
 	}

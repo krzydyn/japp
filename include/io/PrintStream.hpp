@@ -64,7 +64,7 @@ public:
 	const PrintStream& printf(const String& fmt...) const {
 		va_list args;
 		va_start(args, fmt);
-		format(fmt.intern().c_str(),args);
+		format(fmt.cstr(),args);
 		va_end(args);
 		return *this;
 	}
@@ -100,7 +100,7 @@ protected:
 	void write(const String& s) const {
 		if (this == null) {std::cerr << "NULL" << s.intern();return ;}
 		synchronized (*this) {
-			out.write(s.intern().c_str(),s.length());
+			out.write(s.cstr(),s.length());
 		}
 	}
 };

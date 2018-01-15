@@ -17,13 +17,13 @@ void setNativePriority(std::thread& thread, int priority) {
 void setNativeName(std::thread& thread, const String& name, boolean& pending) {
 	#ifdef __APPLE__
 	if (thread.get_id() == std::this_thread::get_id()) {
-		pthread_setname_np(name.intern().c_str());
+		pthread_setname_np(name.cstr());
 		pending = false;
 	}
 	else pending = true;
 	#else
 	pending = false;
-	pthread_setname_np(thread.native_handle(), name.intern().c_str());
+	pthread_setname_np(thread.native_handle(), name.cstr());
 	#endif
 }
 class MainThreadGroup : extends ThreadGroup {

@@ -76,7 +76,7 @@ public:
 	virtual String canonicalize(const String& path) const {return path;}
 	virtual int getBooleanAttributes(const File& f) const {
 		struct stat st;
-		if (::stat(f.getPath().intern().c_str(), &st) < 0)
+		if (::stat(f.getPath().cstr(), &st) < 0)
 			return 0;
 		int attr = BA_EXISTS;
 		if (st.st_mode&S_IFREG) attr |= BA_REGULAR;
@@ -90,12 +90,12 @@ public:
 		if (access&ACCESS_READ) amode |= R_OK;
 		if (access&ACCESS_WRITE) amode |= W_OK;
 		if (access&ACCESS_EXECUTE) amode |= X_OK;
-		return ::access(f.getPath().intern().c_str(), amode) == 0;
+		return ::access(f.getPath().cstr(), amode) == 0;
 	}
 	virtual boolean setPermission(const File& f, int access, boolean enable, boolean owneronly) const {
 		struct stat st;
 		mode_t perm = 0;
-		if (::stat(f.getPath().intern().c_str(), &st) < 0)
+		if (::stat(f.getPath().cstr(), &st) < 0)
 			return 0;
 		if (access&ACCESS_READ) perm |= S_IRUSR|S_IRGRP|S_IROTH;
 		if (access&ACCESS_WRITE) perm |= S_IWUSR|S_IWGRP|S_IWOTH;
@@ -104,11 +104,11 @@ public:
 		if (enable) perm = st.st_mode | perm;
 		else perm = (mode_t)(st.st_mode & (~perm));
 		perm &= S_IRWXU | S_IRWXG | S_IRWXO;
-		return chmod(f.getPath().intern().c_str(), perm) == 0;
+		return chmod(f.getPath().cstr(), perm) == 0;
 	}
 	virtual jlong getLastModifiedTime(const File& f) const {
 		struct stat st;
-		if (::stat(f.getPath().intern().c_str(), &st) < 0)
+		if (::stat(f.getPath().cstr(), &st) < 0)
 			return 0;
 		#ifdef __APPLE__
 		jlong millis = st.st_mtimespec.tv_sec; millis *= 1000;
@@ -121,7 +121,7 @@ public:
 	}
 	virtual jlong getLength(const File& f) const {
 		struct stat st;
-		if (::stat(f.getPath().intern().c_str(), &st) < 0)
+		if (::stat(f.getPath().cstr(), &st) < 0)
 			return 0;
 		return st.st_size;
 	}
@@ -129,7 +129,7 @@ public:
 		return false;
 	}
 	virtual boolean unlink(File f) const {
-		int r = ::unlink(f.getPath().intern().c_str());
+		int r = ::unlink(f.getPath().cstr());
 		if (r == -1) {
 			r = errno;
 			Log.log("unlink '%s': %s(%d)", f.getPath().cstr(), std::strerror(r), r);
@@ -137,7 +137,7 @@ public:
 		return r == 0;
 	}
 	virtual Array<String> list(const File& f) const {
-		DIR *dir = opendir(f.getPath().intern().c_str());
+		DIR *dir = opendir(f.getPath().cstr());
 		struct dirent *ent;
 		if (dir == null) return Array<String>();
 		ArrayList<String> l;
@@ -148,10 +148,10 @@ public:
 		return l.toArray();
 	}
 	virtual boolean createDirectory(File f) const {
-		return ::mkdir(f.getPath().intern().c_str(), 0777) == 0;
+		return ::mkdir(f.getPath().cstr(), 0777) == 0;
 	}
 	virtual boolean rename(const File& f1, const File& f2) const {
-		return ::rename(f1.getPath().intern().c_str(),f2.getPath().intern().c_str());
+		return ::rename(f1.getPath().cstr(),f2.getPath().cstr());
 	}
 	virtual boolean setLastModifiedTime(const File& f, jlong time) const {
 		//struct timeval times[2]; // if times is null => set date&time to current
@@ -159,16 +159,16 @@ public:
 		struct utimbuf ubuf;
 		ubuf.modtime = time/1000;
 		ubuf.actime = time/1000;
-		return ::utime(f.getPath().intern().c_str(), &ubuf) == 0;
+		return ::utime(f.getPath().cstr(), &ubuf) == 0;
 	}
 	virtual boolean setReadOnly(const File& f) const {
 		mode_t perm = S_IRUSR|S_IRGRP|S_IROTH;
-		return chmod(f.getPath().intern().c_str(), perm) == 0;
+		return chmod(f.getPath().cstr(), perm) == 0;
 	}
 	virtual Array<File> listRoots() const { Array<File> a(1); a[0]=File("/"); return a;}
 	virtual jlong getSpace(const File& f, int t) const {
 		struct statvfs stat;
-		statvfs(f.getPath().intern().c_str(), &stat);
+		statvfs(f.getPath().cstr(), &stat);
 		if (t == SPACE_TOTAL) return (jlong)(stat.f_blocks * stat.f_frsize);
 		if (t == SPACE_FREE) return (jlong)(stat.f_bavail * stat.f_frsize);
 		if (t == SPACE_USABLE) return (jlong)((stat.f_blocks-stat.f_bavail)*stat.f_frsize);

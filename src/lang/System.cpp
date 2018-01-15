@@ -20,14 +20,14 @@ const The_Log& The_Log::log(const String& s) const {
 const The_Log& The_Log::log(const char *fmt...) const {
 	va_list args;
 	va_start(args, fmt);
-	format(fmt,args);
+	format(fmt, args);
 	va_end(args);
 	return *this;
 }
 const The_Log& The_Log::log(const String& fmt...) const {
 	va_list args;
 	va_start(args, fmt);
-	format(fmt.intern().c_str(),args);
+	format(fmt.cstr(), args);
 	va_end(args);
 	return *this;
 }
@@ -40,7 +40,7 @@ jlong The_System::nanoTime() {
 }
 
 const String The_System::getenv(const String& name) {
-	const char *v = std::getenv(name.intern().c_str());
+	const char *v = std::getenv(name.cstr());
 	if (v == null) return String();
 	return v;
 }
