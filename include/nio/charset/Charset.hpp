@@ -2,8 +2,8 @@
 #define __NIO_CHARSET_HPP
 
 #include <lang/Comparable.hpp>
-#include <lang/String.hpp>
 #include <lang/Exception.hpp>
+#include <lang/String.hpp>
 
 namespace nio {
 namespace charset {

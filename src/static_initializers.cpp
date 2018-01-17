@@ -31,14 +31,24 @@ HashMap<String,String>& get_env() {
 }
 
 using namespace nio::charset;
-class UTF8_CharsetDecoder : extends CharsetDecoder {
+// http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/6-b14/sun/nio/cs/UTF_8.java#UTF_8.Decoder
+class UTF8_Decoder : extends CharsetDecoder {
 public:
 	//CharsetDecoder(Charset *cs, float averageCharsPerByte, float maxCharsPerByte) :
-	UTF8_CharsetDecoder(const Charset *cs) : CharsetDecoder(cs, 1.0f, 1.0f) {
+	UTF8_Decoder(const Charset *cs) : CharsetDecoder(cs, 1.0f, 1.0f) {
 	}
-	nio::CoderResult decodeLoop(nio::ByteBuffer& in, nio::CharBuffer& out) {
-		Log.log("decodeLoop");
-		return nio::CoderResult::UNDERFLOW;
+	nio::CoderResult decodeLoop(nio::ByteBuffer& src, nio::CharBuffer& dst) {
+		Log.log("UTF8_Decoder::decodeLoop");
+		int mark = src.position();
+		int limit = src.limit();
+		while (mark < limit && dst.remaining() > 0) {
+			int b1 = src.get();
+			dst.put((char)b1);
+		}
+		nio::CoderResult cr = src.remaining() > 0 && dst.remaining() == 0 ?
+				nio::CoderResult::UNDERFLOW : nio::CoderResult::OVERFLOW;
+		src.position(mark);
+		return cr;
 	}
 };
 
@@ -50,7 +60,7 @@ public:
 		return true;
 	}
 	Shared<CharsetDecoder> newDecoder() const {
-		return makeShared<UTF8_CharsetDecoder>(this);
+		return makeShared<UTF8_Decoder>(this);
 		//return null;
 	}
 	Shared<CharsetEncoder> newEncoder() const {
