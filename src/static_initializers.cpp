@@ -34,31 +34,63 @@ HashMap<String,String>& get_env() {
 
 using namespace nio;
 using namespace nio::charset;
-//http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/6-b14/sun/nio/cs/US_ASCII.java#US_ASCII.Decoder
+// http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/6-b14/sun/nio/cs/US_ASCII.java#US_ASCII.Decoder
 class US_ASCII_Decoder : extends CharsetDecoder {
 public:
 	US_ASCII_Decoder(const Charset *cs) : CharsetDecoder(cs, 1.0f, 1.0f) {
 	}
-	CoderResult decodeLoop(ByteBuffer& src, CharBuffer& dst) {
+
+private:
+	CoderResult decodeArrayLoop(ByteBuffer& src, CharBuffer& dst) {
+		Log.log("US_ASCII_Decoder::decodeArrayLoop");
+		Array<byte>& sa = src.array();
+		int sp = src.arrayOffset() + src.position();
+		int sl = src.arrayOffset() + src.limit();
+		sp = (sp <= sl ? sp : sl);
+		Array<char>& da = dst.array();
+		int dp = dst.arrayOffset() + dst.position();
+		int dl = dst.arrayOffset() + dst.limit();
+		dp = (dp <= dl ? dp : dl);
+		Finalize([&]{
+			src.position(sp - src.arrayOffset());
+			dst.position(dp - dst.arrayOffset());
+		});
+		while (sp < sl) {
+			byte b = sa[sp];
+			if (b >= 0) {
+				if (dp >= dl) return CoderResult::OVERFLOW;
+				da[dp++] = (char)b;
+				sp++;
+				continue;
+			}
+			return CoderResult::malformedForLength(1);
+		}
+		return CoderResult::UNDERFLOW;
+	}
+	CoderResult decodeBufferLoop(ByteBuffer& src, CharBuffer& dst) {
 		int mark = src.position();
-		Log.log("US_ASCII_Decoder::decodeLoop mark=%d", mark);
+		Log.log("US_ASCII_Decoder::decodeBufferLoop mark=%d", mark);
+		Finalize([&]{src.position(mark);});
 		while (src.hasRemaining()) {
-			Log.log("src.hasRem=%d, dst.hasRem", (int)src.hasRemaining(), (int)dst.hasRemaining());
+			Log.log("src.hasRem=%d, dst.hasRem=%d", src.remaining(), dst.remaining());
 			byte b = src.get();
 			if (b >= 0) {
-				if (!dst.hasRemaining()) {
-					src.position(mark);
-					return CoderResult::OVERFLOW;
-				}
+				if (!dst.hasRemaining()) return CoderResult::OVERFLOW;
 				dst.put((char)b);
 				mark++;
 				continue;
 			}
-			src.position(mark);
 			return CoderResult::malformedForLength(1);
 		}
-		src.position(mark);
 		return CoderResult::UNDERFLOW;
+	}
+
+protected:
+	CoderResult decodeLoop(ByteBuffer& src, CharBuffer& dst) {
+		if (src.hasArray() && dst.hasArray())
+			return decodeArrayLoop(src, dst);
+		else
+			return decodeBufferLoop(src, dst);
 	}
 };
 
@@ -71,7 +103,6 @@ public:
 	}
 	Shared<CharsetDecoder> newDecoder() const {
 		return makeShared<US_ASCII_Decoder>(this);
-		//return null;
 	}
 	Shared<CharsetEncoder> newEncoder() const {
 		return null;
@@ -81,9 +112,10 @@ public:
 // http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/6-b14/sun/nio/cs/UTF_8.java#UTF_8.Decoder
 class UTF8_Decoder : extends CharsetDecoder {
 public:
-	//CharsetDecoder(Charset *cs, float averageCharsPerByte, float maxCharsPerByte) :
 	UTF8_Decoder(const Charset *cs) : CharsetDecoder(cs, 1.0f, 1.0f) {
 	}
+
+protected:
 	CoderResult decodeLoop(ByteBuffer& src, CharBuffer& dst) {
 		Log.log("UTF8_Decoder::decodeLoop");
 		int mark = src.position();
@@ -107,7 +139,6 @@ public:
 	}
 	Shared<CharsetDecoder> newDecoder() const {
 		return makeShared<UTF8_Decoder>(this);
-		//return null;
 	}
 	Shared<CharsetEncoder> newEncoder() const {
 		return null;

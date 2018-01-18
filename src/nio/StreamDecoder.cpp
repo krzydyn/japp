@@ -35,19 +35,14 @@ int StreamDecoder::readBytes() {
 }
 
 int StreamDecoder::implRead(Array<char>& cbuf, int off, int end) {
-	Log.log("cbuf.len=%d off = %d, end=%d",cbuf.length,off,end);
+	Log.log("StreamDecoder::implRead: cbuf.len=%d off = %d, end=%d",cbuf.length,off,end);
 	Shared<CharBuffer> cb = CharBuffer::wrap(cbuf, off, end - off);
-	Log.log("1: cb.len=%d pos = %d, len=%d",cb->length(),cb->position(),cb->limit());
 	// Ensure that cb[0] == cbuf[off]
 	if (cb->position() != 0) cb = cb->slice();
-	Log.log("2: cb.len=%d pos = %d, len=%d",cb->length(),cb->position(),cb->limit());
 
 	boolean eof = false;
 	for (;;) {
-		Log.log("calling decode ...");
 		nio::CoderResult cr = decoder->decode(*bb, *cb, eof);
-		Log.log("CoderResult = %s", cr.toString().cstr());
-		Log.log("cb %s cr.isUnderflow=%d",cb->toString().cstr(), cr.isUnderflow());
 		if (cr.isUnderflow()) {
 			if (eof) break;
 			if (!cb->hasRemaining()) break;

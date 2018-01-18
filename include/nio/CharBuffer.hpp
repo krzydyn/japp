@@ -65,10 +65,10 @@ public:
 	virtual CharBuffer& put(String src) {
 		return put(src, 0, src.length());
 	}
-	virtual boolean hasArray() const {
+	virtual boolean hasArray() const final {
 		return hb->length > 0 && !isReadOnly();
 	}
-	virtual Array<char>& array() {
+	virtual Array<char>& array() final {
 		if (isReadOnly()) throw ReadOnlyBufferException();
 		return *hb;
 	}

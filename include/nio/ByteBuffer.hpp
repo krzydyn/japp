@@ -86,7 +86,7 @@ public:
 		return put(src, 0, src.length);
 	}
 	virtual boolean hasArray() const final {
-		return (*hb).length > 0 && !isReadOnly();
+		return hb->length > 0 && !isReadOnly();
 	}
 	virtual Array<byte>& array() final {
 		if (isReadOnly()) throw ReadOnlyBufferException();
