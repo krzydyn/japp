@@ -26,26 +26,28 @@ public:
 	boolean operator!=(const ByteOrder& o) { return n != o.n;}
 };
 
-class ByteBuffer : extends Buffer,
-		implements Comparable<ByteBuffer> {
+class ByteBuffer : extends Buffer, implements Comparable<ByteBuffer> {
+private:
+	boolean alloc=false;
 protected:
-	Array<byte> hb;
+	Array<byte>* hb;
 	int mOffset;
 	boolean mIsReadOnly = false;
 	boolean bigEndian;
 
 	ByteBuffer(int mark, int pos, int lim, int cap, int offset = 0) :
 			Buffer(mark, pos, lim, cap), mOffset(offset) {
-		hb = Array<byte>(cap);
+		hb = new Array<byte>(cap);
+		alloc = true;
 	}
 	ByteBuffer(int mark, int pos, int lim, int cap, Array<byte>& hb, int offset = 0) :
 			Buffer(mark, pos, lim, cap), mOffset(offset) {
-		this->hb = std::move(hb);
+		this->hb = &hb;
 	}
 
 	void move(ByteBuffer& o) {
 		Buffer::move(o);
-		hb = std::move(o.hb);
+		hb = o.hb; o.hb=null;
 		mOffset = o.mOffset; o.mOffset=0;
 		mIsReadOnly = o.mIsReadOnly; o.mIsReadOnly=false;
 	}
@@ -60,6 +62,11 @@ public:
 
 	ByteBuffer(ByteBuffer&&o) {move(o);}
 	ByteBuffer& operator=(ByteBuffer&&o) {move(o);return *this;}
+	~ByteBuffer() {
+		if (alloc) {
+			delete hb;
+		}
+	}
 
 	//virtual Shared<ByteBuffer> slice() const = 0;
 	//virtual Shared<ByteBuffer> duplicate() const = 0;
@@ -79,11 +86,11 @@ public:
 		return put(src, 0, src.length);
 	}
 	virtual boolean hasArray() const final {
-		return hb.length > 0 && !isReadOnly();
+		return (*hb).length > 0 && !isReadOnly();
 	}
 	virtual Array<byte>& array() final {
 		if (isReadOnly()) throw ReadOnlyBufferException();
-		return hb;
+		return *hb;
 	}
 	virtual int arrayOffset() const final {
 		if (isReadOnly()) throw ReadOnlyBufferException();

@@ -25,18 +25,18 @@ public:
 	HeapByteBuffer(int cap, int lim) : ByteBuffer(-1, 0, lim, cap, 0) {}
 	HeapByteBuffer(Array<byte>& buf, int off, int len) : ByteBuffer(-1, off, off + len, buf.length, buf, 0) {}
 
-	byte get() { return hb[ix(nextGetIndex())]; }
-	byte get(int i) const { return hb[ix(checkIndex(i))]; }
+	byte get() { return (*hb)[ix(nextGetIndex())]; }
+	byte get(int i) const { return (*hb)[ix(checkIndex(i))]; }
 
 	boolean isDirect() const {return false;}
 	boolean isReadOnly() const {return false;}
 
 	ByteBuffer& put(byte x) {
-		hb[ix(nextPutIndex())] = x;
+		(*hb)[ix(nextPutIndex())] = x;
 		return *this;
 	}
 	ByteBuffer& put(int i, byte x) {
-		hb[ix(checkIndex(i))] = x;
+		(*hb)[ix(checkIndex(i))] = x;
 		return *this;
 	}
 };
