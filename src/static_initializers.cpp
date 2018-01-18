@@ -3,6 +3,8 @@
 #include <io/File.hpp>
 #include <io/FileInputStream.hpp>
 #include <io/FileOutputStream.hpp>
+#include <nio/ByteBuffer.hpp>
+#include <nio/CharBuffer.hpp>
 #include <nio/charset/CharsetDecoder.hpp>
 #include <chrono>
 #include <cstdlib>
@@ -39,7 +41,9 @@ public:
 	}
 	CoderResult decodeLoop(ByteBuffer& src, CharBuffer& dst) {
 		int mark = src.position();
+		Log.log("US_ASCII_Decoder::decodeLoop mark=%d", mark);
 		while (src.hasRemaining()) {
+			Log.log("src.hasRem=%d, dst.hasRem", (int)src.hasRemaining(), (int)dst.hasRemaining());
 			byte b = src.get();
 			if (b >= 0) {
 				if (!dst.hasRemaining()) {
@@ -57,6 +61,7 @@ public:
 		return CoderResult::UNDERFLOW;
 	}
 };
+
 class US_ASCII : extends Charset {
 public:
 	US_ASCII() : Charset("US-ASCII",Array<String>()) {}

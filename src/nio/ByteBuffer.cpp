@@ -25,11 +25,19 @@ public:
 	HeapByteBuffer(int cap, int lim) : ByteBuffer(-1, 0, lim, cap, 0) {}
 	HeapByteBuffer(Array<byte>& buf, int off, int len) : ByteBuffer(-1, off, off + len, buf.length, buf, 0) {}
 
-	byte get() { return (*hb)[ix(nextGetIndex())]; }
-	byte get(int i) const { return (*hb)[ix(checkIndex(i))]; }
-
 	boolean isDirect() const {return false;}
 	boolean isReadOnly() const {return false;}
+
+	ByteBuffer& compact() {
+		System.arraycopy(*hb, ix(position()), *hb, ix(0), remaining());
+		position(remaining());
+		limit(capacity());
+		discardMark();
+		return *this;
+	}
+
+	byte get() { return (*hb)[ix(nextGetIndex())]; }
+	byte get(int i) const { return (*hb)[ix(checkIndex(i))]; }
 
 	ByteBuffer& put(byte x) {
 		(*hb)[ix(nextPutIndex())] = x;

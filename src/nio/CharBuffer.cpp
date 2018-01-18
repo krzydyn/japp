@@ -23,6 +23,7 @@ class HeapCharBuffer : extends CharBuffer {
 protected:
 	int ix(int i) const {return i + mOffset;}
 	String toString(int start, int end) const {
+		Log.log("HeapCharBuffer::toString(%d,%d), [pos=%d,lim=%d]",start,end,position(),limit());
 		return String(*hb, start + mOffset, end - start);
 	}
 public:

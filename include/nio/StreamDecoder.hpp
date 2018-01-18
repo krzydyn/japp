@@ -50,52 +50,8 @@ private:
 	boolean implReady() {
 		return inReady();
 	}
-	int readBytes() {
-		int lim = bb->limit();
-		int pos = bb->position();
-		int rem = (pos <= lim ? lim - pos : 0);
-		int n = in->read(bb->array(), bb->arrayOffset() + pos, rem);
-		if (n < 0) return n;
-		return bb->remaining();
-	}
-	int implRead(Array<char>& cbuf, int off, int end) {
-		Log.log("cbuf.len=%d off = %d, end=%d",cbuf.length,off,end);
-		Shared<CharBuffer> cb = CharBuffer::wrap(cbuf, off, end - off);
-		Log.log("1: cb.len=%d pos = %d, len=%d",cb->length(),cb->position(),cb->limit());
-		// Ensure that cb[0] == cbuf[off]
-		if (cb->position() != 0) cb = cb->slice();
-		Log.log("2: cb.len=%d pos = %d, len=%d",cb->length(),cb->position(),cb->limit());
-
-		boolean eof = false;
-		for (;;) {
-			Log.log("calling decode ...");
-			nio::CoderResult cr = decoder->decode(*bb, *cb, eof);
-			Log.log("CoderResult = %s", cr.toString().cstr());
-			Log.log("cb %s",cb->toString().cstr());
-			if (cr.isUnderflow()) {
-				if (eof) break;
-				if (!cb->hasRemaining()) break;
-				if (cb->position() > 0 && !inReady()) break;
-				int n = readBytes();
-				if (n < 0) {
-					eof = true;
-					if (cb->position() == 0 && !bb->hasRemaining()) break;
-					decoder->reset();
-				}
-				continue;
-			}
-			if (cr.isOverflow()) {
-				break;
-			}
-			cr.throwException();
-		}
-		if (eof) decoder->reset();
-
-		if (cb->position() == 0) {
-			if (eof) return -1;
-		}
-		return cb->position();
-	}
+	int readBytes();
+	int implRead(Array<char>& cbuf, int off, int end);
 	void implClose() {
 		if (in != null) in->close();
 	}

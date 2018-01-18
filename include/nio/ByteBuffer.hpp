@@ -96,7 +96,7 @@ public:
 		if (isReadOnly()) throw ReadOnlyBufferException();
 		return mOffset;
 	}
-	//public abstract ByteBuffer compact();
+	virtual ByteBuffer& compact() = 0;
 	virtual boolean isDirect() const = 0;
 	virtual String toString() const;
 

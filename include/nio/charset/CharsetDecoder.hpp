@@ -2,8 +2,6 @@
 #define __NIO_CHARSET_CHARSETDECODER_HPP
 
 #include <lang/String.hpp>
-#include <nio/ByteBuffer.hpp>
-#include <nio/CharBuffer.hpp>
 #include <nio/CoderResult.hpp>
 #include <nio/charset/Charset.hpp>
 #include <nio/charset/CodingErrorAction.hpp>
@@ -13,6 +11,9 @@ const char* stateNames[] = { "RESET", "CODING", "CODING_END", "FLUSHED" };
 }
 
 namespace nio {
+class ByteBuffer;
+class CharBuffer;
+
 namespace charset {
 
 class CharsetDecoder : extends Object {
@@ -55,7 +56,7 @@ protected:
 
 public:
 	const Charset& charset() const { return *mCharset; }
-	const String& replacement() { return mReplacement; }
+	const String& replacement() const { return mReplacement; }
 	virtual CharsetDecoder& replaceWith(const String& newReplacement) final {
 		mReplacement = newReplacement;
 		implReplaceWith(newReplacement);
@@ -71,27 +72,7 @@ public:
 	virtual float averageCharsPerByte() final { return mAverageCharsPerByte; }
 	virtual float maxCharsPerByte() final { return mMaxCharsPerByte; }
 
-	CoderResult decode(ByteBuffer& in, CharBuffer& out, boolean endOfInput) {
-		int newState = endOfInput ? ST_END : ST_CODING;
-		if ((state != ST_RESET) && (state != ST_CODING) && !(endOfInput && (state == ST_END)))
-			throwIllegalStateException(state, newState);
-		state = newState;
-		Log.log("decode in: %s", in.toString().cstr());
-		for (;;) {
-			CoderResult cr = decodeLoop(in, out);
-			if (cr.isOverflow()) return cr;
-			if (cr.isUnderflow()) {
-				if (endOfInput && in.hasRemaining()) {
-					cr = CoderResult::malformedForLength(in.remaining());
-				}
-				else {
-					return cr;
-				}
-			}
-		}
-		out.flip();
-		return CoderResult::UNDERFLOW;
-	}
+	CoderResult decode(ByteBuffer& in, CharBuffer& out, boolean endOfInput);
 };
 
 }}
