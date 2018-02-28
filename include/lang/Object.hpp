@@ -29,7 +29,6 @@ class Class;
 class Object;
 class String;
 
-
 class Interface {
 protected:
 	Interface(const Interface& o) = delete;
@@ -189,10 +188,26 @@ public:
 		checkArrayBounds(i, length);
 		return a[i];
 	}
-	const T& operator[](int i) const {
+	T& operator[](int i) const {
 		checkArrayBounds(i, length);
 		return a[i];
 	}
+
+	// c++11 range-based for loops support
+	class ArrayRange {
+	friend class Array;
+	private:
+		Array<T>& ref;
+		int idx = 0;
+		ArrayRange(Array<T>* a, int i) : ref(*a), idx(i) {}
+	public:
+		int operator++() { return idx++; }
+		//int operator==(const ArrayRange& o) { return idx == o.idx; }
+		int operator!=(const ArrayRange& o) { return idx != o.idx; }
+		T& operator*() {return ref[idx];}
+	};
+	ArrayRange begin() { return ArrayRange(this, 0); }
+	ArrayRange end() { return ArrayRange(this, length); }
 };
 template<class T>
 class BufArray : extends Array<T> {

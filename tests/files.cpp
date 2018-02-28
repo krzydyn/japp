@@ -56,8 +56,9 @@ void test_write_read() { TESTTRACE;
 void test_filelist() { TESTTRACE;
 	io::File f("/tmp");
 	Array<String> a = f.list();
-	for (int i=0; i < a.length; ++i)
-		System.out.println("\t"+a[i]);
+	for (String& s : a) {
+		System.out.println("\t"+s);
+	}
 	System.out.printf("Found %d files in %s\n", a.length, f.getPath().cstr());
 }
 
