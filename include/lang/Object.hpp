@@ -201,7 +201,8 @@ public:
 		int idx = 0;
 		ArrayRange(Array<T>* a, int i) : ref(*a), idx(i) {}
 	public:
-		int operator++() { return idx++; }
+		int operator++() { return ++idx; } //preincrement
+		//int operator++(int) { return idx++; } //postincrement
 		//int operator==(const ArrayRange& o) { return idx == o.idx; }
 		int operator!=(const ArrayRange& o) { return idx != o.idx; }
 		T& operator*() {return ref[idx];}
