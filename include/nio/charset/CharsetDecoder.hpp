@@ -22,8 +22,8 @@ private:
 	const float mAverageCharsPerByte;
 	const float mMaxCharsPerByte;
 	String mReplacement;
-	CodingErrorAction mMalformedInputAction = CodingErrorAction::REPORT;
-	CodingErrorAction mUnmappableCharacterAction = CodingErrorAction::REPORT;
+	CodingErrorAction *mMalformedInputAction = &CodingErrorAction::REPORT;
+	CodingErrorAction *mUnmappableCharacterAction = &CodingErrorAction::REPORT;
 
 	// Internal states
 	static const int ST_RESET   = 0;
@@ -62,7 +62,7 @@ public:
 		implReplaceWith(newReplacement);
 		return *this;
 	}
-	const CodingErrorAction& malformedInputAction() { return mMalformedInputAction; }
+	const CodingErrorAction& malformedInputAction() { return *mMalformedInputAction; }
 	virtual CharsetDecoder& reset() final {
 		implReset();
 		state = ST_RESET;

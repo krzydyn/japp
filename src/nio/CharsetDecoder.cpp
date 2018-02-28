@@ -10,22 +10,43 @@ CoderResult CharsetDecoder::decode(ByteBuffer& in, CharBuffer& out, boolean endO
 	if ((state != ST_RESET) && (state != ST_CODING) && !(endOfInput && (state == ST_END)))
 		throwIllegalStateException(state, newState);
 	state = newState;
-	Log.log("CharsetDecoder::decode in: %s  out: %s", in.toString().cstr(), out.toString().cstr());
+	CoderResult cr = CoderResult::UNDERFLOW;
 	for (;;) {
-		CoderResult cr = decodeLoop(in, out);
+		cr = decodeLoop(in, out);
 		Log.log("CharsetDecoder::decodeLoop = %s",cr.toString().cstr());
 		if (cr.isOverflow()) return cr;
 		if (cr.isUnderflow()) {
 			if (endOfInput && in.hasRemaining()) {
 				cr = CoderResult::malformedForLength(in.remaining());
 			}
-			else {
-				return cr;
-			}
+			else break;
 		}
+
+		const CodingErrorAction* action = null;
+		if (cr.isMalformed())
+			action = mMalformedInputAction;
+		else if (cr.isUnmappable())
+			action = mUnmappableCharacterAction;
+		else throw Exception("Assertion");
+
+		if (action == &CodingErrorAction::REPORT)
+			break;
+
+		if (action == &CodingErrorAction::REPLACE) {
+			if (out.remaining() < mReplacement.length())
+				return CoderResult::OVERFLOW;
+			out.put(mReplacement);
+		}
+		if ((action == &CodingErrorAction::IGNORE) || (action == CodingErrorAction::REPLACE)) {
+			// Skip erroneous input either way
+			in.position(in.position() + cr.length());
+			continue;
+		}
+
+		throw Exception("Assertion");
 	}
-	out.flip();
-	return CoderResult::UNDERFLOW;
+	Log.log("CharsetDecoder::decode in: %s  out: %s", in.toString().cstr(), out.toString().cstr());
+	return cr;
 }
 
 }}
