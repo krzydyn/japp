@@ -139,14 +139,21 @@ template<class T, class... Args>
 Shared<T> makeShared(Args&&... args) {TRACE; return std::make_shared<T>(args...); }
 
 
-void registerArrayClass(const std::type_info& type);
-void checkArrayBounds(int i, int l);
+
+class AbstractArray : extends Object {
+private:
+	static void registerArrayClass(const std::type_info& type);
+protected:
+	AbstractArray() {
+		registerArrayClass(typeid(*this));
+	};
+	static void checkArrayBounds(int i, int l);
+};
 
 template<class T>
-class Array : extends Object {
+class Array : extends AbstractArray {
 protected:
 	T *a;
-	void init() { registerArrayClass(typeid(*this)); }
 
 public:
 	const int length;
@@ -160,27 +167,29 @@ public:
 	}
 	Array<T>& operator=(const Array<T>&o) {
 		if (this == &o) return *this;
-		delete [] a;
-		const_cast<int&>(length) = o.length;
-		a = new T[length];
+		if (length != o.length) {
+			delete [] a; const_cast<int&>(length) = 0;
+			a = new T[o.length];
+			const_cast<int&>(length) = o.length;
+		}
 		for (int i=0; i < length; ++i) a[i] = o.a[i];
 		return *this;
 	}
-
 	Array<T>& operator=(Array<T>&& o) {
+		if (this == &o) return *this;
 		const_cast<int&>(length) = o.length; const_cast<int&>(o.length) = 0;
 		a = o.a; o.a = null;
 		return *this;
 	}
 
-	Array() : length(0) {init(); a = null; }
+	Array() : length(0) { a = null; }
 	Array(int l) : length(l) {
 		checkArrayBounds(l, l+1);
-		init(); a = new T[l];
+		a = new T[l];
 	}
 	Array(T* v, int l) : length(l) {
 		checkArrayBounds(l, l+1);
-		init(); a = new T[l];
+		a = new T[l];
 		for (int i=0; i < l; ++i) a[i]=v[i];
 	}
 	~Array() { delete [] a; }

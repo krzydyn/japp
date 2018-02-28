@@ -24,8 +24,12 @@ LDFLAGS+=-Wl,-Bstatic
 endif
 LDFLAGS+=-lpthread
 ifeq ($(HOST_OS),Linux)
-#LDFLAGS+=-rdynamic -ldl
-LDFLAGS+=-ldl
+#-rdynamic
+# Pass the flag -export-dynamic to the ELF linker, on targets that support it. This instructs the linker to add all symbols,
+# not only used ones, to the dynamic symbol table. This option is needed for some uses of dlopen or to allow obtaining
+# backtraces from within a program.
+LDFLAGS+=-rdynamic -ldl
+#LDFLAGS+=-ldl
 endif
 
 SRCS:=$(wildcard $(SOURCE_DIR)/*.cpp)

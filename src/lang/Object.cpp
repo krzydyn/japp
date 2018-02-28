@@ -286,14 +286,14 @@ String Object::toString() const {
 	return getClass().getName() + "@" + Integer::toHexString(hashCode());
 }
 
-void registerArrayClass(const std::type_info& type) {
+void AbstractArray::registerArrayClass(const std::type_info& type) {
 	ArrayList<Class*>& cm = classmap();
 	synchronized(cm) {
 		Class *c = Object::findClass(type);
 		if (!c) Object::registerClass(new ArrayClass(type));
 	}
 }
-void checkArrayBounds(int i, int l) {
+void AbstractArray::checkArrayBounds(int i, int l) {
 	if (i < 0 || i >= l) throw IndexOutOfBoundsException(i);
 }
 
