@@ -6,6 +6,7 @@
 #include <nio/ByteBuffer.hpp>
 #include <nio/CharBuffer.hpp>
 #include <nio/charset/CharsetDecoder.hpp>
+#include <nio/channels/SelectorProvider.hpp>
 #include <chrono>
 #include <cstdlib>
 
@@ -238,4 +239,8 @@ namespace charset {
 const CharsetProvider& Charset::standardProvider = getStandardProvider();
 const Charset& Charset::defCharset = getDefaultCharset();
 Array<String> CharsetEncoder::stateNames; // = { "RESET", "CODING", "CODING_END", "FLUSHED" };
-}}
+}
+namespace channels {
+Object SelectorProvider::lock;
+}
+}

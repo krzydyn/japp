@@ -7,7 +7,6 @@
 namespace nio {
 namespace channels {
 
-template<class T>
 interface SocketOption : Interface {
 public:
 	virtual const String& name() = 0;

@@ -2,11 +2,23 @@
 #define __NIO_CHANNELS_CHANNEL_HPP
 
 #include <io/Closeable.hpp>
+#include <net/Socket.hpp>
 #include <net/SocketOption.hpp>
 #include <nio/ByteBuffer.hpp>
+#include <nio/channels/SelectorProvider.hpp>
 
 namespace nio {
 namespace channels {
+
+class SelectionKey {
+protected:
+	SelectionKey() { }
+public:
+	static const int OP_READ = 1 << 0;
+	static const int OP_WRITE = 1 << 2;
+	static const int OP_CONNECT = 1 << 3;
+	static const int OP_ACCEPT = 1 << 4;
+};
 
 interface Channel : extends io::Closeable {
 public:
@@ -29,25 +41,29 @@ interface ByteChannel : extends ReadableByteChannel, extends WritableByteChannel
 
 class SocketAddress;
 interface NetworkChannel : extends Channel {
-	virtual NetworkChannel& bind(SocketAddress local) = 0;
+	virtual NetworkChannel& bind(const SocketAddress& local) = 0;
 	virtual SocketAddress getLocalAddress() const = 0;
-	template<class T>
-	NetworkChannel& setOption(SocketOption<T>& name, T value) { return *this; }
-	template<class T>
-	T getOption(SocketOption<T>& name) const { T v; return v; }
+	virtual NetworkChannel& setOption(const SocketOption& name, Object* value) = 0;
+	virtual Object* getOption(const SocketOption& name) const = 0;
 };
 
-class Selector;
-class SelectorProvider;
-class SelectionKey;
+class InetAddress;
+class NetworkInterface;
+class MembershipKey;
+interface MulticastChannel : extends NetworkChannel {
+	virtual void close() = 0;
+	virtual Shared<MembershipKey> join(const InetAddress& group, const NetworkInterface& interf) = 0;
+	virtual Shared<MembershipKey> join(const InetAddress& group, const NetworkInterface& interf, const InetAddress& source) = 0;
+};
+
 class SelectableChannel : implements Channel {
 protected:
 	SelectableChannel() {}
 
 public:
 	virtual Shared<SelectorProvider> provider() = 0;
-	virtual int validOps() = 0;
-	virtual boolean isRegistered() = 0;
+	virtual int validOps() const = 0;
+	virtual boolean isRegistered() const = 0;
 	virtual SelectionKey& keyFor(Selector& sel) const = 0;
 	virtual SelectionKey& registerChn(Selector& sel, int ops, Object* att) = 0;
 	virtual SelectionKey& registerChn(Selector& sel, int ops) final {
@@ -60,22 +76,47 @@ public:
 
 class AbstractSelectableChannel : extends SelectableChannel {
 private:
-	Shared<SelectorProvider> provider;
+	Shared<SelectorProvider> mProvider;
+protected:
+	AbstractSelectableChannel(Shared<SelectorProvider> provider) : mProvider(provider) {
+	}
+public:
+	Shared<SelectorProvider> provider() { return mProvider; }
 };
 
+// TCP Server socket
 class ServerSocketChannel : extends AbstractSelectableChannel, implements NetworkChannel {
 };
 
+// TCP Client socket
 class SocketChannel : extends AbstractSelectableChannel, implements ByteChannel, implements NetworkChannel {
+protected:
+	SocketChannel(Shared<SelectorProvider> provider) : AbstractSelectableChannel(provider) {
+	}
+public:
+	static Shared<SocketChannel> open();
+
+	virtual SocketChannel& bind(const SocketAddress& local) = 0;
 };
 
-class UdpSocketChannel : extends SocketChannel {
+// Datagram (UDP)
+class DatagramChannel : extends AbstractSelectableChannel, implements ByteChannel, implements MulticastChannel {
+protected:
+	DatagramChannel(Shared<SelectorProvider> provider) : AbstractSelectableChannel(provider) {
+	}
+public:
+	static Shared<DatagramChannel> open();
+	static Shared<DatagramChannel> open(ProtocolFamily family);
+
+	virtual int validOps() const final { return SelectionKey::OP_READ | SelectionKey::OP_WRITE; }
+	virtual DatagramChannel& bind(const SocketAddress& local) = 0;
+	virtual DatagramChannel& setOption(SocketOption& name, Object* value) = 0;
+	virtual DatagramSocket& socket() = 0;
+	virtual boolean isConnected() = 0;
 };
 
-class UnixSocketChannel : extends SocketChannel {
-};
-
-class TcpSocketChannel : extends SocketChannel {
+// Unix Domain socket
+class UnixSocketChannel : extends AbstractSelectableChannel, implements ByteChannel {
 };
 
 }}
