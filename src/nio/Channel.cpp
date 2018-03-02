@@ -3,6 +3,8 @@
 namespace nio {
 namespace channels {
 
+Shared<SelectorProvider> SelectorProvider::mProvider = null;
+
 class SelectorImpl : extends AbstractSelector {
 private:
 	int lockAndDoSelect(long timeout) {
@@ -13,7 +15,7 @@ private:
 		return -1;
 	}
 protected:
-	SelectorImpl(SelectorProvider& sp) : AbstractSelector(sp) {
+	SelectorImpl(Shared<SelectorProvider> sp) : AbstractSelector(sp) {
 	}
 	virtual int doSelect(long timeout) = 0;
 public:
@@ -40,7 +42,7 @@ class AbstractPollSelectorImpl : extends SelectorImpl {
 protected:
 	int totalChannels;
 	int channelOffset;
-	AbstractPollSelectorImpl(SelectorProvider& sp, int channels, int offset) : SelectorImpl(sp),
+	AbstractPollSelectorImpl(Shared<SelectorProvider> sp, int channels, int offset) : SelectorImpl(sp),
 			totalChannels(channels), channelOffset(offset) {
 	}
 	virtual int doSelect(long timeout) = 0;
@@ -62,12 +64,13 @@ protected:
 		return numKeysUpdated;
 	}
 public:
-	PollSelectorImpl(SelectorProvider& p) : AbstractPollSelectorImpl(p, 1, 1) {
+	PollSelectorImpl(Shared<SelectorProvider> p) : AbstractPollSelectorImpl(p, 1, 1) {
 	}
 };
 
 class PollSelectorProviderImpl : extends SelectorProvider {
 public:
+	Shared<SelectorProvider> self;
 	virtual Shared<DatagramChannel> openDatagramChannel() {
 		return null;
 	}
@@ -78,7 +81,7 @@ public:
 		return null;
 	}
 	virtual Shared<AbstractSelector> openSelector() {
-		return makeShared<PollSelectorImpl>(*this);
+		return makeShared<PollSelectorImpl>(self);
 	}
 	virtual Shared<ServerSocketChannel> openServerSocketChannel() {
 		return null;
@@ -100,10 +103,10 @@ Shared<SelectorProvider> DefaultSelectorProvider::create() {
 	//String osname = System::getProperty("os.name");
 	//if (osname.equals("SunOS")) return createProvider("sun.nio.ch.DevPollSelectorProvider");
 	//if (osname.equals("Linux")) return createProvider("sun.nio.ch.EPollSelectorProvider");
-	return makeShared<PollSelectorProviderImpl>();
+	Shared<PollSelectorProviderImpl> p = makeShared<PollSelectorProviderImpl>();
+	p->self = p;
+	return p;
 }
-
-Shared<SelectorProvider> SelectorProvider::mProvider = null;
 
 Shared<SelectorProvider> SelectorProvider::provider() {
 	synchronized (lock) {

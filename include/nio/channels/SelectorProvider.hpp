@@ -65,7 +65,7 @@ private:
 	bool selectorOpen;
 
 protected:
-	AbstractSelector(SelectorProvider& provider) : mProvider(&provider) {
+	AbstractSelector(Shared<SelectorProvider> provider) : mProvider(provider) {
 	}
 public:
 	virtual void close() final {

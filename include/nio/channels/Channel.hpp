@@ -33,7 +33,18 @@ public:
 
 interface WritableByteChannel : extends Channel {
 public:
-	virtual int write(ByteBuffer& dst) = 0;
+	virtual int write(ByteBuffer& src) = 0;
+};
+
+interface ScatteringByteChannel : extends ReadableByteChannel {
+public:
+	virtual long read(Array<ByteBuffer>& dsts, int offset, int length) = 0;
+	virtual long read(Array<ByteBuffer>& dsts) = 0;
+};
+
+interface GatheringByteChannel : extends WritableByteChannel {
+	virtual long write(Array<ByteBuffer>& srcs, int offset, int length) = 0;
+	virtual long write(Array<ByteBuffer>& srcs) = 0;
 };
 
 interface ByteChannel : extends ReadableByteChannel, extends WritableByteChannel {
@@ -89,14 +100,38 @@ class ServerSocketChannel : extends AbstractSelectableChannel, implements Networ
 };
 
 // TCP Client socket
-class SocketChannel : extends AbstractSelectableChannel, implements ByteChannel, implements NetworkChannel {
+class SocketChannel : extends AbstractSelectableChannel,
+		implements ByteChannel, implements ScatteringByteChannel, implements GatheringByteChannel,
+		implements NetworkChannel {
 protected:
 	SocketChannel(Shared<SelectorProvider> provider) : AbstractSelectableChannel(provider) {
 	}
 public:
 	static Shared<SocketChannel> open();
+	static Shared<SocketChannel> open(SocketAddress remote);
 
-	virtual SocketChannel& bind(const SocketAddress& local) = 0;
+	int validOps() const final { return SelectionKey::OP_READ | SelectionKey::OP_WRITE | SelectionKey::OP_CONNECT; }
+	SocketChannel& bind(const SocketAddress& local) = 0;
+	SocketChannel& setOption(const SocketOption& name, Object* value) = 0;
+	virtual SocketChannel& shutdownInput() = 0;
+	virtual SocketChannel& shutdownOutput() = 0;
+	virtual Shared<Socket> socket() = 0;
+	virtual boolean isConnected() = 0;
+	virtual boolean isConnectionPending() = 0;
+	virtual boolean connect(SocketAddress remote) = 0;
+	virtual boolean finishConnect() = 0;
+	virtual SocketAddress getRemoteAddress() = 0;
+	virtual SocketAddress getLocalAddress() = 0;
+	int read(ByteBuffer& dst) = 0;
+	long read(Array<ByteBuffer>& dsts, int offset, int length) = 0;
+	long read(Array<ByteBuffer>& dsts) final {
+		return read(dsts, 0, dsts.length);
+	}
+	int write(ByteBuffer& src) = 0;
+	long write(Array<ByteBuffer>& srcs, int offset, int length) = 0;
+	long write(Array<ByteBuffer>& srcs) final {
+		return write(srcs, 0, srcs.length);
+	}
 };
 
 // Datagram (UDP)
