@@ -69,7 +69,7 @@ int CharBuffer::read(CharBuffer& target) {
 	if (thisRemaining == 0) return -1;
 	int n = Math.min(thisRemaining, targetRemaining);
 	int l = limit();
-	Finalize([&]{limit(l);});
+	Finalize(limit(l););
 	if (targetRemaining < thisRemaining) limit(position() + n);
 	if (n > 0) target.put(*this);
 	return n;

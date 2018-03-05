@@ -238,7 +238,7 @@ public:
 	Finalizer(std::function<void()> f) : finalize(f) {}
 	~Finalizer() { finalize(); }
 };
-#define Finalize(lambda) Finalizer UNIQUE_NAME(fin)(lambda)
+#define Finalize(lambda_body) Finalizer UNIQUE_NAME(fin)([&]{lambda_body})
 
 } //namespace lang
 

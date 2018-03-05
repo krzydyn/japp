@@ -23,7 +23,7 @@ public:
 	virtual double doubleValue() const = 0;
 };
 
-class Boolean : extends Object,implements Comparable<Boolean> {
+class Boolean : extends Object, implements Comparable<Boolean> {
 private:
 	boolean value;
 public:

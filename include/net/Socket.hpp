@@ -21,13 +21,18 @@ class SocketAddress : extends Object {
 };
 
 class InetAddress : extends Object {
-private:
+protected:
 	static const int IPv4 = 1;
 	static const int IPv6 = 2;
+
+	String hostName;
+	String originalHostName;
+	int address;
+	int family;
 public:
-	static Shared<InetAddress> getByAddress(String host, const Array<byte>& addr);
-	static Shared<InetAddress> getByName(String host);
-	static Array<InetAddress> getAllByName(String host);
+	static Shared<InetAddress> getByAddress(const String& host, const Array<byte>& addr);
+	static Shared<InetAddress> getByName(const String& host);
+	static Array<Shared<InetAddress>> getAllByName(const String& host);
 	static Shared<InetAddress> getLoopbackAddress();
 	static Shared<InetAddress> getByAddress(const Array<byte>& addr) { return getByAddress("", addr); }
 	static Shared<InetAddress> getLocalHost();
@@ -38,6 +43,17 @@ public:
 	virtual boolean isLoopbackAddress() { return false; }
 	virtual boolean isLinkLocalAddress() { return false; }
 	virtual boolean isSiteLocalAddress() { return false; }
+
+	String getHostAddress() const { return "null"; }
+	String getHostName() const { return getHostName(true); }
+	String getHostName(boolean check) const {
+		return hostName;
+	}
+
+	boolean equals(const Object& obj) const { return false; }
+	String toString() const {
+		return ((hostName != null) ? hostName : "") + "/" + getHostAddress();
+	}
 };
 
 class InetSocketAddress : extends SocketAddress {
@@ -47,12 +63,15 @@ private:
 	int port;
 
 	static int checkPort(int port);
-	static String checkHost(const String& hostname);
+	static const String& checkHost(const String& hostname);
+
+	boolean isUnresolved() const { return addr == null; }
 public:
+	InetSocketAddress() {}
 	InetSocketAddress(int port) : InetSocketAddress(InetAddress::anyLocalAddress(), port) {
 	}
-	InetSocketAddress(const InetAddress& addr, int port) {
-		this->addr = addr ? addr : InetAddress.anyLocalAddress();
+	InetSocketAddress(Shared<InetAddress> addr, int port) {
+		this->addr = addr ? addr : InetAddress::anyLocalAddress();
 		this->port = checkPort(port);
 	}
 	InetSocketAddress(const String& hostname, int port) {
@@ -62,9 +81,24 @@ public:
 			this->addr = InetAddress::getByName(hostname);
 		} catch(const UnknownHostException& e) {}
 	}
-	virtual int getPort() final { return port; }
-	virtual InetAddress getAddress() final { return addr; }
-	virtual String getHostName() final { return hostname; }
+
+	virtual int getPort() const final { return port; }
+	virtual const InetAddress& getAddress() const final { return *addr; }
+	virtual const String& getHostName() const final { return hostname; }
+
+	String toString() const {
+		if (isUnresolved()) return hostname + ":" + port;
+		return addr->toString() + ":" + port;
+	}
+};
+
+class Inet4Address final : extends InetAddress {
+public:
+	Inet4Address() {
+		hostName = null;
+		address = 0;
+		family = IPv4;
+	}
 };
 
 }

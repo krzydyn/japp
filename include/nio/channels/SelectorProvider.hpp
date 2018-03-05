@@ -33,7 +33,7 @@ public:
 	static Shared<SelectorProvider> provider();
 
 	virtual Shared<DatagramChannel> openDatagramChannel() = 0;
-	virtual Shared<DatagramChannel> openDatagramChannel(ProtocolFamily family) = 0;
+	virtual Shared<DatagramChannel> openDatagramChannel(const ProtocolFamily& family) = 0;
 	virtual Shared<Pipe> openPipe() = 0;
 	virtual Shared<AbstractSelector> openSelector() = 0;
 	virtual Shared<ServerSocketChannel> openServerSocketChannel() = 0;

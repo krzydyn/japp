@@ -52,10 +52,10 @@ private:
 		int dp = dst.arrayOffset() + dst.position();
 		int dl = dst.arrayOffset() + dst.limit();
 		dp = (dp <= dl ? dp : dl);
-		Finalize([&]{
+		Finalize(
 			src.position(sp - src.arrayOffset());
 			dst.position(dp - dst.arrayOffset());
-		});
+		);
 		while (sp < sl) {
 			byte b = sa[sp];
 			if (b >= 0) {
@@ -71,7 +71,7 @@ private:
 	CoderResult decodeBufferLoop(ByteBuffer& src, CharBuffer& dst) {
 		int mark = src.position();
 		Log.log("US_ASCII_Decoder::decodeBufferLoop mark=%d", mark);
-		Finalize([&]{src.position(mark);});
+		Finalize(src.position(mark););
 		while (src.hasRemaining()) {
 			Log.log("src.hasRem=%d, dst.hasRem=%d", src.remaining(), dst.remaining());
 			byte b = src.get();
