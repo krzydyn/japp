@@ -18,13 +18,13 @@ io::InputStream& std_in() {
 io::PrintStream& std_out() {
 	static io::FileOutputStream fstream(std::cout);
 	static io::PrintStream stream(fstream);
-	std::cerr << "std_out init" << std::endl;
+	//std::cerr << "std_out init" << std::endl;
 	return stream;
 }
 io::PrintStream& std_err() {
 	static io::FileOutputStream fstream(std::cerr);
 	static io::PrintStream stream(fstream);
-	std::cerr << "std_err init" << std::endl;
+	//std::cerr << "std_err init" << std::endl;
 	return stream;
 }
 
@@ -174,10 +174,7 @@ private:
 		const String csn = canonicalize(toLower(charsetName));
 
 		const Charset* cs = cache.get(csn);
-		if (cs != null) {
-			System.out.println("fast::lookup(" + csn + ") = " + cs->name());
-			return *cs;
-		}
+		if (cs != null) return *cs;
 
 		System.out.println("fast::lookup(" + charsetName + ") = null");
 		return (Charset&)null_obj;
@@ -218,6 +215,10 @@ const Charset& getDefaultCharset() {
 }
 
 namespace lang {
+
+The_System::The_System() {
+	Thread::currentThread();
+}
 
 const The_System System;
 const The_Log Log;

@@ -125,7 +125,7 @@ public:
 			}
 		}
 		//std::cerr << "key(const) not found: " << String::valueOf(k).intern() << ", return null_obj" << std::endl;
-		if (sizeof(V) <= sizeof(void*))  return (const V&)null_val;
+		//if (sizeof(V) <= sizeof(void*))  return (const V&)null_val;
 		return (const V&)null_obj;
 	}
 	V& get(const K& k) {TRACE;

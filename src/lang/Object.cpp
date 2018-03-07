@@ -34,8 +34,12 @@ void __cxa_throw(void* thrown_exception, void* _tinfo, void (*dest)(void*)) {
 	const Object *o = (const Object *)thrown_exception;
 	if (instanceof<Throwable>(o)) {
 		Throwable* ex = (Throwable*)o;
+		std::cerr << "thrown " << ex->getClass().getName().cstr() << std::endl;
 		if (ex->getStackTrace().length == 0)
 			ex->fillInStackTrace();
+	}
+	else {
+		std::cerr << "thrown unknown exception" << std::endl;
 	}
 	old_handler(thrown_exception, tinfo, dest);
 	std::_Exit(EXIT_FAILURE);
@@ -153,7 +157,7 @@ void terminate_hook() {
 			t.printStackTrace();
 		} catch (...) {
 			Array<StackTraceElement> st;
-			Throwable t;
+			Throwable t("* unknown exception *");
 			t.setStackTrace(captureStackTrace(st,3));
 			t.printStackTrace();
 		}

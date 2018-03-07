@@ -26,6 +26,10 @@ class AlreadyBoundException : extends IllegalStateException {
 	using IllegalStateException::IllegalStateException;
 };
 
+class UnresolvedAddressException : extends IllegalArgumentException {
+	using IllegalArgumentException::IllegalArgumentException;
+};
+
 
 class SelectionKey : extends Object {
 private:

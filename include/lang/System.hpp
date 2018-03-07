@@ -15,7 +15,7 @@ private:
 	static String lineSep;
 	static void arraycopy(const void *src, int srcPos, void *dest, int destPos, int length);
 public:
-	The_System(){}
+	The_System();
 	~The_System(){}
 
 	static void static_init();

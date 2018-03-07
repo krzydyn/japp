@@ -193,6 +193,9 @@ public:
 		//TODO return Pattern.matches(regex, this);
 		return false;
 	}
+	boolean contains(const String& s) const {
+		return indexOf(s) > -1;
+	}
 	String toLowerCase(Locale locale) const {TRACE;
 		std::string s(value);
 		std::transform(s.begin(), s.end(), s.begin(), ::tolower);

@@ -17,9 +17,6 @@ class Socket : implements io::Closeable {
 class DatagramSocket : implements io::Closeable {
 };
 
-class SocketAddress : extends Object {
-};
-
 class InetAddress : extends Object {
 protected:
 	static const int IPv4 = 1;
@@ -27,8 +24,8 @@ protected:
 
 	String hostName;
 	String originalHostName;
-	int address;
 	int family;
+
 public:
 	static Shared<InetAddress> getByAddress(const String& host, const Array<byte>& addr);
 	static Shared<InetAddress> getByName(const String& host);
@@ -44,18 +41,58 @@ public:
 	virtual boolean isLinkLocalAddress() { return false; }
 	virtual boolean isSiteLocalAddress() { return false; }
 
-	String getHostAddress() const { return "null"; }
-	String getHostName() const { return getHostName(true); }
-	String getHostName(boolean check) const {
-		return hostName;
-	}
+	virtual Array<byte> getAddress() const = 0;
+	virtual String getHostAddress() const { return ""; }
+	virtual String getHostName() const { return getHostName(true); }
+	virtual String getHostName(boolean check) const { return hostName; }
 
 	boolean equals(const Object& obj) const { return false; }
 	String toString() const {
-		return ((hostName != null) ? hostName : "") + "/" + getHostAddress();
+		String a = getHostAddress();
+		if (a.length() > 0) a = "/" + a;
+		return ((hostName != null) ? hostName : "") + a;
+	}
+};
+class Inet4Address final : extends InetAddress {
+	static const int INADDRSZ = 4;
+	uint32_t address;
+public:
+	Inet4Address() {
+		hostName = "";
+		family = IPv4;
+		address = 0;
+	}
+	Inet4Address(const String& hostName, const Array<byte>& addr) {
+		this->hostName = hostName;
+		this->family = IPv4;
+		if (addr.length == INADDRSZ) {
+			int address  = addr[3] & 0xFF;
+			address |= ((addr[2] << 8) & 0xFF00);
+			address |= ((addr[1] << 16) & 0xFF0000);
+			address |= ((addr[0] << 24) & 0xFF000000);
+			this->address = address;
+		}
+		originalHostName = hostName;
+	}
+	Inet4Address(const String& hostName, uint32_t address) {
+		this->hostName = hostName;
+		this->family = IPv4;
+		this->address = address;
+		originalHostName = hostName;
+	}
+	Array<byte> getAddress() const {
+		Array<byte> addr(INADDRSZ);
+		addr[0] = (byte) ((address >> 24) & 0xFF);
+		addr[1] = (byte) ((address >> 16) & 0xFF);
+		addr[2] = (byte) ((address >> 8) & 0xFF);
+		addr[3] = (byte) (address & 0xFF);
+		return addr;
 	}
 };
 
+
+class SocketAddress : extends Object {
+};
 class InetSocketAddress : extends SocketAddress {
 private:
 	String hostname;
@@ -65,7 +102,6 @@ private:
 	static int checkPort(int port);
 	static const String& checkHost(const String& hostname);
 
-	boolean isUnresolved() const { return addr == null; }
 public:
 	InetSocketAddress() {}
 	InetSocketAddress(int port) : InetSocketAddress(InetAddress::anyLocalAddress(), port) {
@@ -82,22 +118,15 @@ public:
 		} catch(const UnknownHostException& e) {}
 	}
 
+	boolean isUnresolved() const { return addr == null; }
+
 	virtual int getPort() const final { return port; }
-	virtual const InetAddress& getAddress() const final { return *addr; }
+	virtual const InetAddress& getAddress() const final { return addr ? *addr : (InetAddress&)null_obj; }
 	virtual const String& getHostName() const final { return hostname; }
 
 	String toString() const {
 		if (isUnresolved()) return hostname + ":" + port;
 		return addr->toString() + ":" + port;
-	}
-};
-
-class Inet4Address final : extends InetAddress {
-public:
-	Inet4Address() {
-		hostName = null;
-		address = 0;
-		family = IPv4;
 	}
 };
 

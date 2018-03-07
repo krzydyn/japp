@@ -55,6 +55,7 @@ public:
 	Threads() : thrmap(), main(maingroup) {
 		mainid = std::this_thread::get_id();
 		addThread(mainid, &main);
+		std::cout << "Threads init done" << std::endl;
 	}
 
 	~Threads() {

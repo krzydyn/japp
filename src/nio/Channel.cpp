@@ -2,6 +2,7 @@
 
 #include <unistd.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 
 namespace nio {
 namespace channels {
@@ -29,6 +30,26 @@ int Net::connect(const ProtocolFamily& family, int fd, const InetAddress& remote
 	return 1;
 }
 void Net::bind(const ProtocolFamily& family, int fd, const InetAddress& local, int localPort) {
+	struct sockaddr_in addr_bind;
+/*
+	socklen_t slen = sizeof(addr_bind);
+	if (getsockname(fd, (struct sockaddr*)&addr_bind, &slen) != -1) {
+		throw io::IOException(String("getsockname: socket already bound to an address"));
+	}
+	Log.log("fd not bound, err = %s", strerror(errno));
+*/
+	memset(&addr_bind, 0, sizeof(addr_bind));
+	addr_bind.sin_family = AF_INET;//(short)family;
+	addr_bind.sin_port = htons((short)localPort);
+	//Array<byte> addr = local.getAddress();
+	//memcpy(&addr_bind.sin_addr.s_addr, &addr[0], addr.length);
+	addr_bind.sin_addr.s_addr = htonl(INADDR_ANY);
+	Log.log("binding to port %d", localPort);
+	if (::bind(fd, (struct sockaddr*)&addr_bind, sizeof(addr_bind)) == -1) {
+		if (errno == EINVAL) io::IOException(String("bind: socket already bound to an address"));
+		throw io::IOException(String("bind: ")+strerror(errno)+" on fd="+String::valueOf(fd));
+	}
+	Log.log("bind ok");
 }
 
 InetSocketAddress Net::checkAddress(const SocketAddress& sa) {
@@ -36,6 +57,9 @@ InetSocketAddress Net::checkAddress(const SocketAddress& sa) {
 	if (!(instanceof<InetSocketAddress>(&sa))) {
 		 throw UnsupportedAddressTypeException(); 
 	}
+	InetSocketAddress& isa = (InetSocketAddress&)sa;
+	if (isa.isUnresolved()) throw UnresolvedAddressException(isa.getHostName());
+	//InetAddress& addr = isa.getAddress();
 	return (InetSocketAddress&)sa;
 }
 
@@ -143,40 +167,75 @@ private:
 		}
 	}
 
-	int receive(int fd, ByteBuffer& dst) {
-		int pos = dst.position();
-		int lim = dst.limit();
-		int rem = (pos <= lim ? lim - pos : 0);
-		int n = (int)::recv(fd, &dst.array()[pos], rem, MSG_DONTWAIT);
-		if (n > 0)
-			dst.position(pos + n);
-		return n;
-	}
 	int read(int fd, ByteBuffer& dst) {
 		int pos = dst.position();
 		int lim = dst.limit();
 		int rem = (pos <= lim ? lim - pos : 0);
+		Log.log("reading max %d from fd=%d", rem, fd);
+		if (rem == 0) return 0;
 		int n = (int)::read(fd, &dst.array()[pos], rem);
+		Log.log("read %d bytes from fd=%d", n, fd);
 		if (n > 0)
 			dst.position(pos + n);
-		return n;
-	}
-	int send(int fd, ByteBuffer& src) {
-		int pos = src.position();
-		int lim = src.limit();
-		int rem = (pos <= lim ? lim - pos : 0);
-		int n = (int)::send(fd, &src.array()[pos], rem, MSG_DONTWAIT);
-		if (n > 0)
-			src.position(pos + n);
 		return n;
 	}
 	int write(int fd, ByteBuffer& src) {
 		int pos = src.position();
 		int lim = src.limit();
 		int rem = (pos <= lim ? lim - pos : 0);
+		if (rem == 0) return 0;
+		Log.log("writing %d bytes into fd=%d", rem, fd);
 		int n = (int)::write(fd, &src.array()[pos], rem);
-		if (n > 0)
+		if (n >= 0) {
+			Log.log("wrote %d bytes to fd=%d", n, fd);
 			src.position(pos + n);
+		}
+		else {
+			Log.log("writing to fd=%d error=%d (%s)", fd, errno, strerror(errno));
+		}
+		return n;
+	}
+
+	int receive(int fd, ByteBuffer& dst) {
+		int pos = dst.position();
+		int lim = dst.limit();
+		int rem = (pos <= lim ? lim - pos : 0);
+		Log.log("receiving max %d from fd=%d", rem, fd);
+		if (rem == 0) return 0;
+		struct sockaddr_in addr_remote;
+		socklen_t slen = sizeof(addr_remote);
+		int flags = MSG_NOSIGNAL; // | MSG_DONTWAIT;// | MSG_DONTROUTE
+		int n = (int)::recvfrom(fd, &dst.array()[pos], rem, flags, (struct sockaddr *)&addr_remote, &slen); 
+		if (n > 0) {
+			dst.position(pos + n);
+			Log.log("recv %d bytes from fd=%d", n, fd);
+		}
+		else {
+			Log.log("receiving to fd=%d error=%d (%s)", fd, errno, strerror(errno));
+		}
+		return n;
+	}
+	int send(int fd, ByteBuffer& src) {
+		int pos = src.position();
+		int lim = src.limit();
+		int rem = (pos <= lim ? lim - pos : 0);
+		Log.log("sending %d bytes into fd=%d", rem, fd);
+		if (rem == 0) return 0;
+		struct sockaddr_in addr_remote;
+		memset(&addr_remote, 0, sizeof(addr_remote));
+		addr_remote.sin_family = (short)family;
+		addr_remote.sin_port = htons((short)mRemoteAddress.getPort());
+		Array<byte> addr = mRemoteAddress.getAddress().getAddress();
+		memcpy(&addr_remote.sin_addr.s_addr, &addr[0], addr.length);
+		int flags = MSG_NOSIGNAL; // MSG_DONTWAIT | MSG_DONTROUTE
+		int n = (int)::sendto(fd, &src.array()[pos], rem, flags, (struct sockaddr *)&addr_remote, sizeof(addr_remote));
+		if (n >= 0) {
+			Log.log("sent %d bytes to fd=%d", n, fd);
+			src.position(pos + n);
+		}
+		else {
+			Log.log("sending to fd=%d error=%d (%s)", fd, errno, strerror(errno));
+		}
 		return n;
 	}
 
@@ -192,18 +251,18 @@ public:
 		if (family == StandardProtocolFamily::INET) fam = AF_INET;
 		else if (family == StandardProtocolFamily::INET6) fam = AF_INET6;
 		fdVal = ::socket(fam, SOCK_DGRAM, 0);
-		if (fdVal == -1) throw io::IOException(String("create socket: ")+strerror(errno));
-		Log.log("socket created, fd=%d", fdVal);
+		if (fdVal == -1) throw io::IOException(String("Create datagram: ")+strerror(errno));
+		Log.log("Datagram socket created, fd=%d", fdVal);
 		state = ST_UNCONNECTED;
 	}
 	~DatagramChannelImpl() {
 		if (fdVal != -1) {
-			Log.log("desctructor: socket closing, fd=%d", fdVal);
+			Log.log("%s: socket closing, fd=%d", __FUNCTION__, fdVal);
 			::close(fdVal);
 			fdVal = -1;
 		}
 		else {
-			Log.log("desctructor: socket closed");
+			Log.log("%s: socket never opened", __FUNCTION__);
 		}
 	}
 	DatagramSocket& socket() {
@@ -241,10 +300,9 @@ public:
 	SocketAddress& receive(ByteBuffer& dst) {
 		if (dst.isReadOnly()) throw IllegalArgumentException("Read-only buffer");
 
-		int n;
+		int n = 0;
 		Finalize(readerThread = 0;end((n > 0) || (n == IOStatus::UNAVAILABLE)););
 		begin();
-
 		if (!isOpen()) return (SocketAddress&)null_obj;
 		if (isConnected()) {
 			n = receive(fdVal, dst);
@@ -266,8 +324,8 @@ public:
 			int n = 0;
 			Finalize(writerThread = 0;end((n > 0) || (n == IOStatus::UNAVAILABLE)););
 			begin();
-			 n = send(fdVal, src);
 			if (!isOpen()) return 0;
+			n = send(fdVal, src);
 		}
 		return 0;
 	}
@@ -277,7 +335,9 @@ public:
 				ensureOpen();
 				if (!isConnected()) throw NotYetConnectedException();
 			}
+
 			int n = 0;
+			Finalize(readerThread = 0;end((n > 0) || (n == IOStatus::UNAVAILABLE)););
 			begin();
 			if (!isOpen()) return 0;
 			n = read(fdVal, buf);
@@ -295,10 +355,12 @@ public:
 				ensureOpen();
 				if (!isConnected()) throw NotYetConnectedException();
 			}
+
 			int n = 0;
+			Finalize(writerThread = 0;end((n > 0) || (n == IOStatus::UNAVAILABLE)););
 			begin();
 			if (!isOpen()) return 0;
-			n = write(fdVal, buf);
+			n = send(fdVal, buf);
 			return n;
 		}
 		return -1;
@@ -320,7 +382,7 @@ public:
 
 
 	DatagramChannel& bind(const SocketAddress& local) {
-		System.out.println("bind " + local.toString());
+		System.out.println("binding " + local.toString());
 		synchronized(readLock) {
 			synchronized(writeLock) {
 				synchronized (stateLock) {
@@ -340,7 +402,7 @@ public:
 						if (family == StandardProtocolFamily::INET) {
 							const InetAddress& addr = isa.getAddress();
 							if (!(instanceof<Inet4Address>(&addr))) {
-								throw UnsupportedAddressTypeException(addr.toString() + "is not Inet4Address");
+								throw UnsupportedAddressTypeException(addr.getClass().getName() + " is not Inet4Address");
 							}
 						}
 					}
@@ -358,7 +420,7 @@ public:
 		return false;
 	}
 	DatagramChannel& connect(const SocketAddress& sa) {
-		System.out.println("connect " + sa.toString());
+		System.out.println("connecting " + sa.toString());
 		synchronized(readLock) {
 			synchronized(writeLock) {
 				synchronized (stateLock) {
@@ -368,6 +430,7 @@ public:
 					if (n <= 0) throw Error();
 					state = ST_CONNECTED;
 					mRemoteAddress = isa;
+					Log.log("connected to %s",mRemoteAddress.toString().cstr());
 					//sender = isa;
 					//localAddress = Net::localAddress(fd);
 				}
