@@ -27,7 +27,8 @@ public:
 };
 InetSocketAddress& Net::getRevealedLocalAddress(InetSocketAddress& addr) { return addr; }
 int Net::connect(const ProtocolFamily& family, int fd, const InetAddress& remote, int remotePort) {
-	return 1;
+	if (family == StandardProtocolFamily::INET) return 1;
+	return -1;
 }
 void Net::bind(const ProtocolFamily& family, int fd, const InetAddress& local, int localPort) {
 	struct sockaddr_in addr_bind;
@@ -44,18 +45,17 @@ void Net::bind(const ProtocolFamily& family, int fd, const InetAddress& local, i
 	//Array<byte> addr = local.getAddress();
 	//memcpy(&addr_bind.sin_addr.s_addr, &addr[0], addr.length);
 	addr_bind.sin_addr.s_addr = htonl(INADDR_ANY);
-	Log.log("binding to port %d", localPort);
 	if (::bind(fd, (struct sockaddr*)&addr_bind, sizeof(addr_bind)) == -1) {
 		if (errno == EINVAL) io::IOException(String("bind: socket already bound to an address"));
-		throw io::IOException(String("bind: ")+strerror(errno)+" on fd="+String::valueOf(fd));
+		throw io::IOException(String("bind: ")+strerror(errno)+" on :"+String::valueOf(localPort));
 	}
-	Log.log("bind ok");
+	Log.log("fd=%d: bound to port %s:%d", fd, local.toString().cstr(), localPort);
 }
 
 InetSocketAddress Net::checkAddress(const SocketAddress& sa) {
 	if (sa == null) throw NullPointerException();
 	if (!(instanceof<InetSocketAddress>(&sa))) {
-		 throw UnsupportedAddressTypeException(); 
+		 throw UnsupportedAddressTypeException(sa.getClass().getName());
 	}
 	InetSocketAddress& isa = (InetSocketAddress&)sa;
 	if (isa.isUnresolved()) throw UnresolvedAddressException(isa.getHostName());
@@ -173,30 +173,35 @@ private:
 		int rem = (pos <= lim ? lim - pos : 0);
 		Log.log("reading max %d from fd=%d", rem, fd);
 		if (rem == 0) return 0;
-		int n = (int)::read(fd, &dst.array()[pos], rem);
+		int flags = MSG_NOSIGNAL; // MSG_DONTWAIT | MSG_DONTROUTE
+		int n = (int)::recv(fd, &dst.array()[pos], rem, flags);
 		Log.log("read %d bytes from fd=%d", n, fd);
 		if (n > 0)
 			dst.position(pos + n);
 		return n;
 	}
+// only for connected descriptor
+/*
 	int write(int fd, ByteBuffer& src) {
 		int pos = src.position();
 		int lim = src.limit();
 		int rem = (pos <= lim ? lim - pos : 0);
-		if (rem == 0) return 0;
 		Log.log("writing %d bytes into fd=%d", rem, fd);
-		int n = (int)::write(fd, &src.array()[pos], rem);
-		if (n >= 0) {
+		if (rem == 0) return 0;
+		int flags = MSG_NOSIGNAL; // MSG_DONTWAIT | MSG_DONTROUTE
+		int n = (int)::send(fd, &src.array()[pos], rem, flags);
+		if (n == -1) {
+			Log.log("writing to fd=%d error=%d (%s)", fd, errno, strerror(errno));
+		}
+		else {
 			Log.log("wrote %d bytes to fd=%d", n, fd);
 			src.position(pos + n);
 		}
-		else {
-			Log.log("writing to fd=%d error=%d (%s)", fd, errno, strerror(errno));
-		}
 		return n;
 	}
+*/
 
-	int receive(int fd, ByteBuffer& dst) {
+	int receive(int fd, ByteBuffer& dst, InetSocketAddress& sender) {
 		int pos = dst.position();
 		int lim = dst.limit();
 		int rem = (pos <= lim ? lim - pos : 0);
@@ -205,17 +210,19 @@ private:
 		struct sockaddr_in addr_remote;
 		socklen_t slen = sizeof(addr_remote);
 		int flags = MSG_NOSIGNAL; // | MSG_DONTWAIT;// | MSG_DONTROUTE
-		int n = (int)::recvfrom(fd, &dst.array()[pos], rem, flags, (struct sockaddr *)&addr_remote, &slen); 
-		if (n > 0) {
-			dst.position(pos + n);
-			Log.log("recv %d bytes from fd=%d", n, fd);
+		int n = (int)::recvfrom(fd, &dst.array()[pos], rem, flags, (struct sockaddr *)&addr_remote, &slen);
+		if (n == -1) {
+			Log.log("receiving to fd=%d error=%d (%s)", fd, errno, strerror(errno));
 		}
 		else {
-			Log.log("receiving to fd=%d error=%d (%s)", fd, errno, strerror(errno));
+			dst.position(pos + n);
+			Log.log("recv %d bytes from fd=%d", n, fd);
+			int port = ntohs(addr_remote.sin_port);
+			sender = InetSocketAddress(makeShared<Inet4Address>(), port);
 		}
 		return n;
 	}
-	int send(int fd, ByteBuffer& src) {
+	int send(int fd, ByteBuffer& src, InetSocketAddress& target) {
 		int pos = src.position();
 		int lim = src.limit();
 		int rem = (pos <= lim ? lim - pos : 0);
@@ -224,23 +231,24 @@ private:
 		struct sockaddr_in addr_remote;
 		memset(&addr_remote, 0, sizeof(addr_remote));
 		addr_remote.sin_family = (short)family;
-		addr_remote.sin_port = htons((short)mRemoteAddress.getPort());
-		Array<byte> addr = mRemoteAddress.getAddress().getAddress();
+		addr_remote.sin_port = htons((short)target.getPort());
+		Array<byte> addr = target.getAddress().getAddress();
 		memcpy(&addr_remote.sin_addr.s_addr, &addr[0], addr.length);
 		int flags = MSG_NOSIGNAL; // MSG_DONTWAIT | MSG_DONTROUTE
 		int n = (int)::sendto(fd, &src.array()[pos], rem, flags, (struct sockaddr *)&addr_remote, sizeof(addr_remote));
-		if (n >= 0) {
-			Log.log("sent %d bytes to fd=%d", n, fd);
-			src.position(pos + n);
+		if (n == -1) {
+			Log.log("sending to fd=%d error=%d (%s)", fd, errno, strerror(errno));
 		}
 		else {
-			Log.log("sending to fd=%d error=%d (%s)", fd, errno, strerror(errno));
+			Log.log("sent %d bytes to fd=%d", n, fd);
+			src.position(pos + n);
 		}
 		return n;
 	}
 
 	//void drop(MembershipKeyImpl& key) { }
 
+	InetSocketAddress last_sender;
 protected:
 	void implCloseChannel() {}
 
@@ -268,7 +276,7 @@ public:
 	DatagramSocket& socket() {
 		return (DatagramSocket&)null_obj;
 	}
-	SocketAddress& getLocalAddress() {
+	const SocketAddress& getLocalAddress() const {
 		synchronized (stateLock) {
 			if (!isOpen()) throw ClosedChannelException();
 			//return Net::getRevealedLocalAddress(mLocalAddress);
@@ -276,7 +284,7 @@ public:
 		}
 		return (SocketAddress&)null_obj;
 	}
-	SocketAddress& getRemoteAddress() {
+	const SocketAddress& getRemoteAddress() const {
         synchronized (stateLock) {
             if (!isOpen()) throw ClosedChannelException();
             return mRemoteAddress;
@@ -297,35 +305,42 @@ public:
 		}
 		return null;
 	}
-	SocketAddress& receive(ByteBuffer& dst) {
+	const SocketAddress& receive(ByteBuffer& dst) {
 		if (dst.isReadOnly()) throw IllegalArgumentException("Read-only buffer");
 
-		int n = 0;
-		Finalize(readerThread = 0;end((n > 0) || (n == IOStatus::UNAVAILABLE)););
-		begin();
-		if (!isOpen()) return (SocketAddress&)null_obj;
-		if (isConnected()) {
-			n = receive(fdVal, dst);
+		synchronized (readLock) {
+			ensureOpen();
+			if (!isOpen()) return (const SocketAddress&)null_obj;
+			//if (localAddress() == null) bind(null); //bind to random address
+			int n = 0;
+			Finalize(readerThread = 0;end((n > 0) || (n == IOStatus::UNAVAILABLE)););
+			begin();
+			n = receive(fdVal, dst, last_sender);
+			if (n == -1) return (const SocketAddress&)null_obj;
 		}
-		else {
-			Shared<ByteBuffer> bb = ByteBuffer::allocate(1852);
-			n = receive(fdVal, *bb);
-			bb->flip();
-			dst.put(*bb);
-		}
-		return (SocketAddress&)null_obj;
+		return last_sender;
 	}
-	int send(ByteBuffer& src, SocketAddress& target) {
+	int send(ByteBuffer& src, const SocketAddress& target) {
 		synchronized (writeLock) {
 			ensureOpen();
+			InetSocketAddress isa = Net::checkAddress(target);
 			synchronized (stateLock) {
+				if (!isConnected()) {
+					if (target == null) throw NullPointerException();
+				}
+				else {
+					if (!target.equals(mRemoteAddress)) {
+						throw IllegalArgumentException("Connected address not equal to target address");
+					}
+					return write(src);
+				}
 			}
 
 			int n = 0;
 			Finalize(writerThread = 0;end((n > 0) || (n == IOStatus::UNAVAILABLE)););
 			begin();
 			if (!isOpen()) return 0;
-			n = send(fdVal, src);
+			n = send(fdVal, src, isa);
 		}
 		return 0;
 	}
@@ -360,7 +375,7 @@ public:
 			Finalize(writerThread = 0;end((n > 0) || (n == IOStatus::UNAVAILABLE)););
 			begin();
 			if (!isOpen()) return 0;
-			n = send(fdVal, buf);
+			n = send(fdVal, buf, mRemoteAddress);
 			return n;
 		}
 		return -1;
@@ -368,18 +383,6 @@ public:
 	long write(Array<ByteBuffer>& srcs, int offset, int length) {
 		return -1;
 	}
-
-	SocketAddress& localAddress() {
-		synchronized (stateLock) {
-			return mLocalAddress;
-		}
-	}
-	SocketAddress& remoteAddress() {
-		synchronized (stateLock) {
-			return mRemoteAddress;
-		}
-	}
-
 
 	DatagramChannel& bind(const SocketAddress& local) {
 		System.out.println("binding " + local.toString());
@@ -405,8 +408,12 @@ public:
 								throw UnsupportedAddressTypeException(addr.getClass().getName() + " is not Inet4Address");
 							}
 						}
+						else {
+							throw UnsupportedAddressTypeException("Family is not supported");
+						}
 					}
 					Net::bind(family, fdVal, isa.getAddress(), isa.getPort());
+					mLocalAddress = isa;
 					//mLocalAddress = Net::localAddress(fd);
 				}
 			}
@@ -430,7 +437,7 @@ public:
 					if (n <= 0) throw Error();
 					state = ST_CONNECTED;
 					mRemoteAddress = isa;
-					Log.log("connected to %s",mRemoteAddress.toString().cstr());
+					Log.log("fd=%d: connected to %s", fdVal, mRemoteAddress.toString().cstr());
 					//sender = isa;
 					//localAddress = Net::localAddress(fd);
 				}
@@ -451,13 +458,14 @@ public:
 		return *this;
 	}
 	Shared<MembershipKey> join(const InetAddress& group, const NetworkInterface& interf) {
-		return null;
+		throw UnsupportedOperationException(__FUNCTION__);
 	}
 	Shared<MembershipKey> join(const InetAddress& group, const NetworkInterface& interf, const InetAddress& source) {
-		return null;
+		throw UnsupportedOperationException(__FUNCTION__);
 	}
 	
 	void kill() {
+		throw UnsupportedOperationException(__FUNCTION__);
 	}
 	//boolean translateReadyOps(int ops, int initialOps, SelectionKeyImpl sk) { }
 };
@@ -481,7 +489,7 @@ public:
 		return makeShared<DatagramChannelImpl>(self, family);
 	}
 	virtual Shared<Pipe> openPipe() {
-		return null;
+		throw UnsupportedOperationException(__FUNCTION__);
 	}
 	virtual Shared<AbstractSelector> openSelector() {
 		return makeShared<PollSelectorImpl>(self);
@@ -495,7 +503,7 @@ public:
 	}
 	virtual Shared<Channel> inheritedChannel() {
 		//return InheritedChannel::getChannel();
-		return null;
+		throw UnsupportedOperationException(__FUNCTION__);
     }
 };
 

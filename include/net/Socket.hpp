@@ -56,6 +56,7 @@ public:
 class Inet4Address final : extends InetAddress {
 	static const int INADDRSZ = 4;
 	uint32_t address;
+	static String numericToTextFormat(uint32_t address);
 public:
 	Inet4Address() {
 		hostName = "";
@@ -87,6 +88,9 @@ public:
 		addr[2] = (byte) ((address >> 8) & 0xFF);
 		addr[3] = (byte) (address & 0xFF);
 		return addr;
+	}
+	String getHostAddress() {
+		return numericToTextFormat(address);
 	}
 };
 

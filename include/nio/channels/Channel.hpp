@@ -101,7 +101,7 @@ interface ByteChannel : implements ReadableByteChannel, implements WritableByteC
 
 interface NetworkChannel : implements Channel {
 	virtual NetworkChannel& bind(const SocketAddress& local) = 0;
-	virtual SocketAddress getLocalAddress() const = 0;
+	virtual const SocketAddress& getLocalAddress() const = 0;
 	virtual NetworkChannel& setOption(const SocketOption& name, Object* value) = 0;
 	virtual Object* getOption(const SocketOption& name) const = 0;
 };
@@ -276,9 +276,10 @@ public:
 	virtual boolean isConnected() = 0;
 	virtual DatagramChannel& connect(const SocketAddress& remote) = 0;
 	virtual DatagramChannel& disconnect() = 0;
-	virtual SocketAddress& getRemoteAddress() = 0;
-	virtual SocketAddress& receive(ByteBuffer& dst) = 0;
-	virtual int send(ByteBuffer& src, SocketAddress& target) = 0;
+	virtual const SocketAddress& getRemoteAddress() const = 0;
+	virtual const SocketAddress& getLocalAddress() const = 0;
+	virtual const SocketAddress& receive(ByteBuffer& dst) = 0;
+	virtual int send(ByteBuffer& src, const SocketAddress& target) = 0;
 	virtual int read(ByteBuffer& dst) = 0;
 	virtual long read(Array<ByteBuffer>& dsts, int offset, int length) = 0;
 	virtual long read(Array<ByteBuffer>& dsts) final {
@@ -289,7 +290,6 @@ public:
 	virtual long write(Array<ByteBuffer>& srcs) final {
 		return write(srcs, 0, srcs.length);
 	}
-	virtual SocketAddress& getLocalAddress() = 0;
 };
 
 // TCP Server socket
@@ -317,8 +317,8 @@ public:
 	virtual boolean isConnectionPending() = 0;
 	virtual boolean connect(const SocketAddress& remote) = 0;
 	virtual boolean finishConnect() = 0;
-	virtual SocketAddress getRemoteAddress() = 0;
-	virtual SocketAddress getLocalAddress() = 0;
+	virtual const SocketAddress& getRemoteAddress() const = 0;
+	virtual const SocketAddress& getLocalAddress() const = 0;
 	int read(ByteBuffer& dst) = 0;
 	long read(Array<ByteBuffer>& dsts, int offset, int length) = 0;
 	long read(Array<ByteBuffer>& dsts) final {

@@ -39,7 +39,7 @@ TARGETS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%,$(SRCS))
 TARGETS: $(JRELIB)
 
 $(BUILD_DIR)/%: $(SOURCE_DIR)/%.cpp $(JRELIB)
-	@printf "$(CC) $(CPPFLAGS) $^ $(LDFLAGS) -o $@\n"
+	@#printf "$(CC) $(CPPFLAGS) $^ $(LDFLAGS) -o $@\n"
 	$(CC) $(CPPFLAGS) $^ $(LDFLAGS) -o $@
 
 build: create-$(BUILD_DIR) $(TARGETS)

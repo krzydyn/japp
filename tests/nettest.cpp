@@ -5,22 +5,35 @@ int main() {
 	String addr = "localhost";
 	int port = 8000;
 	Shared<Selector> selector = Selector::open();
-	Shared<DatagramChannel> chn = selector->provider()->openDatagramChannel();
-	if (chn == null) {
+	Shared<DatagramChannel> chn1 = selector->provider()->openDatagramChannel();
+	Shared<DatagramChannel> chn2 = selector->provider()->openDatagramChannel();
+	if (chn1 == null || chn2 == null) {
 		System.out.println("can't open socket channel");
 	}
 	else {
-		chn->configureBlocking(false);
-		chn->bind(InetSocketAddress(addr, port+1));
-		chn->connect(InetSocketAddress(addr, port));
-		Shared<nio::ByteBuffer> src = nio::ByteBuffer::allocate(100);
-		chn->write(*src);
-		//chn->disconnect();
-		src->flip();
-		//chn->bind(InetSocketAddress(addr, port));
-		chn->write(*src);
-		src->flip();
-		chn->receive(*src);
+		Shared<nio::ByteBuffer> src1 = nio::ByteBuffer::allocate(100);
+		Shared<nio::ByteBuffer> src2 = nio::ByteBuffer::allocate(200);
+		chn1->configureBlocking(false);
+		chn2->configureBlocking(false);
+		chn1->bind(InetSocketAddress(addr, port));
+		chn2->connect(InetSocketAddress(addr, port));
+
+		src1->clear();
+		for (int i=0; i < src1->limit(); ++i) src1->put((byte)i);
+		src1->flip();
+		chn2->write(*src1);
+
+		src2->clear();
+		const SocketAddress& cli = chn1->receive(*src2);
+		Log.log("received 1");
+
+		src1->clear();
+		for (int i=0; i < src1->limit(); ++i) src1->put((byte)i);
+		src1->flip();
+		chn1->send(*src1, cli);
+		src2->clear();
+		chn2->receive(*src2);
+		Log.log("received 2");
 	}
 	selector->wakeup();
 }

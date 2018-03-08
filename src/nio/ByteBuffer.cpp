@@ -5,7 +5,7 @@
 #include <nio/ByteBuffer.hpp>
 
 namespace {
-void checkBounds(int off, int len, int size) { 
+void checkBounds(int off, int len, int size) {
 	if ((off | len | (off + len) | (size - (off + len))) < 0)
 		throw IndexOutOfBoundsException();
 }

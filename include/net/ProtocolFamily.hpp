@@ -10,17 +10,13 @@ private:
 	static int enumIndex;
 protected:
 	ProtocolFamily() : value(enumIndex++) {}
-	ProtocolFamily(int v) : value(v) {}
+	ProtocolFamily(int v) : value(v) { enumIndex=v+1; }
 	const int value;
 public:
 	String name();
 	boolean operator==(const ProtocolFamily& o) const { return this->value == o.value; }
 	operator int() const { return value; }
 };
-
-//inline boolean operator==(const ProtocolFamily& f1, const ProtocolFamily& f2) {
-//	return &f1 == &f2;
-//}
 
 class StandardProtocolFamily : implements ProtocolFamily {
 	StandardProtocolFamily(int v) : ProtocolFamily(v) {}
