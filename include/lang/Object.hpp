@@ -139,7 +139,6 @@ template<class T, class... Args>
 Shared<T> makeShared(Args&&... args) {TRACE; return std::make_shared<T>(args...); }
 
 
-
 class AbstractArray : extends Object {
 private:
 	static void registerArrayClass(const std::type_info& type);
@@ -157,13 +156,14 @@ protected:
 
 public:
 	const int length;
-	Array(const Array<T>& o) : length(o.length) {
+	Array(const Array<T>& o) : length(o.length), mEnd(this) {
 		a = new T[length];
 		for (int i=0; i < length; ++i) a[i] = o.a[i];
 	}
-	Array(Array<T>&& o) : length(o.length) {
+	Array(Array<T>&& o) : length(o.length), mEnd(this) {
 		const_cast<int&>(o.length) = 0;
 		a = o.a; o.a = null;
+		mEnd.idx = length; o.mEnd.idx = 0;
 	}
 	Array<T>& operator=(const Array<T>&o) {
 		if (this == &o) return *this;
@@ -173,21 +173,23 @@ public:
 			const_cast<int&>(length) = o.length;
 		}
 		for (int i=0; i < length; ++i) a[i] = o.a[i];
+		mEnd.idx = length;
 		return *this;
 	}
 	Array<T>& operator=(Array<T>&& o) {
 		if (this == &o) return *this;
 		const_cast<int&>(length) = o.length; const_cast<int&>(o.length) = 0;
 		a = o.a; o.a = null;
+		mEnd.idx = length;
 		return *this;
 	}
 
-	Array() : length(0) { a = null; }
-	Array(int l) : length(l) {
+	Array() : length(0), mEnd(this) { a = null; }
+	Array(int l) : length(l), mEnd(this) {
 		checkArrayBounds(l, l+1);
 		a = new T[l];
 	}
-	Array(T* v, int l) : length(l) {
+	Array(T* v, int l) : length(l), mEnd(this) {
 		checkArrayBounds(l, l+1);
 		a = new T[l];
 		for (int i=0; i < l; ++i) a[i]=v[i];
@@ -208,16 +210,18 @@ public:
 	private:
 		Array<T>& ref;
 		int idx = 0;
-		ArrayRange(Array<T>* a, int i) : ref(*a), idx(i) {}
+		ArrayRange(Array<T>* a) : ref(*a) {}
 	public:
 		int operator++() { return ++idx; } //preincrement
 		//int operator++(int) { return idx++; } //postincrement
 		//int operator==(const ArrayRange& o) { return idx == o.idx; }
-		int operator!=(const ArrayRange& o) { return idx != o.idx; }
+		int operator!=(const ArrayRange& o) const { return idx != o.idx; }
 		T& operator*() {return ref[idx];}
 	};
-	ArrayRange begin() { return ArrayRange(this, 0); }
-	ArrayRange end() { return ArrayRange(this, length); }
+	ArrayRange begin() { return ArrayRange(this); }
+	const ArrayRange& end() { return mEnd; }
+private:
+	ArrayRange mEnd;
 };
 template<class T>
 class BufArray : extends Array<T> {

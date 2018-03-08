@@ -218,8 +218,9 @@ private:
 	}
 	
 protected:
-	AbstractSelectableChannel(Shared<SelectorProvider> provider) : mProvider(provider) {
-	}
+	AbstractSelectableChannel(Shared<SelectorProvider> provider) : mProvider(provider) {}
+	virtual void implConfigureBlocking(boolean block) = 0;
+
 public:
 	virtual Shared<SelectorProvider> provider() final { return mProvider; }
 	virtual boolean isRegistered() const final {
@@ -255,6 +256,12 @@ public:
 		return regLock;
 	}
 	SelectableChannel& configureBlocking(boolean block) final {
+		synchronized (regLock) {
+			if (!isOpen()) throw ClosedChannelException();
+			if (blocking == block) return *this;
+			implConfigureBlocking(block);
+			blocking = block;
+		}
 		return *this;
 	}
 };

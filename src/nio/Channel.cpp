@@ -247,18 +247,16 @@ private:
 	}
 
 	//void drop(MembershipKeyImpl& key) { }
-
 	InetSocketAddress last_sender;
+
 protected:
 	void implCloseChannel() {}
+	void implConfigureBlocking(boolean block) {}
 
 public:
 	DatagramChannelImpl(Shared<SelectorProvider> p, const ProtocolFamily& family = StandardProtocolFamily::INET) :
 			DatagramChannel(p), family(family) {
-		int fam = -1;
-		if (family == StandardProtocolFamily::INET) fam = AF_INET;
-		else if (family == StandardProtocolFamily::INET6) fam = AF_INET6;
-		fdVal = ::socket(fam, SOCK_DGRAM, 0);
+		fdVal = ::socket(family, SOCK_DGRAM, 0);
 		if (fdVal == -1) throw io::IOException(String("Create datagram: ")+strerror(errno));
 		Log.log("Datagram socket created, fd=%d", fdVal);
 		state = ST_UNCONNECTED;
@@ -495,11 +493,10 @@ public:
 		return makeShared<PollSelectorImpl>(self);
 	}
 	virtual Shared<ServerSocketChannel> openServerSocketChannel() {
-		return null;
+		throw UnsupportedOperationException(__FUNCTION__);
 	}
 	virtual Shared<SocketChannel> openSocketChannel() {
-		//return makeShared<SocketChannelImpl>(self);
-		return null;
+		throw UnsupportedOperationException(__FUNCTION__);
 	}
 	virtual Shared<Channel> inheritedChannel() {
 		//return InheritedChannel::getChannel();

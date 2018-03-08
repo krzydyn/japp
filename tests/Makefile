@@ -11,6 +11,8 @@ JRELIB?=../build/jre.a
 DEBUG?=-g2
 STATIC=
 
+BUILD_DIR:=$(BUILD_DIR)/bin
+
 HOST_OS:=$(shell uname -s)
 GCC_VERSION:=$(shell gcc --version | awk '/^gcc/ {print $$4}')
 
