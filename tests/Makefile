@@ -20,18 +20,23 @@ CC:=g++
 CPPFLAGS:=$(DEBUG) -I$(INC_DIR) -fPIC -std=c++11
 CPPFLAGS+=-Wall -Wconversion -Werror
 
-LDFLAGS:=
+LDFLAGS:=-rdynamic
 ifeq ($(STATIC),1)
 LDFLAGS+=-Wl,-Bstatic
 endif
+
 LDFLAGS+=-lpthread
+
+ifeq ($(STATIC),1)
+LDFLAGS+=-Wl,dynamic
+endif
 ifeq ($(HOST_OS),Linux)
 #-rdynamic
 # Pass the flag -export-dynamic to the ELF linker, on targets that support it. This instructs the linker to add all symbols,
 # not only used ones, to the dynamic symbol table. This option is needed for some uses of dlopen or to allow obtaining
 # backtraces from within a program.
-LDFLAGS+=-rdynamic -ldl
 #LDFLAGS+=-ldl
+LDFLAGS+=-ldl
 endif
 
 SRCS:=$(wildcard $(SOURCE_DIR)/*.cpp)
