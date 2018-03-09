@@ -157,14 +157,17 @@ private:
 		return 0;
 	}
 
-	void ensureOpen() {
+	void ensureOpen() const {
 		if (!isOpen()) throw ClosedChannelException();
 	}
-	void ensureOpenAndUnconnected() {
+	void ensureOpenAndUnconnected() const {
 		synchronized (stateLock) {
 			if (!isOpen()) throw ClosedChannelException();
 			if (state != ST_UNCONNECTED) throw IllegalStateException("Connect already invoked");
 		}
+	}
+	void kill() {
+		throw UnsupportedOperationException(__FUNCTION__);
 	}
 
 	int read(int fd, ByteBuffer& dst) {
@@ -180,7 +183,7 @@ private:
 			dst.position(pos + n);
 		return n;
 	}
-// only for connected descriptor
+// only for connected descriptor, but Datagram is not connected
 /*
 	int write(int fd, ByteBuffer& src) {
 		int pos = src.position();
@@ -296,7 +299,7 @@ public:
 		}
 		return *this;
 	}
-	Object* getOption(const SocketOption& name) {
+	Object* getOption(const SocketOption& name) const {
 		//if (name == null) throw NullPointerException();
 		synchronized (stateLock) {
 			ensureOpen();
@@ -462,19 +465,186 @@ public:
 		throw UnsupportedOperationException(__FUNCTION__);
 	}
 	
-	void kill() {
-		throw UnsupportedOperationException(__FUNCTION__);
-	}
 	//boolean translateReadyOps(int ops, int initialOps, SelectionKeyImpl sk) { }
 };
 
 class SocketChannelImpl : extends SocketChannel {
 private:
-	//int state;
+	static const int ST_UNINITIALIZED = -1;
+	static const int ST_UNCONNECTED = 0;
+	static const int ST_PENDING = 1;
+	static const int ST_CONNECTED = 2;
+	static const int ST_KILLPENDING = 3;
+	static const int ST_KILLED = 4;
+
+	int fdVal = -1;
+
+	long readerThread = 0;
+	long writerThread = 0;
+
+	Object readLock;
+	Object writeLock;
+	Object stateLock;
+
+	int state = ST_UNINITIALIZED;
+
+	InetSocketAddress mLocalAddress;
+	InetSocketAddress mRemoteAddress;
+
+	boolean reuseAddressEmulated;
+	boolean isReuseAddress;
+
+	// Input/Output open
+	boolean isInputOpen = true;
+	boolean isOutputOpen = true;
+	boolean readyToConnect = false;
+
+	boolean ensureReadOpen() {
+		synchronized (stateLock) {
+			if (!isOpen()) throw ClosedChannelException();
+			if (!isConnected()) throw NotYetConnectedException();
+			//if (!isInputOpen) return false;
+			return isInputOpen;
+		}
+		return false;
+	}
+	boolean ensureWriteOpen() {
+		synchronized (stateLock) {
+			if (!isOpen()) throw ClosedChannelException();
+			if (!isConnected()) throw NotYetConnectedException();
+			//if (!isInputOpen) return false;
+			return isOutputOpen;
+		}
+		return false;
+	}
+	void ensureOpenAndUnconnected() {
+		synchronized (stateLock) {
+			if (!isOpen()) throw ClosedChannelException();
+			if (state == ST_CONNECTED) throw AlreadyConnectedException();
+			if (state == ST_PENDING) throw ConnectionPendingException();
+		}
+	}
+	void readerCleanup() {
+		synchronized (stateLock) {
+			readerThread = 0;
+			if (state == ST_KILLPENDING) kill();
+		}
+	}
+	void writerCleanup() {
+		synchronized (stateLock) {
+			writerThread = 0;
+			if (state == ST_KILLPENDING) kill();
+		}
+	}
+	void kill() {
+		throw UnsupportedOperationException(__FUNCTION__);
+	}
+	int sendOutOfBandData(byte b) {
+		return -1;
+	}
+
+	int read(int fd, ByteBuffer& dst) {
+		return -1;
+	}
+	int write(int fd, ByteBuffer& src) {
+		return -1;
+	}
 public:
 	SocketChannelImpl(Shared<SelectorProvider> p) : SocketChannel(p) {
-		//state = ST_UNCONNECTED;
+		fdVal = ::socket(AF_INET, SOCK_STREAM, 0);
+		if (fdVal == -1) throw io::IOException(String("Create socket: ")+strerror(errno));
+		Log.log("Socket created, fd=%d", fdVal);
+		state = ST_UNCONNECTED;
 	}
+	SocketChannelImpl(Shared<SelectorProvider> p, const InetSocketAddress& remote) : SocketChannel(p) {
+		fdVal = ::socket(AF_INET, SOCK_DGRAM, 0);
+		if (fdVal == -1) throw io::IOException(String("Create socket: ")+strerror(errno));
+		Log.log("Socket created, fd=%d", fdVal);
+		mRemoteAddress = remote;
+		state = ST_CONNECTED;
+	}
+
+	const SocketAddress& getLocalAddress() const {
+		synchronized (stateLock) {
+			if (!isOpen()) throw ClosedChannelException();
+			return mLocalAddress;
+		}
+	}
+	const SocketAddress& getRemoteAddress() const {
+		synchronized (stateLock) {
+			if (!isOpen()) throw ClosedChannelException();
+			return mRemoteAddress;
+		}
+		return (SocketAddress&)null_obj;
+	}
+
+	SocketChannel& setOption(const SocketOption& name, Object *value) {
+		//if (name == null) throw NullPointerException();
+		synchronized (stateLock) {
+			if (!isOpen()) throw ClosedChannelException();
+		}
+		return *this;
+	}
+	Object* getOption(const SocketOption& name) const {
+		//if (name == null) throw NullPointerException();
+		synchronized (stateLock) {
+			if (!isOpen()) throw ClosedChannelException();
+		}
+		return null;
+	}
+
+	int read(ByteBuffer& buf) {
+		synchronized (readLock) {
+			if (!ensureReadOpen()) return -1;
+			int n = 0;
+			Finalize(end((n > 0) || (n == IOStatus::UNAVAILABLE)););
+			begin();
+			synchronized (stateLock) {
+				if (!isOpen()) return 0;
+			}
+			n = read(fdVal, buf);
+			return n;
+		}
+		return -1;
+	}
+	long read(Array<ByteBuffer>& dsts, int offset, int length) {
+		return -1;
+	}
+
+	int write(ByteBuffer& buf) {
+		synchronized (writeLock) {
+			ensureWriteOpen();
+			int n = 0;
+			Finalize(writerCleanup();end((n > 0) || (n == IOStatus::UNAVAILABLE)););
+			begin();
+			synchronized (stateLock) {
+				if (!isOpen()) return 0;
+				// writerThread = NativeThread.current();
+			}
+			n = write(fdVal, buf);
+			return n;
+		}
+		return -1;
+	}
+	long write(Array<ByteBuffer>& srcs, int offset, int length) {
+		return -1;
+	}
+	SocketChannel& bind(const SocketAddress& local) {
+		return *this;
+	}
+	boolean isConnected() {
+		synchronized (stateLock) {
+			return (state == ST_CONNECTED);
+		}
+		return false;
+	}
+	boolean isConnectionPending() {
+		synchronized (stateLock) {
+			return (state == ST_PENDING);
+		}
+		return false;
+	}
+	
 };
 
 class PollSelectorProviderImpl : extends SelectorProvider {
@@ -496,7 +666,7 @@ public:
 		throw UnsupportedOperationException(__FUNCTION__);
 	}
 	virtual Shared<SocketChannel> openSocketChannel() {
-		throw UnsupportedOperationException(__FUNCTION__);
+		return makeShared<SocketChannelImpl>(self);
 	}
 	virtual Shared<Channel> inheritedChannel() {
 		//return InheritedChannel::getChannel();

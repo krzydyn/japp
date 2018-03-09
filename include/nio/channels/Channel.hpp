@@ -30,6 +30,13 @@ class UnresolvedAddressException : extends IllegalArgumentException {
 	using IllegalArgumentException::IllegalArgumentException;
 };
 
+class AlreadyConnectedException : extends IllegalStateException {
+	using IllegalStateException::IllegalStateException;
+};
+
+class ConnectionPendingException : extends IllegalStateException {
+	using IllegalStateException::IllegalStateException;
+};
 
 class SelectionKey : extends Object {
 private:

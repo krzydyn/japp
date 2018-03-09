@@ -1,7 +1,8 @@
 #include <nio/channels/Channel.hpp>
 
 using namespace nio::channels;
-int main() {
+
+void test_datagrams() {
 	String addr = "localhost";
 	int port = 8000;
 	Shared<Selector> selector = Selector::open();
@@ -36,4 +37,27 @@ int main() {
 		Log.log("received 2");
 	}
 	selector->wakeup();
+}
+
+void test_sockets() {
+	String addr = "localhost";
+	int port = 8000;
+	Shared<Selector> selector = Selector::open();
+	Shared<SocketChannel> chn1 = selector->provider()->openSocketChannel();
+	Shared<SocketChannel> chn2 = selector->provider()->openSocketChannel();
+	if (chn1 == null || chn2 == null) {
+		System.out.println("can't open socket channel");
+	}
+	else {
+		chn2->connect(InetSocketAddress(addr, port));
+		
+	}
+}
+
+void test_selector() {
+}
+
+int main() {
+	test_datagrams();
+	test_sockets();
 }
