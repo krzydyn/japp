@@ -35,11 +35,11 @@ public:
 	static Shared<InetAddress> getLocalHost();
 	static Shared<InetAddress> anyLocalAddress();
 
-	virtual boolean isMulticastAddress() { return false; }
-	virtual boolean isAnyLocalAddress() { return false; }
-	virtual boolean isLoopbackAddress() { return false; }
-	virtual boolean isLinkLocalAddress() { return false; }
-	virtual boolean isSiteLocalAddress() { return false; }
+	virtual boolean isMulticastAddress() const { return false; }
+	virtual boolean isAnyLocalAddress() const { return false; }
+	virtual boolean isLoopbackAddress() const { return false; }
+	virtual boolean isLinkLocalAddress() const { return false; }
+	virtual boolean isSiteLocalAddress() const { return false; }
 
 	virtual Array<byte> getAddress() const = 0;
 	virtual String getHostAddress() const { return ""; }
@@ -89,7 +89,7 @@ public:
 		addr[3] = (byte) (address & 0xFF);
 		return addr;
 	}
-	String getHostAddress() {
+	String getHostAddress() const {
 		return numericToTextFormat(address);
 	}
 };

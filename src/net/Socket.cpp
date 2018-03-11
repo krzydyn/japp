@@ -16,7 +16,7 @@ const StandardProtocolFamily StandardProtocolFamily::INET6(AF_INET6);
 
 
 String Inet4Address::numericToTextFormat(uint32_t a) {
-	return String::format("%d.%d.%d.%d",(a>>24)&&0xff,(a>>16)&&0xff,(a>>8)&&0xff,(a>>0)&&0xff);
+	return String::format("%d.%d.%d.%d/%08X",(a>>24)&0xff,(a>>16)&0xff,(a>>8)&0xff,(a>>0)&0xff,a);
 }
 
 namespace {
@@ -40,7 +40,7 @@ public:
 		return ret;
 	}
 	String getHostByAddr(Array<byte> addr) {
-		return "hostaddr";
+		return "??getHostByAddr??";
 	}
 	Shared<InetAddress> anyLocalAddress() {
 		if (mAnyLocalAddress == null) {
@@ -226,6 +226,13 @@ Array<Shared<InetAddress>> priv_getAllByName(const String& host, const InetAddre
 }
 }
 
+Shared<InetAddress> InetAddress::getLocalHost() {
+	String local = impl.getLocalHostName();
+	if (local.equals("localhost")) {
+		return impl.loopbackAddress();
+	}
+	return impl.loopbackAddress();
+}
 Shared<InetAddress> InetAddress::anyLocalAddress() {
 	return impl.anyLocalAddress();
 }

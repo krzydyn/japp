@@ -159,6 +159,7 @@ public:
 	Array(const Array<T>& o) : length(o.length), mEnd(this) {
 		a = new T[length];
 		for (int i=0; i < length; ++i) a[i] = o.a[i];
+		mEnd.idx = length;
 	}
 	Array(Array<T>&& o) : length(o.length), mEnd(this) {
 		const_cast<int&>(o.length) = 0;
@@ -188,11 +189,13 @@ public:
 	Array(int l) : length(l), mEnd(this) {
 		checkArrayBounds(l, l+1);
 		a = new T[l];
+		mEnd.idx = length;
 	}
 	Array(T* v, int l) : length(l), mEnd(this) {
 		checkArrayBounds(l, l+1);
 		a = new T[l];
 		for (int i=0; i < l; ++i) a[i]=v[i];
+		mEnd.idx = length;
 	}
 	~Array() { delete [] a; }
 	T& operator[](int i) {

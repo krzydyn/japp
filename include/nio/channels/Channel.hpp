@@ -227,6 +227,15 @@ private:
 protected:
 	AbstractSelectableChannel(Shared<SelectorProvider> provider) : mProvider(provider) {}
 	virtual void implConfigureBlocking(boolean block) = 0;
+	virtual void implCloseSelectableChannel() = 0;
+	void implCloseChannel() final {
+		implCloseSelectableChannel();
+		synchronized (keyLock) {
+			int count = (keys == null) ? 0 : keys.length;
+			for (int i = 0; i < count; i++) {
+			}
+		}
+	}
 
 public:
 	virtual Shared<SelectorProvider> provider() final { return mProvider; }
@@ -304,6 +313,7 @@ public:
 	virtual long write(Array<ByteBuffer>& srcs) final {
 		return write(srcs, 0, srcs.length);
 	}
+	virtual int getFDVal() = 0;
 };
 
 // TCP Server socket
@@ -327,8 +337,8 @@ public:
 	virtual SocketChannel& shutdownInput() = 0;
 	virtual SocketChannel& shutdownOutput() = 0;
 	virtual Shared<Socket> socket() = 0;
-	virtual boolean isConnected() = 0;
-	virtual boolean isConnectionPending() = 0;
+	virtual boolean isConnected() const = 0;
+	virtual boolean isConnectionPending() const = 0;
 	virtual boolean connect(const SocketAddress& remote) = 0;
 	virtual boolean finishConnect() = 0;
 	virtual const SocketAddress& getRemoteAddress() const = 0;

@@ -37,7 +37,7 @@ private:
 			mCharset(cs),
 			mAverageCharsPerByte(averageCharsPerByte),
 			mMaxCharsPerByte(maxCharsPerByte) {
-			replaceWith(replacement);
+		replaceWith(replacement);
 	}
 
 	void throwIllegalStateException(int from, int to) {

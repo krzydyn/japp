@@ -38,6 +38,7 @@ private:
 	static String valueHex(long);
 	static String className(const std::type_info&);
 
+	void init(const byte* s, int vlen, int offset, int count);
 public:
 	String(String&& o) {move(this,&o);}
 	String(const String& o) {copy(this,&o); }
@@ -50,6 +51,7 @@ public:
 
 	String() : value(emptystr) {}
 	String(const Array<char>& s, int offset, int count);
+	String(const Array<byte>& s, int offset, int count);
 
 	const std::string& intern() const {TRACE; return value; }
 	const char *cstr() const { return value.c_str(); }
@@ -62,10 +64,15 @@ public:
 		return Array<byte>((byte*)value.c_str(),(int)value.length());
 	}
 
+	String operator+(char c) const {TRACE;
+		return value+c;
+	}
 	String operator+(const char *s) const {TRACE;
+		if (s == null) return value+"<null>";
 		return value+s;
 	}
 	String operator+(char *s) const {TRACE;
+		if (s == null) return value+"<null>";
 		return value+s;
 	}
 	String operator+(const std::string& s) const {TRACE;
@@ -81,8 +88,13 @@ public:
 	String operator+(const T& v) const {TRACE;
 		return value+std::to_string(v);
 	}
-	String& operator+=(const char *rhs){TRACE;
+	String& operator+=(char rhs){TRACE;
 		value += rhs;
+		return *this;
+	}
+	String& operator+=(const char *rhs){TRACE;
+		if (rhs == null) value += "<null>";
+		else value += rhs;
 		return *this;
 	}
 	String& operator+=(const String& rhs){TRACE;

@@ -18,14 +18,25 @@ public:
 	static const int UNSUPPORTED_CASE = -6; // This case not supported
 };
 
+//http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/8u40-b25/sun/nio/ch/Net.java
 class Net {
 public:
-	static InetSocketAddress& getRevealedLocalAddress(InetSocketAddress& addr);
+	static const int SHUT_RD = 0;
+	static const int SHUT_WR = 1;
+	static const int SHUT_RDWR = 2;
+
+	static const InetSocketAddress& getRevealedLocalAddress(const InetSocketAddress& addr);
 	static InetSocketAddress checkAddress(const SocketAddress& sa);
+	static int connect(int fd, const InetAddress& remote, int remotePort);
 	static int connect(const ProtocolFamily& family, int fd, const InetAddress& remote, int remotePort);
 	static void bind(const ProtocolFamily& family, int fd, const InetAddress& local, int localPort);
+	static void shutdown(int fdVal, int how);
 };
-InetSocketAddress& Net::getRevealedLocalAddress(InetSocketAddress& addr) { return addr; }
+
+const InetSocketAddress& Net::getRevealedLocalAddress(const InetSocketAddress& addr) { return addr; }
+int Net::connect(int fd, const InetAddress& remote, int remotePort) {
+	return -1;
+}
 int Net::connect(const ProtocolFamily& family, int fd, const InetAddress& remote, int remotePort) {
 	if (family == StandardProtocolFamily::INET) return 1;
 	return -1;
@@ -51,7 +62,9 @@ void Net::bind(const ProtocolFamily& family, int fd, const InetAddress& local, i
 	}
 	Log.log("fd=%d: bound to port %s:%d", fd, local.toString().cstr(), localPort);
 }
-
+void Net::shutdown(int fdVal, int how) {
+	::shutdown(fdVal, how);
+}
 InetSocketAddress Net::checkAddress(const SocketAddress& sa) {
 	if (sa == null) throw NullPointerException();
 	if (!(instanceof<InetSocketAddress>(&sa))) {
@@ -59,7 +72,7 @@ InetSocketAddress Net::checkAddress(const SocketAddress& sa) {
 	}
 	InetSocketAddress& isa = (InetSocketAddress&)sa;
 	if (isa.isUnresolved()) throw UnresolvedAddressException(isa.getHostName());
-	//InetAddress& addr = isa.getAddress();
+	//const InetAddress& addr = isa.getAddress();
 	return (InetSocketAddress&)sa;
 }
 
@@ -166,9 +179,7 @@ private:
 			if (state != ST_UNCONNECTED) throw IllegalStateException("Connect already invoked");
 		}
 	}
-	void kill() {
-		throw UnsupportedOperationException(__FUNCTION__);
-	}
+	void kill() { }
 
 	int read(int fd, ByteBuffer& dst) {
 		int pos = dst.position();
@@ -253,7 +264,7 @@ private:
 	InetSocketAddress last_sender;
 
 protected:
-	void implCloseChannel() {}
+	void implCloseSelectableChannel() {}
 	void implConfigureBlocking(boolean block) {}
 
 public:
@@ -274,14 +285,14 @@ public:
 			Log.log("%s: socket never opened", __FUNCTION__);
 		}
 	}
+	int getFDVal() { return fdVal; }
 	DatagramSocket& socket() {
 		return (DatagramSocket&)null_obj;
 	}
 	const SocketAddress& getLocalAddress() const {
 		synchronized (stateLock) {
 			if (!isOpen()) throw ClosedChannelException();
-			//return Net::getRevealedLocalAddress(mLocalAddress);
-			return mLocalAddress;
+			return Net::getRevealedLocalAddress(mLocalAddress);
 		}
 		return (SocketAddress&)null_obj;
 	}
@@ -536,9 +547,6 @@ private:
 			if (state == ST_KILLPENDING) kill();
 		}
 	}
-	void kill() {
-		throw UnsupportedOperationException(__FUNCTION__);
-	}
 	int sendOutOfBandData(byte b) {
 		return -1;
 	}
@@ -548,6 +556,12 @@ private:
 	}
 	int write(int fd, ByteBuffer& src) {
 		return -1;
+	}
+protected:
+	void implConfigureBlocking(boolean block) {}
+	void implCloseSelectableChannel() {
+		synchronized (stateLock) {
+		}
 	}
 public:
 	SocketChannelImpl(Shared<SelectorProvider> p) : SocketChannel(p) {
@@ -563,12 +577,23 @@ public:
 		mRemoteAddress = remote;
 		state = ST_CONNECTED;
 	}
+	~SocketChannelImpl() {
+		if (fdVal != -1) {
+			Log.log("%s: socket closing, fd=%d", __FUNCTION__, fdVal);
+			::close(fdVal);
+			fdVal = -1;
+		}
+		else {
+			Log.log("%s: socket never opened", __FUNCTION__);
+		}
+	}
 
 	const SocketAddress& getLocalAddress() const {
 		synchronized (stateLock) {
 			if (!isOpen()) throw ClosedChannelException();
 			return mLocalAddress;
 		}
+		return (SocketAddress&)null_obj;
 	}
 	const SocketAddress& getRemoteAddress() const {
 		synchronized (stateLock) {
@@ -591,6 +616,97 @@ public:
 			if (!isOpen()) throw ClosedChannelException();
 		}
 		return null;
+	}
+	void kill() {
+		synchronized (stateLock) {
+			if (state == ST_KILLED) return;
+			if (state == ST_UNINITIALIZED) {
+				state = ST_KILLED;
+				return;
+			}
+			::close(fdVal); fdVal=-1;
+			state = ST_KILLED;
+		}
+	}
+	SocketChannel& shutdownInput() {
+		synchronized (stateLock) {
+			if (!isOpen()) throw new ClosedChannelException();
+			if (!isConnected()) throw new NotYetConnectedException();
+			if (isInputOpen) {
+				Net::shutdown(fdVal, Net::SHUT_RD);
+				isInputOpen = false;
+			}
+		}
+		return *this;
+	}
+	SocketChannel& shutdownOutput() {
+		synchronized (stateLock) {
+			if (!isOpen()) throw new ClosedChannelException();
+			if (!isConnected()) throw new NotYetConnectedException();
+			if (isOutputOpen) {
+				Net::shutdown(fdVal, Net::SHUT_WR);
+				isOutputOpen = false;
+			}
+		}
+		return *this;
+	}
+	Shared<Socket> socket() {return null;}
+	boolean isConnected() {
+		synchronized (stateLock) {
+			return state == ST_CONNECTED;
+		}
+		return false;
+	}
+	boolean isConnectionPending() {
+		synchronized (stateLock) {
+			return state == ST_PENDING;
+		}
+	}
+	boolean connect(const SocketAddress& sa) {
+		synchronized (readLock) {
+			synchronized (writeLock) {
+				ensureOpenAndUnconnected();
+				InetSocketAddress isa = Net::checkAddress(sa);
+				synchronized (blockingLock()) {
+					int n = 0;
+					try {
+						Finalize(readerCleanup();end((n > 0) || (n == IOStatus::UNAVAILABLE)););
+						begin();
+						synchronized (stateLock) {
+							if (!isOpen()) return false;
+						}
+						for (;;) {
+							Shared<InetAddress> sia;
+							const InetAddress* ia = &isa.getAddress();
+							if ((*ia).isAnyLocalAddress()) {
+								sia = InetAddress::getLocalHost();
+								ia = &(*sia);
+							}
+							n = Net::connect(fdVal, *ia, isa.getPort());
+							if ((n == IOStatus::INTERRUPTED) && isOpen()) continue;
+							break;
+						}
+					}
+					catch (const io::IOException& e) {
+						close();
+						throw;
+					}
+					synchronized (stateLock) {
+						mRemoteAddress = isa;
+						if (n > 0) {
+							state = ST_CONNECTED;
+							//if (isOpen()) localAddress = Net.localAddress(fd);
+							return true;
+						}
+						if (!isBlocking()) state = ST_PENDING;
+					}
+				}
+			}
+		}
+		return false;
+	}
+	boolean finishConnect() {
+		return true;
 	}
 
 	int read(ByteBuffer& buf) {
@@ -632,13 +748,13 @@ public:
 	SocketChannel& bind(const SocketAddress& local) {
 		return *this;
 	}
-	boolean isConnected() {
+	boolean isConnected() const {
 		synchronized (stateLock) {
 			return (state == ST_CONNECTED);
 		}
 		return false;
 	}
-	boolean isConnectionPending() {
+	boolean isConnectionPending() const {
 		synchronized (stateLock) {
 			return (state == ST_PENDING);
 		}
