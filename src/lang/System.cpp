@@ -1,6 +1,7 @@
 #include <lang/System.hpp>
 #include <chrono>
 #include <cstdlib> //std::getenv
+#include <time.h>
 
 using namespace std::chrono;
 
@@ -10,24 +11,68 @@ auto nano_start = high_resolution_clock::now();
 
 namespace lang {
 
-void The_Log::format(const char *fmt, va_list& args) const {
-	System.out.println(String::format(fmt,args));
+void Logger::format(const char *fn, unsigned ln, int level, const char *fmt, va_list& args) const {
+	jlong jtm = System.currentTimeMillis();
+	int r = 0;
+	time_t t = (time_t)(jtm/1000);
+	if (jtm >= 0) r = (int)(jtm%1000);
+	else if (jtm < 0) r = (int)((-jtm)%1000);
+	char buf[30];
+	struct tm stm;
+	gmtime_r(&t, &stm);
+	strftime (buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", localtime_r(&t, &stm));
+	System.out.printf("%s.%03llu %s(%u): ", buf, r, fn, ln);
+	System.out.println(String::format(fmt, args));
 }
-const The_Log& The_Log::log(const String& s) const {
-	System.out.println(s);
-	return *this;
+
+const Logger& Logger::error(const char *fn, unsigned ln, const String& s) const {
+	return debug(fn, ln, "%s", s.cstr());
 }
-const The_Log& The_Log::log(const char *fmt...) const {
+const Logger& Logger::error(const char *fn, unsigned ln, const char *fmt...) const {
 	va_list args;
 	va_start(args, fmt);
-	format(fmt, args);
+	format(fn, ln, 2, fmt, args);
 	va_end(args);
 	return *this;
 }
-const The_Log& The_Log::log(const String& fmt...) const {
+const Logger& Logger::error(const char *fn, unsigned ln, const String& fmt...) const {
 	va_list args;
 	va_start(args, fmt);
-	format(fmt.cstr(), args);
+	format(fn, ln, 2, fmt.cstr(), args);
+	va_end(args);
+	return *this;
+}
+const Logger& Logger::debug(const char *fn, unsigned ln, const String& s) const {
+	return debug(fn, ln, "%s", s.cstr());
+}
+const Logger& Logger::debug(const char *fn, unsigned ln, const char *fmt...) const {
+	va_list args;
+	va_start(args, fmt);
+	format(fn, ln, 1, fmt, args);
+	va_end(args);
+	return *this;
+}
+const Logger& Logger::debug(const char *fn, unsigned ln, const String& fmt...) const {
+	va_list args;
+	va_start(args, fmt);
+	format(fn, ln, 1, fmt.cstr(), args);
+	va_end(args);
+	return *this;
+}
+const Logger& Logger::info(const char *fn, unsigned ln, const String& s) const {
+	return info(fn, ln, "%s", s.cstr());
+}
+const Logger& Logger::info(const char *fn, unsigned ln, const char *fmt...) const {
+	va_list args;
+	va_start(args, fmt);
+	format(fn, ln, 0, fmt, args);
+	va_end(args);
+	return *this;
+}
+const Logger& Logger::info(const char *fn, unsigned ln, const String& fmt...) const {
+	va_list args;
+	va_start(args, fmt);
+	format(fn, ln, 0, fmt.cstr(), args);
 	va_end(args);
 	return *this;
 }

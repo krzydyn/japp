@@ -9,10 +9,10 @@ class TestTrace {
 private:
 public:
 	TestTrace(const char *fn) {
-		Log.log(">>>> %s", fn);
+		LOGD(">>>> %s", fn);
 	}
 	~TestTrace() {
-		Log.log("===============");
+		LOGD("===============");
 	}
 };
 #define TESTTRACE TestTrace __trace(__FUNCTION__)

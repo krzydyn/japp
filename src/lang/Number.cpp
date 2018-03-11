@@ -13,7 +13,7 @@ struct base {
         switch(_base) {
             case 8: *_out << std::oct << data; break;
             case 10: *_out << std::dec << data; break;
-            case 16: *_out << std::hex << data; break;
+            //case 16: *_out << std::hex << data; break;
             default: print(data); break;
         }
         return *this;

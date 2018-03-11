@@ -43,7 +43,7 @@ public:
 
 private:
 	CoderResult decodeArrayLoop(ByteBuffer& src, CharBuffer& dst) {
-		Log.log("US_ASCII_Decoder::decodeArrayLoop");
+		LOGD("US_ASCII_Decoder::decodeArrayLoop");
 		Array<byte>& sa = src.array();
 		int sp = src.arrayOffset() + src.position();
 		int sl = src.arrayOffset() + src.limit();
@@ -70,10 +70,10 @@ private:
 	}
 	CoderResult decodeBufferLoop(ByteBuffer& src, CharBuffer& dst) {
 		int mark = src.position();
-		Log.log("US_ASCII_Decoder::decodeBufferLoop mark=%d", mark);
+		LOGD("US_ASCII_Decoder::decodeBufferLoop mark=%d", mark);
 		Finalize(src.position(mark););
 		while (src.hasRemaining()) {
-			Log.log("src.hasRem=%d, dst.hasRem=%d", src.remaining(), dst.remaining());
+			LOGD("src.hasRem=%d, dst.hasRem=%d", src.remaining(), dst.remaining());
 			byte b = src.get();
 			if (b >= 0) {
 				if (!dst.hasRemaining()) return CoderResult::OVERFLOW;
@@ -118,7 +118,7 @@ public:
 
 protected:
 	CoderResult decodeLoop(ByteBuffer& src, CharBuffer& dst) {
-		Log.log("UTF8_Decoder::decodeLoop");
+		LOGD("UTF8_Decoder::decodeLoop");
 		int mark = src.position();
 		int limit = src.limit();
 		while (mark < limit && dst.remaining() > 0) {
@@ -220,8 +220,8 @@ The_System::The_System() {
 	Thread::currentThread();
 }
 
+const Logger SystemLog;
 const The_System System;
-const The_Log Log;
 const The_Math Math;
 
 Properties The_System::props;

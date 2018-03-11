@@ -132,7 +132,7 @@ public:
 		int r = ::unlink(f.getPath().cstr());
 		if (r == -1) {
 			r = errno;
-			Log.log("unlink '%s': %s(%d)", f.getPath().cstr(), std::strerror(r), r);
+			LOGD("unlink '%s': %s(%d)", f.getPath().cstr(), std::strerror(r), r);
 		}
 		return r == 0;
 	}

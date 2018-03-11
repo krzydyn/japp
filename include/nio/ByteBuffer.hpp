@@ -110,28 +110,27 @@ public:
 		bigEndian = (bo == ByteOrder::BIG_ENDIAN);
 		return *this;
 	}
-	/*
-	virtual char getChar() = 0;
-	virtual ByteBuffer& putChar(char value) = 0;
-	virtual char getChar(int index) = 0;
-	virtual ByteBuffer& putChar(int index, char value) = 0;
-	virtual Shared<CharBuffer> asCharBuffer() = 0;
+
+	virtual jchar getChar() = 0;
+	virtual ByteBuffer& putChar(jchar value) = 0;
+	virtual jchar getChar(int index) const = 0;
+	virtual ByteBuffer& putChar(int index, jchar value) = 0;
+	//virtual Shared<CharBuffer> asCharBuffer() = 0;
 	virtual short getShort() = 0;
 	virtual ByteBuffer& putShort(short value) = 0;
-	virtual short getShort(int index) = 0;
+	virtual short getShort(int index) const = 0;
 	virtual ByteBuffer& putShort(int index,short value) = 0;
 	//virtual Shared<ShortrBuffer> asShortBuffer() = 0;
 	virtual int getInt() = 0;
 	virtual ByteBuffer& putInt(int value) = 0;
-	virtual int getInt(int index) = 0;
+	virtual int getInt(int index) const = 0;
 	virtual ByteBuffer& putInt(int index, int value) = 0;
 	//virtual Shared<IntBuffer> asIntBuffer() = 0;
-	virtual long getLong() = 0;
-	virtual ByteBuffer& putLong(long value) = 0;
-	virtual long getLong(int index) = 0;
-	virtual ByteBuffer& putLong(int index, long value) = 0;
+	virtual jlong getLong() = 0;
+	virtual ByteBuffer& putLong(jlong value) = 0;
+	virtual jlong getLong(int index) const = 0;
+	virtual ByteBuffer& putLong(int index, jlong value) = 0;
 	//virtual Shared<LongBuffer> asLongBuffer() = 0;
-	*/
 };
 
 } //namespace nio

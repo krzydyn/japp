@@ -48,7 +48,6 @@ protected:
 			if (mark > pos) throw IllegalArgumentException("mark > position");
 			this->mMark = mark;
 		}
-		Log.log("Buffer: pos=%d, lim=%d, cap=%d",pos,lim,cap);
 	}
 
 	int nextGetIndex() {

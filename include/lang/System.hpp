@@ -78,16 +78,31 @@ public:
 };
 extern const The_System System;
 
-class The_Log {
+class Logger {
 private:
-	void format(const char *fmt, va_list& args) const;
+	void format(const char *fn, unsigned ln, int level, const char *fmt, va_list& args) const;
 
 public:
-	const The_Log& log(const String& s) const;
-	const The_Log& log(const char *fmt...) const;
-	const The_Log& log(const String& fmt...) const;
+	const Logger& error(const char *fn, unsigned ln, const String& s) const;
+	const Logger& error(const char *fn, unsigned ln, const char *fmt...) const;
+	const Logger& error(const char *fn, unsigned ln, const String& fmt...) const;
+
+	const Logger& debug(const char *fn, unsigned ln, const String& s) const;
+	const Logger& debug(const char *fn, unsigned ln, const char *fmt...) const;
+	const Logger& debug(const char *fn, unsigned ln, const String& fmt...) const;
+
+	const Logger& info(const char *fn, unsigned ln, const String& s) const;
+	const Logger& info(const char *fn, unsigned ln, const char *fmt...) const;
+	const Logger& info(const char *fn, unsigned ln, const String& fmt...) const;
 };
-extern const The_Log Log;
+extern const Logger SystemLog;
+
+#define LOGE(fmt...) SystemLog.error(__FILE__,__LINE__,fmt)
+#define LOGW(fmt...) SystemLog.warn(__FILE__,__LINE__,fmt)
+#define LOGD(fmt...) SystemLog.debug(__FILE__,__LINE__,fmt)
+#define LOGI(fmt...) SystemLog.info(__FILE__,__LINE__,fmt)
+#define LOGN(fmt...) SystemLog.notice(__FILE__,__LINE__,fmt)
+
 
 } //namespace lang
 

@@ -47,6 +47,87 @@ public:
 		(*hb)[ix(checkIndex(i))] = x;
 		return *this;
 	}
+
+	jchar getChar() {
+		int i = ix(nextGetIndex(2));
+		return (jchar)(((*hb)[i] << 8) | (*hb)[i+1]);
+	}
+	ByteBuffer& putChar(jchar value) {
+		int i = ix(nextPutIndex(2));
+		(*hb)[i] = (byte)(value >> 8);
+		(*hb)[i+1] = (byte)value;
+		return *this;
+	}
+	jchar getChar(int index) const {
+		int i = ix(checkIndex(index, 2));
+		return (jchar)(((*hb)[i] << 8) | (*hb)[i+1]);
+	}
+	ByteBuffer& putChar(int index, jchar value) {
+		int i = ix(checkIndex(index, 2));
+		(*hb)[i] = (byte)(value >> 8);
+		(*hb)[i+1] = (byte)value;
+		return *this;
+	}
+	//virtual Shared<CharBuffer> asCharBuffer() = 0;
+	short getShort() {
+		int i = ix(nextGetIndex(2));
+		return (short)(((*hb)[i] << 8) | (*hb)[i+1]);
+	}
+	ByteBuffer& putShort(short value) {
+		int i = ix(nextPutIndex(2));
+		(*hb)[i] = (byte)(value >> 8);
+		(*hb)[i+1] = (byte)value;
+		return *this;
+	}
+	short getShort(int index) const {
+		int i = ix(checkIndex(index, 2));
+		return (short)(((*hb)[i] << 8) | (*hb)[i+1]);
+	}
+	ByteBuffer& putShort(int index, short value) {
+		int i = ix(checkIndex(index, 2));
+		(*hb)[i] = (byte)(value >> 8);
+		(*hb)[i+1] = (byte)value;
+		return *this;
+	}
+	//virtual Shared<ShortrBuffer> asShortBuffer() = 0;
+	int getInt() {
+		int i = ix(nextGetIndex(4));
+		return ((*hb)[i] << 24) | ((*hb)[i+1] << 16) | ((*hb)[i+2] << 8) | (*hb)[i+3];
+	}
+	ByteBuffer& putInt(int value) {
+		int i = ix(nextPutIndex(4));
+		(*hb)[i] = (byte)(value >> 24);
+		(*hb)[i+1] = (byte)(value >> 16);
+		(*hb)[i+2] = (byte)(value >> 8);
+		(*hb)[i+3] = (byte)value;
+		return *this;
+	}
+	int getInt(int index) const {
+		int i = ix(checkIndex(index, 4));
+		return ((*hb)[i] << 24) | ((*hb)[i+1] << 16) | ((*hb)[i+2] << 8) | (*hb)[i+3];
+	}
+	ByteBuffer& putInt(int index, int value) {
+		int i = ix(checkIndex(index, 4));
+		(*hb)[i] = (byte)(value >> 24);
+		(*hb)[i+1] = (byte)(value >> 16);
+		(*hb)[i+2] = (byte)(value >> 8);
+		(*hb)[i+3] = (byte)value;
+		return *this;
+	}
+	//virtual Shared<IntBuffer> asIntBuffer() = 0;
+	jlong getLong() {
+		throw UnsupportedOperationException(__FUNCTION__);
+	}
+	ByteBuffer& putLong(jlong value) {
+		throw UnsupportedOperationException(__FUNCTION__);
+	}
+	jlong getLong(int index) const {
+		throw UnsupportedOperationException(__FUNCTION__);
+	}
+	ByteBuffer& putLong(int index, jlong value) {
+		throw UnsupportedOperationException(__FUNCTION__);
+	}
+	//virtual Shared<LongBuffer> asLongBuffer() = 0;
 };
 
 const ByteOrder ByteOrder::LITTLE_ENDIAN = ByteOrder(0);

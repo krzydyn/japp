@@ -26,7 +26,7 @@ void test_datagrams() {
 
 		src2->clear();
 		const SocketAddress& cli = chn1->receive(*src2);
-		Log.log("received 1");
+		LOGD("received 1");
 
 		src1->clear();
 		for (int i=0; i < src1->limit(); ++i) src1->put((byte)i);
@@ -34,7 +34,7 @@ void test_datagrams() {
 		chn1->send(*src1, cli);
 		src2->clear();
 		chn2->receive(*src2);
-		Log.log("received 2");
+		LOGD("received 2");
 	}
 	selector->wakeup();
 }

@@ -107,7 +107,7 @@ private:
 	static const String& checkHost(const String& hostname);
 
 public:
-	InetSocketAddress() {}
+	InetSocketAddress() : addr(null), port(0) {}
 	InetSocketAddress(int port) : InetSocketAddress(InetAddress::anyLocalAddress(), port) {
 	}
 	InetSocketAddress(Shared<InetAddress> addr, int port) {

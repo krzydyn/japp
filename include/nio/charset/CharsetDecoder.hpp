@@ -41,7 +41,6 @@ private:
 	}
 
 	void throwIllegalStateException(int from, int to) {
-		Log.log("throwIllegalStateException");
 		throw IllegalStateException(String("Current state = ") + stateNames[from] + ", new state = " + stateNames[to]);
 	}
 

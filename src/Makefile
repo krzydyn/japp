@@ -12,6 +12,7 @@ DEBUG?=-g2
 CC:=g++
 CPPFLAGS:=$(DEBUG) -I$(INC_DIR) -fPIC -std=c++11
 CPPFLAGS+=-Wall -Wconversion -Werror
+#CPPFLAGS+=-fstack-protector
 
 SRC:=
 SRCS+=$(wildcard $(SOURCE_DIR)/*.cpp)

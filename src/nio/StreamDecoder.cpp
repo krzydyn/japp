@@ -35,7 +35,7 @@ int StreamDecoder::readBytes() {
 }
 
 int StreamDecoder::implRead(Array<char>& cbuf, int off, int end) {
-	Log.log("StreamDecoder::implRead: cbuf.len=%d off = %d, end=%d",cbuf.length,off,end);
+	LOGD("StreamDecoder::implRead: cbuf.len=%d off = %d, end=%d",cbuf.length,off,end);
 	Shared<CharBuffer> cb = CharBuffer::wrap(cbuf, off, end - off);
 	// Ensure that cb[0] == cbuf[off]
 	if (cb->position() != 0) cb = cb->slice();

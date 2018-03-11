@@ -13,7 +13,7 @@ CoderResult CharsetDecoder::decode(ByteBuffer& in, CharBuffer& out, boolean endO
 	CoderResult cr = CoderResult::UNDERFLOW;
 	for (;;) {
 		cr = decodeLoop(in, out);
-		Log.log("CharsetDecoder::decodeLoop = %s",cr.toString().cstr());
+		LOGD("CharsetDecoder::decodeLoop = %s",cr.toString().cstr());
 		if (cr.isOverflow()) return cr;
 		if (cr.isUnderflow()) {
 			if (endOfInput && in.hasRemaining()) {
@@ -45,7 +45,7 @@ CoderResult CharsetDecoder::decode(ByteBuffer& in, CharBuffer& out, boolean endO
 
 		throw Exception("Assertion");
 	}
-	Log.log("CharsetDecoder::decode in: %s  out: %s", in.toString().cstr(), out.toString().cstr());
+	LOGD("CharsetDecoder::decode in: %s  out: %s", in.toString().cstr(), out.toString().cstr());
 	return cr;
 }
 

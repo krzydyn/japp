@@ -237,6 +237,7 @@ public:
 	static String valueOf(unsigned n) {TRACE;return std::to_string(n); }
 	static String valueOf(long n) {TRACE;return std::to_string(n); }
 	static String valueOf(unsigned long n) {TRACE;return std::to_string(n); }
+	static String valueOf(jlong n) {TRACE;return std::to_string(n); }
 	static String valueOf(float n) {TRACE;return std::to_string(n); }
 	static String valueOf(double n) {TRACE;return std::to_string(n); }
 
