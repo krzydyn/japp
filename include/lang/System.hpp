@@ -83,17 +83,30 @@ private:
 	void format(const char *fn, unsigned ln, int level, const char *fmt, va_list& args) const;
 
 public:
-	const Logger& error(const char *fn, unsigned ln, const String& s) const;
+	const Logger& error(const char *fn, unsigned ln, const String& s) const {
+		return error(fn, ln, "%s", s.cstr());
+	}
 	const Logger& error(const char *fn, unsigned ln, const char *fmt...) const;
-	const Logger& error(const char *fn, unsigned ln, const String& fmt...) const;
 
-	const Logger& debug(const char *fn, unsigned ln, const String& s) const;
+	const Logger& warn(const char *fn, unsigned ln, const String& s) const {
+		return warn(fn, ln, "%s", s.cstr());
+	}
+	const Logger& warn(const char *fn, unsigned ln, const char *fmt...) const;
+
+	const Logger& debug(const char *fn, unsigned ln, const String& s) const {
+		return debug(fn, ln, "%s", s.cstr());
+	}
 	const Logger& debug(const char *fn, unsigned ln, const char *fmt...) const;
-	const Logger& debug(const char *fn, unsigned ln, const String& fmt...) const;
 
-	const Logger& info(const char *fn, unsigned ln, const String& s) const;
+	const Logger& info(const char *fn, unsigned ln, const String& s) const {
+		return info(fn, ln, "%s", s.cstr());
+	}
 	const Logger& info(const char *fn, unsigned ln, const char *fmt...) const;
-	const Logger& info(const char *fn, unsigned ln, const String& fmt...) const;
+
+	const Logger& notice(const char *fn, unsigned ln, const String& s) const {
+		return notice(fn, ln, "%s", s.cstr());
+	}
+	const Logger& notice(const char *fn, unsigned ln, const char *fmt...) const;
 };
 extern const Logger SystemLog;
 
