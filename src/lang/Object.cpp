@@ -64,6 +64,7 @@ boolean initialize() {
 	signal(SIGFPE, signal_handle);
 	//signal(SIGABRT, signal_handle);
 	//signal(SIGSEGV, signal_handle);
+	signal(SIGINT, signal_handle);
 	return true;
 }
 
@@ -127,17 +128,26 @@ void captureStack2(Array<StackTraceElement>& stackTrace) {
 }
 #endif
 void signal_handle(int signum) {
+	System.err.print("\x1b[0;31m");
 	System.err.println("Received signal " + String::valueOf(signum));
+	System.err.print("\x1b[m");
+
 	Array<StackTraceElement> st;
 	captureStackTrace(st, 3);
+	if (signum == SIGINT) {
+		InterruptedException ex("SIGINT");
+		ex.setStackTrace(st);
+		throw ex;
+	}
 	if (signum == SIGFPE) {
 		ArithmeticException ex("SIGFPE");
 		ex.setStackTrace(st);
 		throw ex;
 	}
-	for (int i=0; i < st.length; ++i) {
-		System.err.println(st[i].toString());
-	}
+
+	Throwable t("Signal " + String::valueOf(signum));
+	t.setStackTrace(st);
+	t.printStackTrace();
 	terminate_hook();
 }
 [[noreturn]]
@@ -215,7 +225,10 @@ Throwable& Throwable::fillInStackTrace() {
 	return *this;
 }
 void Throwable::printStackTrace() const {TRACE;
-	printStackTrace(System.err);
+	io::PrintStream& s = System.err;
+	s.print("\x1b[0;31m");
+	printStackTrace(s);
+	s.print("\x1b[m");
 }
 void Throwable::printStackTrace(io::PrintStream& s) const {TRACE;
 	synchronized(s) {

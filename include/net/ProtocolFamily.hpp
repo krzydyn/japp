@@ -5,6 +5,7 @@
 
 namespace net {
 
+//enum-like class
 interface ProtocolFamily : Interface {
 private:
 	static int enumIndex;

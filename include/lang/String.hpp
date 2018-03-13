@@ -9,6 +9,10 @@
 #include <string>
 #include <thread>
 
+namespace nio { namespace charset {
+class Charset;
+}}
+
 namespace lang {
 
 //TODO Locale
@@ -16,6 +20,7 @@ class Locale {
 public:
 	static Locale getDefault();
 };
+
 
 interface CharSequence : Interface {
 public:
@@ -50,7 +55,14 @@ public:
 	explicit String(const std::nullptr_t&) {TRACE;copystr(this, (const char *)0); }
 
 	String() : value(emptystr) {}
+	String(const Array<char>& s) : String(s, 0, s.length) {}
 	String(const Array<char>& s, int offset, int count);
+	String(const Array<int>& cp, int offset, int count);
+	String(const Array<byte>& s, const String& charsetName) : String(s, 0, s.length, charsetName) {}
+	String(const Array<byte>& s, int offset, int count, const String& charsetName);
+	String(const Array<byte>& s, const nio::charset::Charset& charset) : String(s, 0, s.length, charset) {}
+	String(const Array<byte>& s, int offset, int count, const nio::charset::Charset& charset);
+	String(const Array<byte>& s) : String(s, 0, s.length) {}
 	String(const Array<byte>& s, int offset, int count);
 
 	const std::string& intern() const {TRACE; return value; }
@@ -60,9 +72,11 @@ public:
 	boolean isEmpty() const { return value.length() == 0; }
 	char charAt(int index) const;
 	void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) const;
-	Array<byte> getBytes() {
+	Array<byte> getBytes() const {
 		return Array<byte>((byte*)value.c_str(),(int)value.length());
 	}
+	Array<byte> getBytes(const String& charsetName) const;
+	Array<byte> getBytes(const nio::charset::Charset& charset) const;
 
 	String operator+(char c) const {TRACE;
 		return value+c;
