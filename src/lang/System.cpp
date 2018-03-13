@@ -6,8 +6,30 @@
 using namespace std::chrono;
 
 namespace {
+#define CSI "\x1b["
+
+#define SGR_RESET        CSI "m"
+
+#define SGR_BLACK        CSI "0;30m"
+#define SGR_RED          CSI "0;31m"
+#define SGR_GREEN        CSI "0;32m"
+#define SGR_YELLOW       CSI "0;33m"
+#define SGR_BLUE         CSI "0;34m"
+#define SGR_MAGENTA      CSI "0;35m"
+#define SGR_CYAN         CSI "0;36m"
+#define SGR_LIGHTGRAY    CSI "0;37m"
+#define SGR_GRAY         CSI "1;30m"
+#define SGR_LIGHTRED     CSI "1;31m"
+#define SGR_LIGHTGREEN   CSI "1;32m"
+#define SGR_LIGHTYELLOW  CSI "1;33m"
+#define SGR_LIGHTBLUE    CSI "1;34m"
+#define SGR_LIGHTMAGENTA CSI "1;35m"
+#define SGR_LIGHTCYAN    CSI "1;36m"
+#define SGR_WHITE        CSI "1;37m"
+
 auto nano_start = high_resolution_clock::now();
-char levelName[] = {'E', 'W', 'D', 'I', 'N'};
+char levelName[] = {'E', 'W', 'D', 'I', 'N', 0};
+const char *levelColor[] = {SGR_RED, SGR_YELLOW, SGR_BLUE, SGR_CYAN, "", SGR_GREEN, SGR_MAGENTA };
 }
 
 namespace lang {
@@ -22,9 +44,10 @@ void Logger::format(const char *fn, unsigned ln, int level, const char *fmt, va_
 	struct tm stm;
 	gmtime_r(&t, &stm);
 	strftime (buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", localtime_r(&t, &stm));
-	System.out.printf("%s.%03llu [%c] %s(%u): ", buf, r, levelName[level], fn, ln);
+	System.out.printf("%s.%03llu %s[%c] %s(%u): ", buf, r, levelColor[level], levelName[level], fn, ln);
 	//System.out.printf("%s.%03llu [%c]: ", buf, r, levelName[level]);
-	System.out.println(String::format(fmt, args));
+	System.out.print(String::format(fmt, args));
+	System.out.println(SGR_RESET);
 }
 
 const Logger& Logger::error(const char *fn, unsigned ln, const char *fmt...) const {
