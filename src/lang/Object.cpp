@@ -88,7 +88,6 @@ Array<StackTraceElement>& captureStackTrace(Array<StackTraceElement>& stackTrace
 	const int depth = 50;
 	void *trace[depth];
 	int got = ::backtrace(trace, depth);
-	System.out.printf("::backtrace = %d\n",got);
 	if (got <= skip) {
 		return stackTrace;
 	}
@@ -128,7 +127,7 @@ void captureStack2(Array<StackTraceElement>& stackTrace) {
 }
 #endif
 void signal_handle(int signum) {
-	System.err.print("\x1b[0;31m");
+	System.err.print("\x1b[1;37m");
 	System.err.println("Received signal " + String::valueOf(signum));
 	System.err.print("\x1b[m");
 

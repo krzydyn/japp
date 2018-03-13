@@ -1,3 +1,4 @@
+#include <lang/Character.hpp>
 #include <lang/Number.hpp>
 
 namespace {
@@ -54,6 +55,25 @@ String Integer::toUnsignedString(jint v, int radix) {
 	std::stringstream stream;
 	stream << base((unsigned)radix) << (unsigned long)v;
 	return stream.str();
+}
+
+int Integer::parseInt(const String& s, int radix) {
+	int result = 0;
+	if (s.length() == 0) throw NumberFormatException("Empty input");
+	boolean negative = false;
+	int i=0;
+	char c = s.charAt(0);
+	if (c == '-') {negative=true; ++i;}
+	else if (c == '+') {++i;}
+	if (i == s.length()) throw NumberFormatException("Invalid input");
+	for (; i < s.length(); ++i) {
+		c = s.charAt(i);
+		int digit = Character::digit(c, radix);
+		if (digit < 0) throw NumberFormatException("Invalid input");
+		result *= radix;
+		result -= digit;
+	}
+	return negative ? result : -result;
 }
 
 String Long::toString(long v, int radix) {
