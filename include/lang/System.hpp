@@ -80,6 +80,7 @@ extern const The_System System;
 
 class Logger {
 private:
+	static boolean release;
 	void format(const char *fn, unsigned ln, int level, const char *fmt, va_list& args) const;
 
 public:
