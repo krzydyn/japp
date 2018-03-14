@@ -1,6 +1,7 @@
 #include <awt/Color.hpp>
 #include <awt/MouseInfo.hpp>
 #include <lang/Exception.hpp>
+#include <util/ArrayList.hpp>
 
 namespace awt {
 
@@ -8,7 +9,25 @@ class IllegalComponentStateException : extends IllegalStateException {
 	using IllegalStateException::IllegalStateException;
 };
 
-class ComponentPeer;
+interface ComponentPeer : Interface {
+};
+interface LightweightPeer : extends ComponentPeer {
+};
+interface ContainerPeer : extends ComponentPeer {
+};
+interface WindowPeer : extends ContainerPeer {
+};
+
+class Component;
+class Window;
+class Toolkit {
+private:
+	static LightweightPeer* lightweightMarker;
+public:
+	LightweightPeer* createComponent(Component* target);
+	WindowPeer* createWindow(Window* target);
+};
+
 class AppContext;
 class Container;
 class Component : extends Object {
@@ -19,6 +38,8 @@ private:
 	boolean focusable = true;
 
 protected:
+	static Object LOCK;
+
 	ComponentPeer *peer;
 	AppContext *appContext;
 	Container *parent;
@@ -40,7 +61,7 @@ protected:
 	Dimension maxSize;
 	boolean maxSizeSet;
 
-	Component() {
+	Component() : peer(null) {
 		//appContext = AppContext.getAppContext();
 	}
 
@@ -59,6 +80,8 @@ public:
 	static constexpr float RIGHT_ALIGNMENT = 1.0f;
 	
 
+	Object& getTreeLock() { return LOCK; }
+
 	String getName() const { return name; }
 	void setName(const String& name) {
 		this->name = name;
@@ -66,6 +89,7 @@ public:
 	}
 	Container *getParent() const { return parent; }
 	//const GraphicsConfiguration& getGraphicsConfiguration() { }
+	boolean isLightweight() { return instanceof<LightweightPeer>(peer); }
 	boolean isValid() const { return (peer != null) && valid; }
 	boolean isDisplayable()  const{ return peer != null; }
 	boolean isVisible() const { return visible; }
@@ -85,6 +109,8 @@ public:
 		return foreground;
 	}
 
+	Toolkit& getToolkit();
+	Container *getContainer() { return parent; }
 	Point getLocationOnScreen() const {
 		if (peer != null && isShowing()) {
 			Point pt;
@@ -92,12 +118,37 @@ public:
 		}
 		throw IllegalComponentStateException("componentn not on screen");
 	}
+
+	virtual void addNotify();
+	virtual void removeNotify() {
+		synchronized (getTreeLock()) {
+		}
+	}
 };
 
 class Container : extends Component {
+private:
+	util::ArrayList<Component*> component;
+public:
+	void addNotify() {
+		Component::addNotify();
+		for (int i = 0; i < component.size(); i++) {
+			component.get(i)->addNotify();
+		}
+	}
 };
 
 class Window : extends Container {
+public:
+	enum class Type {
+		NORMAL,
+		UTILITY,
+		POPUP
+	};
+	void addNotify() {
+		if (peer == null) peer = getToolkit().createWindow(this);
+		Container::addNotify();
+	}
 };
 
 } //namespace awt

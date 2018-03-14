@@ -19,6 +19,7 @@ GCC_VERSION:=$(shell gcc --version | awk '/^gcc/ {print $$4}')
 CC:=g++
 CPPFLAGS:=$(DEBUG) -I$(INC_DIR) -fPIC -std=c++11
 CPPFLAGS+=-Wall -Wconversion -Werror
+CPPFLAGS+=-O2
 
 LDFLAGS:=-rdynamic
 ifeq ($(STATIC),1)

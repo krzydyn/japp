@@ -62,14 +62,14 @@ public:
 		removeThread(mainid);
 	}
 	long nextThreadNum() {
-		long n;
+		long n = 0;
 		synchronized(*this) {
 			n = threadInitNumber++;
 		}
 		return n;
 	}
 	long nextThreadID() {
-		long tid;
+		long tid = 0;
 		synchronized(*this) {
 			tid = ++threadSeqNumber;
 		}

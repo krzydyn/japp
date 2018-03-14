@@ -47,7 +47,7 @@ private:
 	CharacterDataLatin1() {
 		for (int i=0; i < 256; ++i) {
 			A[i] = 0;
-			if (isdigit(i)) A[i] = ('0' << 5)*0x3E0 + Character::DECIMAL_DIGIT_NUMBER;
+			if (isdigit(i)) A[i] = (('0' << 5)&0x3E0) + Character::DECIMAL_DIGIT_NUMBER;
 		}
 	}
 public:
@@ -60,20 +60,48 @@ public:
 		int props = getProperties(ch);
 		return (props & 0x1F);
 	}
+	int toLowerCase(int ch) {
+		int mapChar = ch;
+		int val = getProperties(ch);
+		if (((val & 0x00020000) != 0) && ((val & 0x07FC0000) != 0x07FC0000)) {
+			int offset = val << 5 >> (5+18);
+			mapChar = ch + offset;
+		}
+		return mapChar;
+	}
+	int toUpperCase(int ch) {
+		int mapChar = ch;
+		int val = getProperties(ch);
+
+		if ((val & 0x00010000) != 0) {
+			if ((val & 0x07FC0000) != 0x07FC0000) {
+				int offset = val  << 5 >> (5+18);
+				mapChar =  ch - offset;
+			} else if (ch == 0x00B5) {
+				mapChar = 0x039C;
+			}
+		}
+		return mapChar;
+	}
+	int toTitleCase(int ch) { return toUpperCase(ch); }
 	int digit(int ch, int radix) {
 		int value = -1;
 		if (radix >= Character::MIN_RADIX && radix <= Character::MAX_RADIX) {
 			int val = getProperties(ch);
 			int kind = val & 0x1F;
 			if (kind == Character::DECIMAL_DIGIT_NUMBER) {
-				//value = (ch + ((val & 0x3E0) >> 5)) & 0x1F;
-				value = ch - '0';
+				value = (ch + ((val & 0x3E0) >> 5)) & 0x1F;
 			}
 			else if ((val & 0xC00) == 0x00000C00) { // Java supradecimal digit
 				value = ((ch + ((val & 0x3E0) >> 5)) & 0x1F) + 10;
 			}
 		}
 		return (value < radix) ? value : -1;
+	}
+
+	boolean isWhitespace(int ch) {
+		int props = getProperties(ch);
+		return ((props & 0x00007000) == 0x00004000);
 	}
 };
 CharacterDataLatin1 CharacterDataLatin1::instance;

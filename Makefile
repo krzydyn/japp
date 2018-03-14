@@ -45,7 +45,7 @@ build-tests: build-src
 
 .PHONY: run run-tests
 run: run-tests
-run-tests:
+run-tests: build-tests
 	-$(MAKE) PREFIX=$(@:run-%=%) -f $(@:run-%=%)/Makefile run
 
 

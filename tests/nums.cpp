@@ -7,6 +7,8 @@ int main() {
 	Integer t3(1);
 	Long t4(1);
 	Boolean::compare(true,false);
-	Integer::parseInt("123");
+	int i = Integer::parseInt("123");
+	if (i != 123) LOGE("parseInt error");
+	i = Integer::parseInt("A23");
 	return 0;
 }

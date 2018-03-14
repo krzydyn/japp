@@ -285,7 +285,7 @@ const Class& Object::getClass() const {TRACE;
 	return getClass(typeid(*this));
 }
 const Class& Object::getClass(const std::type_info& type) {
-	Class *c;
+	Class *c = null;
 	ArrayList<Class*>& cm = classmap();
 	synchronized(cm) {
 		c = Object::findClass(type);
