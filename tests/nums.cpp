@@ -7,5 +7,6 @@ int main() {
 	Integer t3(1);
 	Long t4(1);
 	Boolean::compare(true,false);
+	Integer::parseInt("123");
 	return 0;
 }

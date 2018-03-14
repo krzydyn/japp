@@ -1,4 +1,5 @@
 #include <lang/Character.hpp>
+#include <lang/System.hpp>
 
 #include <ctype.h>
 
@@ -46,7 +47,7 @@ private:
 	CharacterDataLatin1() {
 		for (int i=0; i < 256; ++i) {
 			A[i] = 0;
-			if (isdigit(i)) A[i] = (i << 5)*0x3E0 + Character::DECIMAL_DIGIT_NUMBER;
+			if (isdigit(i)) A[i] = ('0' << 5)*0x3E0 + Character::DECIMAL_DIGIT_NUMBER;
 		}
 	}
 public:
@@ -65,7 +66,8 @@ public:
 			int val = getProperties(ch);
 			int kind = val & 0x1F;
 			if (kind == Character::DECIMAL_DIGIT_NUMBER) {
-				value = (ch + ((val & 0x3E0) >> 5)) & 0x1F;
+				//value = (ch + ((val & 0x3E0) >> 5)) & 0x1F;
+				value = ch - '0';
 			}
 			else if ((val & 0xC00) == 0x00000C00) { // Java supradecimal digit
 				value = ((ch + ((val & 0x3E0) >> 5)) & 0x1F) + 10;

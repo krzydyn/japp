@@ -1,5 +1,6 @@
 #include <lang/Character.hpp>
 #include <lang/Number.hpp>
+#include <lang/System.hpp>
 
 namespace {
 char digit[] = "0123456789ABCDEFGHIJKLMNOPRSTUVWXYZ";
@@ -65,11 +66,11 @@ int Integer::parseInt(const String& s, int radix) {
 	char c = s.charAt(0);
 	if (c == '-') {negative=true; ++i;}
 	else if (c == '+') {++i;}
-	if (i == s.length()) throw NumberFormatException("Invalid input");
+	if (i == s.length()) throw NumberFormatException("Invalid input, no digits");
 	for (; i < s.length(); ++i) {
 		c = s.charAt(i);
 		int digit = Character::digit(c, radix);
-		if (digit < 0) throw NumberFormatException("Invalid input");
+		if (digit < 0) throw NumberFormatException("Invalid input, wrong digit "+String::valueOf(c));
 		result *= radix;
 		result -= digit;
 	}

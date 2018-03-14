@@ -20,7 +20,8 @@ BUILD_DIRS:=$(SUBDIRS:%=build-%)
 CLEAN_DIRS:=$(SUBDIRS:%=clean-%)
 .PHONY: $(BUILD_DIRS) $(CLEAN_DIRS)
 
-all:build-src
+build-src:
+all:build
 
 rebuild:
 	make clean
