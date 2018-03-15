@@ -1,3 +1,6 @@
+#ifndef __AWT_COLOR_HPP
+#define __AWT_COLOR_HPP
+
 #include <lang/String.hpp>
 #include <lang/Class.hpp>
 
@@ -42,3 +45,5 @@ public:
 };
 
 }
+
+#endif

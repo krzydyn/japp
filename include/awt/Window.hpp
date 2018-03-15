@@ -1,5 +1,10 @@
+#ifndef __AWT_WINDOW_HPP
+#define __AWT_WINDOW_HPP
+
 #include <awt/Color.hpp>
+#include <awt/Graphics.hpp>
 #include <awt/MouseInfo.hpp>
+#include <awt/peer/WindowPeer.hpp>
 #include <lang/Exception.hpp>
 #include <util/ArrayList.hpp>
 
@@ -9,23 +14,15 @@ class IllegalComponentStateException : extends IllegalStateException {
 	using IllegalStateException::IllegalStateException;
 };
 
-interface ComponentPeer : Interface {
-};
-interface LightweightPeer : extends ComponentPeer {
-};
-interface ContainerPeer : extends ComponentPeer {
-};
-interface WindowPeer : extends ContainerPeer {
-};
-
-class Component;
-class Window;
-class Toolkit {
+class Toolkit : extends Object {
 private:
 	static LightweightPeer* lightweightMarker;
 public:
-	LightweightPeer* createComponent(Component* target);
-	WindowPeer* createWindow(Window* target);
+	static Toolkit& getDefaultToolkit();
+	virtual FramePeer* createFrame(Frame* target) = 0;
+	virtual LightweightPeer* createComponent(Component* target) = 0;
+	virtual WindowPeer* createWindow(Window* target) = 0;
+	virtual DialogPeer* createDialog(Dialog* target) = 0;
 };
 
 class AppContext;
@@ -46,7 +43,7 @@ protected:
 	int        x,y,width,height;
 	Color      foreground;
 	Color      background;
-	//Font       font;
+	Font       *font;
 	//Cursor     cursor;
 	//Locale     locale;
 
@@ -72,6 +69,12 @@ protected:
 		return Point(absolute.x - p0.x, absolute.y - p0.y);
 	}
 
+	void invalidateParent();
+
+	void invalidateIfValid() {
+		if (isValid()) invalidate();
+	}
+
 public:
 	static constexpr float TOP_ALIGNMENT = 0.0f;
 	static constexpr float CENTER_ALIGNMENT = 0.5f;
@@ -81,6 +84,7 @@ public:
 	
 
 	Object& getTreeLock() { return LOCK; }
+	Toolkit& getToolkit();
 
 	String getName() const { return name; }
 	void setName(const String& name) {
@@ -109,7 +113,6 @@ public:
 		return foreground;
 	}
 
-	Toolkit& getToolkit();
 	Container *getContainer() { return parent; }
 	Point getLocationOnScreen() const {
 		if (peer != null && isShowing()) {
@@ -118,6 +121,28 @@ public:
 		}
 		throw IllegalComponentStateException("componentn not on screen");
 	}
+
+	void validate() {
+		synchronized (getTreeLock()) {
+			ComponentPeer* peer = this->peer;
+			boolean wasValid = isValid();
+			if (!wasValid && peer != null) {
+				peer->layout();
+			}
+			valid = true;
+		}
+	}
+	void invalidate() {
+		synchronized (getTreeLock()) {
+			valid = false;
+			invalidateParent();
+		}
+	}
+	void revalidate() {
+	}
+
+	Graphics& getGraphics();
+	Font& getFont();
 
 	virtual void addNotify();
 	virtual void removeNotify() {
@@ -152,3 +177,5 @@ public:
 };
 
 } //namespace awt
+
+#endif
