@@ -4,6 +4,7 @@
 #include <io/FileInputStream.hpp>
 #include <io/OutputStreamWriter.hpp>
 #include <io/FileReader.hpp>
+#include <io/FileWriter.hpp>
 
 class TestTrace {
 private:
@@ -94,6 +95,9 @@ void test_reader() { TESTTRACE;
 
 	System.out.println("FileReader...");
 	io::FileReader fr("/tmp/test.txt");
+
+	System.out.println("FileWriter...");
+	io::FileWriter fw("/tmp/test.txt");
 }
 
 int main() {
