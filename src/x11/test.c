@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
  
+// https://seasonofcode.com/posts/how-x-window-managers-work-and-how-to-write-one-part-ii.html
 int main(void)
 {
     Display *display;
@@ -24,6 +25,8 @@ int main(void)
     /* create window */
     window = XCreateSimpleWindow(display, RootWindow(display, s), 10, 10, 200, 200, 1,
                            BlackPixel(display, s), WhitePixel(display, s));
+
+	XStoreName(display, window, "Demo app");
  
     /* select kind of events we are interested in */
     XSelectInput(display, window, 0x3ffff);

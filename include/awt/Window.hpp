@@ -4,25 +4,13 @@
 #include <awt/Color.hpp>
 #include <awt/Graphics.hpp>
 #include <awt/MouseInfo.hpp>
-#include <awt/peer/WindowPeer.hpp>
-#include <lang/Exception.hpp>
+#include <awt/Toolkit.hpp>
 #include <util/ArrayList.hpp>
 
 namespace awt {
 
 class IllegalComponentStateException : extends IllegalStateException {
 	using IllegalStateException::IllegalStateException;
-};
-
-class Toolkit : extends Object {
-private:
-	static LightweightPeer* lightweightMarker;
-public:
-	static Toolkit& getDefaultToolkit();
-	virtual FramePeer* createFrame(Frame* target) = 0;
-	virtual LightweightPeer* createComponent(Component* target) = 0;
-	virtual WindowPeer* createWindow(Window* target) = 0;
-	virtual DialogPeer* createDialog(Dialog* target) = 0;
 };
 
 class AppContext;

@@ -18,6 +18,7 @@ CPPFLAGS+=-Wall -Wconversion -Werror
 SRC:=
 SRCS+=$(wildcard $(SOURCE_DIR)/*.cpp)
 SRCS+=$(wildcard $(SOURCE_DIR)/awt/*.cpp)
+SRCS+=$(wildcard $(SOURCE_DIR)/awt/x11/*.cpp)
 SRCS+=$(wildcard $(SOURCE_DIR)/lang/*.cpp)
 SRCS+=$(wildcard $(SOURCE_DIR)/io/*.cpp)
 SRCS+=$(wildcard $(SOURCE_DIR)/net/*.cpp)
