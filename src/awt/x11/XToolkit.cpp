@@ -1,5 +1,6 @@
 #include <lang/System.hpp>
 
+#include "XConstants.hpp"
 #include "XToolkit.hpp"
 #include "XlibWrapper.hpp"
 
@@ -14,20 +15,19 @@ long awt_defaultFg;
 
 void awt_toolkit_init() {
 }
+void awtLock() {
+}
+void awtUnlock() {
+}
+void callTimeoutTasks() {
+}
+void waitForEvents(long nextTaskTime) {
+}
 }
 
 namespace awt { namespace x11 {
 
 // http://www.grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/8u40-b25/sun/awt/X11/XToolkit.java
-long XToolkit::getDisplay() {
-	return display;
-}
-long XToolkit::getDefaultRootWindow() {
-	long res = XlibWrapper::RootWindow(XToolkit::getDisplay(), XlibWrapper::DefaultScreen(XToolkit::getDisplay()));
-	if (res == 0) throw IllegalStateException("Root window must not be null");
-	return res;
-}
-
 XToolkit::XToolkit() {
 	LOGD("XToolkit construction");
 	if (GraphicsEnvironment::isHeadless()) throw HeadlessException();
@@ -35,6 +35,24 @@ XToolkit::XToolkit() {
 	init();
 	toolkitThread = Thread(*this, "AWT-XAWT");
 	toolkitThread.start();
+}
+
+long XToolkit::getNextTaskTime() {
+	awtLock();
+	Finalize(awtUnlock(););
+	//return (Long)timeoutTasks.firstKey();
+	return -1L;
+}
+
+long XToolkit::getDisplay() {
+	return display;
+}
+long XToolkit::getDefaultRootWindow() {
+	awtLock();
+	Finalize(awtUnlock(););
+	long res = XlibWrapper::RootWindow(XToolkit::getDisplay(), XlibWrapper::DefaultScreen(XToolkit::getDisplay()));
+	if (res == 0) throw IllegalStateException("Root window must not be null");
+	return res;
 }
 
 void XToolkit::init() {
@@ -90,7 +108,7 @@ void XToolkit::run(boolean loop) {
 				callTimeoutTasks();
 				waitForEvents(getNextTaskTime());
 			}
-			XlibWrapper::XNextEvent(getDisplay(),ev.pData);
+			XlibWrapper::XNextEvent(getDisplay(), ev.getPData());
 		}
 	}
 }

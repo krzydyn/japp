@@ -15,11 +15,10 @@ public:
 	void *getPData() { return pData; }
 };
 
-
 class XToolkit : extends Toolkit, implements Runnable {
 private:
 	void init();
-	static long getDefaultScreenData();
+	long getNextTaskTime();
 public:
 	static long getDisplay();
 	static long getDefaultRootWindow();

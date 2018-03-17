@@ -27,6 +27,7 @@ LDFLAGS+=-Wl,-Bstatic
 endif
 
 LDFLAGS+=-lpthread
+LDFLAGS+=-lX11
 
 ifeq ($(STATIC),1)
 LDFLAGS+=-Wl,dynamic
