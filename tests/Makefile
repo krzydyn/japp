@@ -44,6 +44,7 @@ endif
 SRCS:=$(wildcard $(SOURCE_DIR)/*.cpp)
 OBJS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
 TARGETS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%,$(SRCS))
+#TAEGETS:=$(BUILD_DIR)/awt
 
 TARGETS: $(JRELIB)
 

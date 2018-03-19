@@ -3,16 +3,27 @@
 
 #include <awt/Window.hpp>
 #include <lang/Thread.hpp>
+#include <nio/ByteBuffer.hpp>
 
 namespace awt { namespace x11 {
 
 class XEvent {
 private:
-	void *pData;
+	Shared<nio::ByteBuffer> pData;
 public:
-	XEvent() { }
-	XEvent(void *addr) { pData = addr; }
-	void *getPData() { return pData; }
+	static int getSize() { return 192; }
+
+	XEvent() {
+		pData = nio::ByteBuffer::allocate(getSize());
+	}
+	XEvent(Shared<nio::ByteBuffer> buf) {
+		pData = buf;
+	}
+	~XEvent() {
+	}
+	void *getPData() { return &(pData->array()[0]); }
+	void dispose() { pData.reset(); }
+	int get_type() { return pData->getInt(0); }
 };
 
 class XToolkit : extends Toolkit, implements Runnable {
@@ -20,14 +31,17 @@ private:
 	void init();
 	long getNextTaskTime();
 public:
+	static void awtLock();
+	static void awtUnlock();
 	static long getDisplay();
 	static long getDefaultRootWindow();
+	static boolean getSunAwtDisableGrab();
 
 	XToolkit();
-	FramePeer* createFrame(Frame* target);
-	LightweightPeer* createComponent(Component* target);
-	WindowPeer* createWindow(Window* target);
-	DialogPeer* createDialog(Dialog* target);
+	awt::FramePeer* createFrame(awt::Frame* target);
+	awt::LightweightPeer* createComponent(awt::Component* target);
+	awt::WindowPeer* createWindow(awt::Window* target);
+	awt::DialogPeer* createDialog(awt::Dialog* target);
 
 	void run();
 	void run(boolean loop);

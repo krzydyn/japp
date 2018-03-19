@@ -115,6 +115,11 @@ public:
 	using Error::Error;
 };
 
+class ThreadDeath : extends Error {
+public:
+	using Error::Error;
+};
+
 class RuntimeException : extends Exception {
 public:
 	using Exception::Exception;

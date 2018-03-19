@@ -37,11 +37,15 @@ long XlibWrapper::XWhitePixel(long display, int screen) {
 
 //int XlibWrapper::XGrabPointer(long display, long grab_window, int owner_events, int event_mask, int pointer_mode, int keyboard_mode, long confine_to, long cursor, long time);
 
-//void XlibWrapper::XUngrabPointer(long display, long time);
+void XlibWrapper::XUngrabPointer(long display, long time) {
+	::XUngrabPointer((Display *)display, time);
+}
 
 //int XlibWrapper::XGrabKeyboard(long display, long grab_window, int owner_events, int pointer_mode, int keyboard_mode, long time);
 
-//void XlibWrapper::XUngrabKeyboard(long display, long time);
+void XlibWrapper::XUngrabKeyboard(long display, long time) {
+	::XUngrabKeyboard((Display *)display, time);
+}
 
 //void XlibWrapper::XGrabServer(long display);
 //void XlibWrapper::XUngrabServer(long display);
@@ -74,7 +78,9 @@ String XlibWrapper::XSetLocaleModifiers(const String& modifier_list) {
 }
 //int XlibWrapper::XTranslateCoordinates( long display, long src_w, long dest_w, long src_x, long src_y, long dest_x_return, long dest_y_return, long child_return);
 //void XlibWrapper::XPeekEvent(long display,void* ptr);
-//void XlibWrapper::XFlush(long display);
+void XlibWrapper::XFlush(long display) {
+	::XFlush((Display*)display);
+}
 //void XlibWrapper::XSync(long display,int discard);
 //void XlibWrapper::XMoveResizeWindow(long display, long window, int x, int y, int width, int height);
 //void XlibWrapper::XResizeWindow(long display, long window, int width, int height);

@@ -1,5 +1,6 @@
 #include <awt/Window.hpp>
 #include <awt/peer/WindowPeer.hpp>
+#include <lang/System.hpp>
 #include "x11/XToolkit.hpp"
 
 namespace awt {
@@ -63,6 +64,7 @@ Toolkit& Toolkit::getDefaultToolkit() {
 	if (toolkit == null) {
 		if (GraphicsEnvironment::isHeadless()) toolkit = new HeadlessToolkit();
 		else toolkit = new x11::XToolkit();
+		LOGD("Toolkit created");
 	}
 	return *toolkit;
 }

@@ -6,11 +6,9 @@
 #include <io/OutputStream.hpp>
 #include <lang/Exception.hpp>
 #include <util/HashMap.hpp>
+#include <util/concurrent/Lock.hpp>
 
 namespace lang {
-
-class TimeUnit {
-};
 
 class ProcessEnvironment final : Interface {
 private:
@@ -32,7 +30,7 @@ public:
 	virtual io::InputStream& getInputStream() = 0;
 	virtual io::InputStream& getErrorStream() = 0;
 	virtual int waitFor() = 0;
-	boolean waitFor(long timeout, TimeUnit unit) {
+	boolean waitFor(long timeout, util::concurrent::TimeUnit unit) {
 		return false;
 	}
 	virtual int exitValue() = 0;

@@ -187,8 +187,11 @@ Thread::~Thread() {
 			System.err.println("delete RunnableFunction");
 			delete target;
 		}
+	}catch(const Throwable& e) {
+		LOGE("Exeption in ~Thread() %s", getName().cstr());
+		e.printStackTrace();
 	}catch(...) {
-		System.err.println("Exeption in ~Thread()");
+		LOGE("Unknown Exeption in ~Thread() %s", getName().cstr());
 	}
 	System.out.println(getName() + " destructor");
 }

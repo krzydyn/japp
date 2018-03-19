@@ -164,6 +164,9 @@ public:
 	}
 };
 
+class Frame : extends Window {
+};
+
 } //namespace awt
 
 #endif

@@ -10,6 +10,7 @@ enum class XCursorFontConstants : int {
 	XC_arrow=2,
 };
 
+// http://www.grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/8u40-b25/sun/awt/X11/XlibWrapper.java
 class XlibWrapper {
 private:
 	XlibWrapper() {}
