@@ -11,6 +11,13 @@ class Frame;
 class Component;
 class Window;
 class Dialog;
+class GraphicsConfiguration;
+
+interface MouseInfoPeer : Interface {
+public:
+	virtual int fillPointWithCoords(Point& point) = 0;
+	virtual boolean isWindowUnderMouse(Window* w) = 0;
+};
 
 interface ComponentPeer : Interface {
 public:
@@ -32,7 +39,7 @@ public:
 	virtual void setForeground(const Color& c) = 0;
 	virtual void setBackground(const Color& c) = 0;
 	virtual void setFont(const Font& f) = 0;
-	virtual void updateCursorImmediately() = 0;
+	//virtual void updateCursorImmediately() = 0;
 	//boolean requestFocus(Component lightweightChild, boolean temporary,
 		//                  boolean focusedWindowChangeAllowed, long time,
 		//                  CausedFocusEvent.Cause cause) = 0;
@@ -50,6 +57,8 @@ public:
 	//virtual void reparent(ContainerPeer& newContainer) = 0;
 	//virtual boolean isReparentSupported() = 0;
 	virtual void layout() = 0;
+
+	virtual boolean updateGraphicsData(GraphicsConfiguration& gc) = 0;
 };
 interface CanvasPeer : implements ComponentPeer {
 };

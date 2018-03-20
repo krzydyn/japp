@@ -22,6 +22,11 @@ private:
 	boolean valid = false;
 	boolean focusable = true;
 
+	GraphicsConfiguration* graphicsConfig;
+
+	void repaintParentIfNeeded(int oldX, int oldY, int oldWidth, int oldHeight);
+	void notifyNewBounds(boolean resized, boolean moved);
+
 protected:
 	static Object LOCK;
 
@@ -57,11 +62,14 @@ protected:
 		return Point(absolute.x - p0.x, absolute.y - p0.y);
 	}
 
-	void invalidateParent();
-
-	void invalidateIfValid() {
-		if (isValid()) invalidate();
+	virtual boolean updateGraphicsData(GraphicsConfiguration& gc) {
+		if (graphicsConfig == &gc) return false;
+		graphicsConfig = &gc;
+		if (peer != null) return peer->updateGraphicsData(gc);
+		return false;
 	}
+
+	virtual void invalidateParent();
 
 public:
 	static constexpr float TOP_ALIGNMENT = 0.0f;
@@ -70,39 +78,45 @@ public:
 	static constexpr float LEFT_ALIGNMENT = 0.0f;
 	static constexpr float RIGHT_ALIGNMENT = 1.0f;
 	
+	virtual void invalidateIfValid() final {
+		if (isValid()) invalidate();
+	}
 
-	Object& getTreeLock() { return LOCK; }
-	Toolkit& getToolkit();
+	virtual Object& getTreeLock() { return LOCK; }
+	virtual Toolkit& getToolkit();
 
-	String getName() const { return name; }
-	void setName(const String& name) {
+	virtual String getName() const { return name; }
+	virtual void setName(const String& name) {
 		this->name = name;
 		nameExplicitlySet = true;
 	}
-	Container *getParent() const { return parent; }
-	//const GraphicsConfiguration& getGraphicsConfiguration() { }
-	boolean isLightweight() { return instanceof<LightweightPeer>(peer); }
-	boolean isValid() const { return (peer != null) && valid; }
-	boolean isDisplayable()  const{ return peer != null; }
-	boolean isVisible() const { return visible; }
-	Point getMousePosition() const {
+	virtual Container *getParent() const { return parent; }
+	virtual ComponentPeer* getPeer() { return peer; }
+	virtual const GraphicsConfiguration& getGraphicsConfiguration() {
+		return *graphicsConfig;
+	}
+	virtual boolean isLightweight() { return instanceof<LightweightPeer>(peer); }
+	virtual boolean isValid() const { return (peer != null) && valid; }
+	virtual boolean isDisplayable()  const{ return peer != null; }
+	virtual boolean isVisible() const { return visible; }
+	virtual Point getMousePosition() const {
 		PointerInfo pi = MouseInfo::getPointerInfo();
 		return pointRelativeToComponent(pi.getLocation());
 	}
-	boolean isShowing() const;
-	boolean isEnabled() const { return enabled; }
-	void setEnabled(boolean b) { enabled = b; }
-	boolean isDoubleBuffered() const { return false; }
-	void enableInputMethods(boolean enable) {}
-	void setVisible(boolean b) {
+	virtual boolean isShowing() const;
+	virtual boolean isEnabled() const { return enabled; }
+	virtual void setEnabled(boolean b) { enabled = b; }
+	virtual boolean isDoubleBuffered() const { return false; }
+	virtual void enableInputMethods(boolean enable) {}
+	virtual void setVisible(boolean b) {
 		visible = b;
 	}
-	Color getForeground() const {
+	virtual Color getForeground() const {
 		return foreground;
 	}
 
-	Container *getContainer() { return parent; }
-	Point getLocationOnScreen() const {
+	virtual Container *getContainer() { return parent; }
+	virtual Point getLocationOnScreen() const {
 		if (peer != null && isShowing()) {
 			Point pt;
 			return pt;
@@ -110,7 +124,7 @@ public:
 		throw IllegalComponentStateException("componentn not on screen");
 	}
 
-	void validate() {
+	virtual void validate() {
 		synchronized (getTreeLock()) {
 			ComponentPeer* peer = this->peer;
 			boolean wasValid = isValid();
@@ -120,17 +134,28 @@ public:
 			valid = true;
 		}
 	}
-	void invalidate() {
+	virtual void invalidate() {
 		synchronized (getTreeLock()) {
 			valid = false;
 			invalidateParent();
 		}
 	}
-	void revalidate() {
+	virtual void revalidate() {
 	}
 
-	Graphics& getGraphics();
-	Font& getFont();
+	virtual Graphics& getGraphics();
+	virtual Font& getFont();
+
+	virtual void setLocation(int x, int y) {setBounds(x, y, width, height);}
+	virtual void setBounds(int x, int y, int width, int height);
+	virtual int getX() { return x; }
+	virtual int getY() { return y; }
+	virtual int getWidth() { return width; }
+	virtual int getHeight() { return height; }
+
+	virtual void repaint() { repaint(0, 0, 0, width, height); }
+	virtual void repaint(int x, int y, int width, int height) { repaint(0, x, y, width, height); }
+	virtual void repaint(long tm, int x, int y, int width, int height);
 
 	virtual void addNotify();
 	virtual void removeNotify() {
@@ -152,12 +177,34 @@ public:
 };
 
 class Window : extends Container {
+private:
+	void ownedInit(Window& owner);
+	void init(const GraphicsConfiguration& gc);
+	Window(const GraphicsConfiguration& gc) { init(gc); }
+
 public:
 	enum class Type {
 		NORMAL,
 		UTILITY,
 		POPUP
 	};
+
+	Window() {
+		init((GraphicsConfiguration&)null_obj);
+	}
+/*
+	Window(Frame& owner) : Window(owner == null ? (GraphicsConfiguration&)null_obj : owner.getGraphicsConfiguration())  {
+		ownedInit(owner);
+	}
+*/
+	Window(Window& owner) : Window(owner == null ? (GraphicsConfiguration&)Object::null_obj : owner.getGraphicsConfiguration())  {
+		ownedInit(owner);
+	}
+	Window(Window& owner, const GraphicsConfiguration& gc) : Window(gc) {
+		ownedInit(owner);
+	}
+	void setBounds(int x, int y, int width, int height) {
+	}
 	void addNotify() {
 		if (peer == null) peer = getToolkit().createWindow(this);
 		Container::addNotify();

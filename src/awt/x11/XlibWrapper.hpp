@@ -84,7 +84,7 @@ public:
 	static void XResizeWindow(long display, long window, int width, int height);
 	static void XMoveWindow(long display, long window, int x, int y);
 
-	static boolean  XQueryPointer (long display, long window, long root_return, long child_return, long root_x_return, long root_y_return, long win_x_return, long win_y_return, long mask_return);
+	static boolean XQueryPointer(long display, long window, long& root_return, long& child_return, long& root_x_return, long& root_y_return, long& win_x_return, long& win_y_return, long& mask_return);
 	static void XFreeCursor(long display, long cursor);
 	static void XSetWindowBackground(long display, long window, long background_pixel);
 	static int XEventsQueued(long display, int mode);

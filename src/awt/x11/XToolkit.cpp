@@ -8,16 +8,71 @@
 
 namespace {
 
+class XMouseInfoPeer : implements awt::MouseInfoPeer {
+public:
+	XMouseInfoPeer() {};
+	int fillPointWithCoords(awt::Point& point) {
+		long display = awt::x11::XToolkit::getDisplay();
+		awt::GraphicsEnvironment& ge = awt::GraphicsEnvironment::getLocalGraphicsEnvironment();
+		Array<awt::GraphicsDevice*> gds = ge.getScreenDevices();
+
+		awt::x11::XToolkit::awtLock();
+		Finalize(awt::x11::XToolkit::awtUnlock(););
+		for (int i = 0; i < gds.length; i++) {
+			long screenRoot = awt::x11::XlibWrapper::RootWindow(display, i);
+			long l_root_return, l_child_return;
+			long l_root_x_return, l_root_y_return, l_win_x_return, l_win_y_return;
+			long l_mask_return;
+			boolean pointerFound = awt::x11::XlibWrapper::XQueryPointer(display, screenRoot, l_root_return,
+					l_child_return, l_root_x_return, l_root_y_return, l_win_x_return, l_win_y_return, l_mask_return);
+			if (pointerFound) {
+				return i;
+			}
+		}
+		LOGE("No pointer found in the system.");
+		return -1;
+	}
+	boolean isWindowUnderMouse(awt::Window* w) {
+		long display = awt::x11::XToolkit::getDisplay();
+		int contentWindow = ((awt::x11::XWindow*)w->getPeer())->getContentWindow();
+
+		awt::x11::XToolkit::awtLock();
+		Finalize(awt::x11::XToolkit::awtUnlock(););
+		long screenRoot = awt::x11::XlibWrapper::RootWindow(display, contentWindow);
+		long l_root_return, l_child_return;
+		long l_root_x_return, l_root_y_return, l_win_x_return, l_win_y_return;
+		long l_mask_return;
+		boolean windowOnTheSameScreen = awt::x11::XlibWrapper::XQueryPointer(display, screenRoot, l_root_return,
+					l_child_return, l_root_x_return, l_root_y_return, l_win_x_return, l_win_y_return, l_mask_return);
+		return windowOnTheSameScreen;
+	}
+};
+
+class XGraphicsDevice : extends awt::GraphicsDevice {
+public:
+	XGraphicsDevice() {}
+};
+
 const boolean PRIMARY_LOOP = false;
 const boolean SECONDARY_LOOP = true;
 
 util::concurrent::ReentrantLock AWT_LOCK;
+XMouseInfoPeer xPeer;
+Array<awt::GraphicsDevice*> screens;
 
 Thread toolkitThread;
 long display;
 int arrowCursor;
 long eventNumber;
 long awt_defaultFg;
+
+int getNumScreens() {
+	return 1;
+}
+
+awt::GraphicsDevice* makeScreenDevice(int screennum) {
+	return new XGraphicsDevice();
+}
 
 void awt_toolkit_init() {
 }
@@ -33,6 +88,20 @@ void processException(const Throwable& thr) {
 }//anonymous namespace
 
 namespace awt { namespace x11 {
+Array<awt::GraphicsDevice*> XGraphicsEnvironment::getScreenDevices() {
+	if (screens.length == 0) {
+		int num = getNumScreens();
+		screens = Array<awt::GraphicsDevice*>(num);
+		for (int i = 0; i < num; i++) {
+			screens[i] = makeScreenDevice(i);
+		}
+	}
+	return screens;
+}
+GraphicsDevice& XGraphicsEnvironment::getDefaultScreenDevice() {
+	return *(getScreenDevices()[0]);
+}
+
 class XComponentPeer : extends XWindow, implements awt::ComponentPeer {
 	void setVisible(boolean v) {}
 	void setEnabled(boolean e) {}
@@ -52,7 +121,7 @@ class XComponentPeer : extends XWindow, implements awt::ComponentPeer {
 	void setForeground(const Color& c) {}
 	void setBackground(const Color& c) {}
 	void setFont(const Font& f) {}
-	void updateCursorImmediately() {}
+	//void updateCursorImmediately() {}
 	//boolean requestFocus(Component lightweightChild, boolean temporary,
 		//                  boolean focusedWindowChangeAllowed, long time,
 		//                  CausedFocusEvent.Cause cause) = 0;
@@ -70,6 +139,9 @@ class XComponentPeer : extends XWindow, implements awt::ComponentPeer {
 	//virtual void reparent(ContainerPeer& newContainer) = 0;
 	//virtual boolean isReparentSupported() = 0;
 	void layout() {}
+	boolean updateGraphicsData(awt::GraphicsConfiguration& gc) {
+		return false;
+	}
 };
 class XCanvasPeer : extends XComponentPeer, implements awt::CanvasPeer {
 };
@@ -122,6 +194,10 @@ XToolkit::XToolkit() {
 	init();
 	toolkitThread = Thread(*this, "AWT-XAWT");
 	toolkitThread.start();
+}
+
+awt::MouseInfoPeer& XToolkit::getMouseInfoPeer() {
+	return xPeer;
 }
 
 void XToolkit::awtLock() {

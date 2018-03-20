@@ -19,12 +19,15 @@ public:
 
 class XBaseWindow : extends Object {
 protected:
+	int window;
 	virtual void ungrabInputImpl() {}
 public:
 	static void ungrabInput();
 	static void dispatchToWindow(const XEvent& ev);
 
 	virtual void dispatchEvent(const XEvent& ev);
+	virtual int getWindow() { return window; }
+    virtual int getContentWindow() { return window; }
 };
 
 class XWindow : extends XBaseWindow {

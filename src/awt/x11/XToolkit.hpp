@@ -7,6 +7,12 @@
 
 namespace awt { namespace x11 {
 
+class XGraphicsEnvironment : extends GraphicsEnvironment {
+public:
+	Array<GraphicsDevice*> getScreenDevices();
+	GraphicsDevice& getDefaultScreenDevice();
+};
+
 class XEvent {
 private:
 	Shared<nio::ByteBuffer> pData;
@@ -42,6 +48,8 @@ public:
 	awt::LightweightPeer* createComponent(awt::Component* target);
 	awt::WindowPeer* createWindow(awt::Window* target);
 	awt::DialogPeer* createDialog(awt::Dialog* target);
+
+	awt::MouseInfoPeer& getMouseInfoPeer();
 
 	void run();
 	void run(boolean loop);

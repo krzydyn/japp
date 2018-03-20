@@ -28,28 +28,30 @@ public:
 
 class ByteBuffer : extends Buffer, implements Comparable<ByteBuffer> {
 private:
-	boolean alloc=false;
+	const boolean allocated;
 protected:
-	Array<byte>* hb;
+	Array<byte>* hb = null;
 	int mOffset;
 	boolean mIsReadOnly = false;
-	boolean bigEndian;
+	boolean bigEndian = true;
 
 	ByteBuffer(int mark, int pos, int lim, int cap, int offset = 0) :
-			Buffer(mark, pos, lim, cap), mOffset(offset) {
+			Buffer(mark, pos, lim, cap), allocated(true), mOffset(offset) {
 		hb = new Array<byte>(cap);
-		alloc = true;
 	}
 	ByteBuffer(int mark, int pos, int lim, int cap, Array<byte>& hb, int offset = 0) :
-			Buffer(mark, pos, lim, cap), mOffset(offset) {
+			Buffer(mark, pos, lim, cap), allocated(false), mOffset(offset) {
 		this->hb = &hb;
 	}
 
 	void move(ByteBuffer& o) {
+		LOGD("ByteBuffer::move");
 		Buffer::move(o);
 		hb = o.hb; o.hb=null;
+		const_cast<boolean&>(allocated) = o.allocated;
 		mOffset = o.mOffset; o.mOffset=0;
 		mIsReadOnly = o.mIsReadOnly; o.mIsReadOnly=false;
+		bigEndian = o.bigEndian; o.bigEndian=true;
 	}
 
 public:
@@ -60,12 +62,11 @@ public:
 		return wrap(array, 0, array.length);
 	}
 
-	ByteBuffer(ByteBuffer&&o) {move(o);}
+	ByteBuffer() : allocated(false) {}
+	ByteBuffer(ByteBuffer&&o) : allocated(false) {move(o);}
 	ByteBuffer& operator=(ByteBuffer&&o) {move(o);return *this;}
 	~ByteBuffer() {
-		if (alloc) {
-			delete hb;
-		}
+		if (allocated) delete hb;
 	}
 
 	//virtual Shared<ByteBuffer> slice() const = 0;

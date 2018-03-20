@@ -86,7 +86,13 @@ void XlibWrapper::XFlush(long display) {
 //void XlibWrapper::XResizeWindow(long display, long window, int width, int height);
 //void XlibWrapper::XMoveWindow(long display, long window, int x, int y);
 
-//boolean  XlibWrapper::XQueryPointer (long display, long window, long root_return, long child_return, long root_x_return, long root_y_return, long win_x_return, long win_y_return, long mask_return);
+//int XQueryPointer(Display*, Window, Window*, Window*, int*, int*, int*, int*, unsigned int*)
+boolean XlibWrapper::XQueryPointer(long display, long window, long& root_return, long& child_return, long& root_x_return, long& root_y_return, long& win_x_return, long& win_y_return, long& mask_return) {
+	Window l_root_return, l_child_return;
+	int l_root_x_return, l_root_y_return, l_win_x_return, l_win_y_return;
+	unsigned l_mask_return;
+	return ::XQueryPointer((Display*)display, (Window)window, &l_root_return, &l_child_return, &l_root_x_return, &l_root_y_return, &l_win_x_return, &l_win_y_return, &l_mask_return);
+}
 //void XlibWrapper::XFreeCursor(long display, long cursor);
 //void XlibWrapper::XSetWindowBackground(long display, long window, long background_pixel);
 int XlibWrapper::XEventsQueued(long display, int mode) {

@@ -10,10 +10,30 @@ class HeadlessException : extends UnsupportedOperationException {
 	using UnsupportedOperationException::UnsupportedOperationException;
 };
 
+class GraphicsDevice {
+protected:
+	GraphicsDevice() {}
+};
+
 class GraphicsEnvironment {
 public:
 	static boolean isHeadless() { return false; }
+	static void checkHeadless() {
+		if (isHeadless()) throw HeadlessException();
+	}
+	static GraphicsEnvironment& getLocalGraphicsEnvironment();
+	virtual Array<GraphicsDevice*> getScreenDevices() = 0;
+	virtual GraphicsDevice& getDefaultScreenDevice() = 0;
 };
+
+class GraphicsConfiguration {
+protected:
+	GraphicsConfiguration(){}
+public:
+	virtual GraphicsDevice& getDevice() = 0;
+	virtual Rectangle getBounds() const = 0;
+};
+
 
 class Toolkit : extends Object {
 private:
@@ -25,6 +45,20 @@ public:
 	virtual LightweightPeer* createComponent(Component* target) = 0;
 	virtual WindowPeer* createWindow(Window* target) = 0;
 	virtual DialogPeer* createDialog(Dialog* target) = 0;
+
+	virtual MouseInfoPeer& getMouseInfoPeer() {
+		throw UnsupportedOperationException("Not implemented");
+	}
+
+	virtual Insets getScreenInsets(const GraphicsConfiguration& gc) {
+		GraphicsEnvironment::checkHeadless();
+		if (*this != Toolkit::getDefaultToolkit()) {
+			return Toolkit::getDefaultToolkit().getScreenInsets(gc);
+		}
+		else {
+			return Insets(0, 0, 0, 0);
+		}
+	}
 };
 
 } //namespace

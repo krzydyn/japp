@@ -2,8 +2,8 @@
 #include <lang/System.hpp>
 
 void showWindow() {
-	awt::Toolkit::getDefaultToolkit();
 	awt::Window w;
+	w.setBounds(0,0,100,100);
 	w.setVisible(true);
 	LOGD("w.setVis");
 }
