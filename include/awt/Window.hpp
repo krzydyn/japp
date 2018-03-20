@@ -22,7 +22,7 @@ private:
 	boolean valid = false;
 	boolean focusable = true;
 
-	GraphicsConfiguration* graphicsConfig;
+	const GraphicsConfiguration* graphicsConfig = null;
 
 	void repaintParentIfNeeded(int oldX, int oldY, int oldWidth, int oldHeight);
 	void notifyNewBounds(boolean resized, boolean moved);
@@ -30,13 +30,13 @@ private:
 protected:
 	static Object LOCK;
 
-	ComponentPeer *peer;
-	AppContext *appContext;
-	Container *parent;
+	ComponentPeer *peer = null;
+	AppContext *appContext = null;
+	Container *parent = null;
 	int        x,y,width,height;
 	Color      foreground;
 	Color      background;
-	Font       *font;
+	Font       *font = null;
 	//Cursor     cursor;
 	//Locale     locale;
 
@@ -62,14 +62,9 @@ protected:
 		return Point(absolute.x - p0.x, absolute.y - p0.y);
 	}
 
-	virtual boolean updateGraphicsData(GraphicsConfiguration& gc) {
-		if (graphicsConfig == &gc) return false;
-		graphicsConfig = &gc;
-		if (peer != null) return peer->updateGraphicsData(gc);
-		return false;
-	}
-
 	virtual void invalidateParent();
+
+	virtual void setGraphicsConfiguration(const GraphicsConfiguration& gc);
 
 public:
 	static constexpr float TOP_ALIGNMENT = 0.0f;
@@ -78,6 +73,13 @@ public:
 	static constexpr float LEFT_ALIGNMENT = 0.0f;
 	static constexpr float RIGHT_ALIGNMENT = 1.0f;
 	
+	virtual boolean updateGraphicsData(const GraphicsConfiguration& gc) {
+		if (graphicsConfig == &gc) return false;
+		graphicsConfig = &gc;
+		if (peer != null) return peer->updateGraphicsData(gc);
+		return false;
+	}
+
 	virtual void invalidateIfValid() final {
 		if (isValid()) invalidate();
 	}
@@ -93,6 +95,7 @@ public:
 	virtual Container *getParent() const { return parent; }
 	virtual ComponentPeer* getPeer() { return peer; }
 	virtual const GraphicsConfiguration& getGraphicsConfiguration() {
+		if (graphicsConfig == null) throw NullPointerException("graphicsConfig");
 		return *graphicsConfig;
 	}
 	virtual boolean isLightweight() { return instanceof<LightweightPeer>(peer); }
@@ -168,6 +171,7 @@ class Container : extends Component {
 private:
 	util::ArrayList<Component*> component;
 public:
+	boolean updateGraphicsData(const GraphicsConfiguration& gc);
 	void addNotify() {
 		Component::addNotify();
 		for (int i = 0; i < component.size(); i++) {
@@ -178,9 +182,13 @@ public:
 
 class Window : extends Container {
 private:
-	void ownedInit(Window& owner);
+	const GraphicsConfiguration& initGC(const GraphicsConfiguration& gc);
 	void init(const GraphicsConfiguration& gc);
+	void ownedInit(Window& owner);
 	Window(const GraphicsConfiguration& gc) { init(gc); }
+
+protected:
+	void setGraphicsConfiguration(const GraphicsConfiguration& gc);
 
 public:
 	enum class Type {

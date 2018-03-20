@@ -69,7 +69,7 @@ class NullComponentPeer : extends Object, implements LightweightPeer {
 	//Image createImage(int width, int height) = 0;
 	//boolean prepareImage(Image img, int w, int h, ImageObserver o) = 0;
 	//int checkImage(Image img, int w, int h, ImageObserver o) = 0;
-	GraphicsConfiguration& getGraphicsConfiguration() {return (GraphicsConfiguration&)null_obj;}
+	const GraphicsConfiguration& getGraphicsConfiguration() {return (GraphicsConfiguration&)null_obj;}
 	boolean handlesWheelScrolling() { return false; }
 	//void createBuffers(int numBuffers, BufferCapabilities caps) = 0;
 	//Image getBackBuffer() = 0;
@@ -78,7 +78,7 @@ class NullComponentPeer : extends Object, implements LightweightPeer {
 	void reparent(ContainerPeer& newContainer) {}
 	boolean isReparentSupported() { return false; }
 	void layout() {}
-	boolean updateGraphicsData(GraphicsConfiguration& gc) { return false; }
+	boolean updateGraphicsData(const GraphicsConfiguration& gc) { return false; }
 };
 class HeadlessToolkit : extends Toolkit {
 	FramePeer* createFrame(Frame* target) {

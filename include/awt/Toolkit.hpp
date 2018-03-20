@@ -10,12 +10,14 @@ class HeadlessException : extends UnsupportedOperationException {
 	using UnsupportedOperationException::UnsupportedOperationException;
 };
 
-class GraphicsDevice {
+class GraphicsDevice : extends Object {
 protected:
 	GraphicsDevice() {}
+public:
+	virtual const GraphicsConfiguration& getDefaultConfiguration() = 0;
 };
 
-class GraphicsEnvironment {
+class GraphicsEnvironment : extends Object {
 public:
 	static boolean isHeadless() { return false; }
 	static void checkHeadless() {
@@ -26,7 +28,7 @@ public:
 	virtual GraphicsDevice& getDefaultScreenDevice() = 0;
 };
 
-class GraphicsConfiguration {
+class GraphicsConfiguration : extends Object {
 protected:
 	GraphicsConfiguration(){}
 public:

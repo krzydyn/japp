@@ -46,6 +46,7 @@ void Logger::format(const char *fn, unsigned ln, int level, const char *fmt, va_
 	struct tm stm;
 	gmtime_r(&t, &stm);
 	String thn = Thread::currentThread().getName();
+	synchronized(*this) {
 	if (release) {
 		strftime (buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", localtime_r(&t, &stm));
 		System.out.printf("%s.%03llu %s[%c] %s: ", buf, r, levelColor[level], levelName[level], thn.cstr());
@@ -57,6 +58,7 @@ void Logger::format(const char *fn, unsigned ln, int level, const char *fmt, va_
 	//System.out.printf("%s.%03llu [%c]: ", buf, r, levelName[level]);
 	System.out.print(String::format(fmt, args));
 	System.out.println(SGR_RESET);
+	}
 }
 
 const Logger& Logger::error(const char *fn, unsigned ln, const char *fmt...) const {

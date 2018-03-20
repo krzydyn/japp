@@ -1,9 +1,22 @@
 #include <awt/Window.hpp>
 #include <lang/System.hpp>
 
+namespace {
+
+}
+
 namespace awt {
 
 Object Component::LOCK;
+
+void Component::setGraphicsConfiguration(const GraphicsConfiguration& gc) {
+	synchronized(getTreeLock()) {
+		if (updateGraphicsData(gc)) {
+			removeNotify();
+			addNotify();
+		}
+	}
+}
 
 void Component::repaintParentIfNeeded(int oldX, int oldY, int oldWidth, int oldHeight) {
 	if (parent != null && instanceof<LightweightPeer>(peer) && isShowing()) {
@@ -119,13 +132,39 @@ void Component::addNotify() {
 	}
 }
 
+boolean Container::updateGraphicsData(const GraphicsConfiguration& gc) {
+	boolean ret = Component::updateGraphicsData(gc);
+	//for (Component comp : component) {
+	for (int i = 0; i < component.size(); i++) {
+		Component* comp = component.get(i);
+		if (comp != null) {
+			ret |= comp->updateGraphicsData(gc);
+		}
+	}
+	return ret;
+}
+
+void Window::setGraphicsConfiguration(const GraphicsConfiguration& gc) {
+	Container::setGraphicsConfiguration(gc);
+}
+const GraphicsConfiguration& Window::initGC(const GraphicsConfiguration& gc) {
+	const GraphicsConfiguration* rgc = &gc;
+	GraphicsEnvironment::checkHeadless();
+	if (gc == null) {
+		rgc = &GraphicsEnvironment::getLocalGraphicsEnvironment().
+			getDefaultScreenDevice().getDefaultConfiguration();
+	}
+	setGraphicsConfiguration(*rgc);
+	return *rgc;
+}
+
 void Window::init(const GraphicsConfiguration& gc) {
 	GraphicsEnvironment::checkHeadless();
 	visible = false;
-	//gc = initGC(gc);
+	const GraphicsConfiguration& rgc = initGC(gc);
 	//setLayout(BorderLayout());
-	Rectangle screenBounds = gc.getBounds();
-	Insets screenInsets = getToolkit().getScreenInsets(gc);
+	Rectangle screenBounds = rgc.getBounds();
+	Insets screenInsets = getToolkit().getScreenInsets(rgc);
 	int x = getX() + screenBounds.x + screenInsets.left;
 	int y = getY() + screenBounds.y + screenInsets.top;
 	if (x != this->x || y != this->y) {
@@ -133,6 +172,7 @@ void Window::init(const GraphicsConfiguration& gc) {
 		//setLocationByPlatform(locationByPlatformProp);
 	}
 }
+
 void Window::ownedInit(Window& owner) {
 	this->parent = &owner;
 }

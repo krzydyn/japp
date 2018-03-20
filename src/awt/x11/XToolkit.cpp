@@ -48,9 +48,16 @@ public:
 	}
 };
 
+class XGraphicsConfiguration : extends awt::GraphicsConfiguration {
+public:
+	awt::GraphicsDevice& getDevice();
+	awt::Rectangle getBounds() const;
+};
+
 class XGraphicsDevice : extends awt::GraphicsDevice {
 public:
 	XGraphicsDevice() {}
+	const awt::GraphicsConfiguration& getDefaultConfiguration();
 };
 
 const boolean PRIMARY_LOOP = false;
@@ -58,6 +65,7 @@ const boolean SECONDARY_LOOP = true;
 
 util::concurrent::ReentrantLock AWT_LOCK;
 XMouseInfoPeer xPeer;
+XGraphicsConfiguration xGraphicsConfig;
 Array<awt::GraphicsDevice*> screens;
 
 Thread toolkitThread;
@@ -66,6 +74,16 @@ int arrowCursor;
 long eventNumber;
 long awt_defaultFg;
 
+awt::GraphicsDevice& XGraphicsConfiguration::getDevice() {
+	return *(screens[0]);
+}
+awt::Rectangle XGraphicsConfiguration::getBounds() const {
+	return awt::Rectangle(0,0,1000,800);
+}
+
+const awt::GraphicsConfiguration& XGraphicsDevice::getDefaultConfiguration() {
+	return xGraphicsConfig;
+}
 int getNumScreens() {
 	return 1;
 }
@@ -103,6 +121,8 @@ GraphicsDevice& XGraphicsEnvironment::getDefaultScreenDevice() {
 }
 
 class XComponentPeer : extends XWindow, implements awt::ComponentPeer {
+	const GraphicsConfiguration* graphicsConfig = null;
+public:
 	void setVisible(boolean v) {}
 	void setEnabled(boolean e) {}
 	void paint(Graphics& g) {}
@@ -130,7 +150,10 @@ class XComponentPeer : extends XWindow, implements awt::ComponentPeer {
 	//Image createImage(int width, int height) = 0;
 	//boolean prepareImage(Image img, int w, int h, ImageObserver o) = 0;
 	//int checkImage(Image img, int w, int h, ImageObserver o) = 0;
-	//GraphicsConfiguration getGraphicsConfiguration() = 0;
+	const awt::GraphicsConfiguration& getGraphicsConfiguration() {
+		if (graphicsConfig == null) throw NullPointerException("graphicsConfig");
+		return *graphicsConfig;
+	}
 	//virtual boolean handlesWheelScrolling() = 0;
 	//void createBuffers(int numBuffers, BufferCapabilities caps) = 0;
 	//Image getBackBuffer() = 0;
@@ -139,8 +162,10 @@ class XComponentPeer : extends XWindow, implements awt::ComponentPeer {
 	//virtual void reparent(ContainerPeer& newContainer) = 0;
 	//virtual boolean isReparentSupported() = 0;
 	void layout() {}
-	boolean updateGraphicsData(awt::GraphicsConfiguration& gc) {
-		return false;
+	boolean updateGraphicsData(const awt::GraphicsConfiguration& gc) {
+		if (graphicsConfig == &gc) return false;
+		graphicsConfig = &gc;
+		return true;
 	}
 };
 class XCanvasPeer : extends XComponentPeer, implements awt::CanvasPeer {
