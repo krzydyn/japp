@@ -9,6 +9,27 @@ namespace awt {
 
 Object Component::LOCK;
 
+void Component::setVisible(boolean b) {
+	if (visible == b) return ;
+	if (b == true) { //show
+	synchronized (getTreeLock()) {
+		visible = true;
+		//mixOnShowing();
+		if (peer != null) {
+			peer->setVisible(b);
+			if (instanceof<LightweightPeer>(peer)) repaint();
+		}
+		/*if (componentListener != null || (eventMask & AWTEvent::COMPONENT_EVENT_MASK) != 0 ||
+				Toolkit::enabledOnToolkit(AWTEvent::COMPONENT_EVENT_MASK)) {
+			ComponentEvent e = new ComponentEvent(this, ComponentEvent::COMPONENT_SHOWN);
+			Toolkit::getEventQueue().postEvent(e);
+		}*/
+	}
+	}
+	else { //hide
+	}
+}
+
 void Component::setGraphicsConfiguration(const GraphicsConfiguration& gc) {
 	synchronized(getTreeLock()) {
 		if (updateGraphicsData(gc)) {

@@ -111,9 +111,7 @@ public:
 	virtual void setEnabled(boolean b) { enabled = b; }
 	virtual boolean isDoubleBuffered() const { return false; }
 	virtual void enableInputMethods(boolean enable) {}
-	virtual void setVisible(boolean b) {
-		visible = b;
-	}
+	virtual void setVisible(boolean b);
 	virtual Color getForeground() const {
 		return foreground;
 	}
@@ -161,10 +159,7 @@ public:
 	virtual void repaint(long tm, int x, int y, int width, int height);
 
 	virtual void addNotify();
-	virtual void removeNotify() {
-		synchronized (getTreeLock()) {
-		}
-	}
+	virtual void removeNotify() { }
 };
 
 class Container : extends Component {
@@ -213,8 +208,15 @@ public:
 	}
 	void setBounds(int x, int y, int width, int height) {
 	}
+	//void setVisible(boolean b) { Container::setVisible(b); }
+
 	void addNotify() {
-		if (peer == null) peer = getToolkit().createWindow(this);
+		synchronized (getTreeLock()) {
+			if (peer == null) peer = getToolkit().createWindow(this);
+			Container::addNotify();
+		}
+	}
+	void removeNotify() {
 		Container::addNotify();
 	}
 };

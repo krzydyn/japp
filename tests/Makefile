@@ -43,8 +43,8 @@ endif
 
 SRCS:=$(wildcard $(SOURCE_DIR)/*.cpp)
 OBJS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
-TARGETS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%,$(SRCS))
-#TAEGETS:=$(BUILD_DIR)/awt
+#TARGETS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%,$(SRCS))
+TARGETS:=$(BUILD_DIR)/awt
 
 TARGETS: $(JRELIB)
 
@@ -52,7 +52,10 @@ $(BUILD_DIR)/%: $(SOURCE_DIR)/%.cpp $(JRELIB)
 	@#printf "$(CC) $(CPPFLAGS) $^ $(LDFLAGS) -o $@\n"
 	$(CC) $(CPPFLAGS) $^ $(LDFLAGS) -o $@
 
+build-awt: $(BUILD_DIR)/awt
+
 build: create-$(BUILD_DIR) $(TARGETS)
+	@echo "Build done: $^."
 
 clean:
 	rm -rf $(BUILD_DIR)
