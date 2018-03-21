@@ -40,8 +40,8 @@ protected:
 	//Cursor     cursor;
 	//Locale     locale;
 
-	boolean visible = true;
-	boolean enabled = true;
+	boolean visible = false;
+	boolean enabled = false;
 	boolean isPacked = false;
 
 	Dimension minSize;
@@ -63,8 +63,8 @@ protected:
 	}
 
 	virtual void invalidateParent();
-
 	virtual void setGraphicsConfiguration(const GraphicsConfiguration& gc);
+	virtual void setBoundsOp(int op) {}
 
 public:
 	static constexpr float TOP_ALIGNMENT = 0.0f;
@@ -99,6 +99,14 @@ public:
 		return *graphicsConfig;
 	}
 	virtual boolean isLightweight() { return instanceof<LightweightPeer>(peer); }
+
+	virtual void setPreferredSize(const Dimension& preferredSize);
+	virtual Dimension getPreferredSize();
+	virtual boolean isPreferredSizeSet() { return prefSizeSet; }
+	virtual void setMinimumSize(const Dimension& minimumSize);
+	virtual Dimension getMinimumSize();
+	virtual boolean isMinimumSizeSet() { return minSizeSet; }
+
 	virtual boolean isValid() const { return (peer != null) && valid; }
 	virtual boolean isDisplayable()  const{ return peer != null; }
 	virtual boolean isVisible() const { return visible; }
@@ -148,6 +156,13 @@ public:
 	virtual Font& getFont();
 
 	virtual void setLocation(int x, int y) {setBounds(x, y, width, height);}
+	virtual Dimension getSize() { return Dimension(width, height); }
+	virtual void setSize(int width, int height) {
+		synchronized(getTreeLock()) {
+			//setBoundsOp(ComponentPeer.SET_SIZE);
+			setBounds(x, y, width, height);
+		}
+	}
 	virtual void setBounds(int x, int y, int width, int height);
 	virtual int getX() { return x; }
 	virtual int getY() { return y; }
@@ -159,7 +174,7 @@ public:
 	virtual void repaint(long tm, int x, int y, int width, int height);
 
 	virtual void addNotify();
-	virtual void removeNotify() { }
+	virtual void removeNotify(){}
 };
 
 class Container : extends Component {
@@ -167,6 +182,9 @@ private:
 	util::ArrayList<Component*> component;
 public:
 	boolean updateGraphicsData(const GraphicsConfiguration& gc);
+	virtual void validateUnconditionally() final {
+	}
+	Dimension getPreferredSize();
 	void addNotify() {
 		Component::addNotify();
 		for (int i = 0; i < component.size(); i++) {
@@ -177,10 +195,19 @@ public:
 
 class Window : extends Container {
 private:
+	boolean beforeFirstShow = true;
+	boolean isInShow = false;
+
+	Window(const GraphicsConfiguration& gc) { init(gc); }
 	const GraphicsConfiguration& initGC(const GraphicsConfiguration& gc);
 	void init(const GraphicsConfiguration& gc);
 	void ownedInit(Window& owner);
-	Window(const GraphicsConfiguration& gc) { init(gc); }
+	void setClientSize(int w, int h) {
+		synchronized (getTreeLock()) {
+			setBoundsOp(ComponentPeer::SET_CLIENT_SIZE);
+			setBounds(x, y, w, h);
+		}
+	}
 
 protected:
 	void setGraphicsConfiguration(const GraphicsConfiguration& gc);
@@ -208,17 +235,12 @@ public:
 	}
 	void setBounds(int x, int y, int width, int height) {
 	}
-	//void setVisible(boolean b) { Container::setVisible(b); }
 
-	void addNotify() {
-		synchronized (getTreeLock()) {
-			if (peer == null) peer = getToolkit().createWindow(this);
-			Container::addNotify();
-		}
-	}
-	void removeNotify() {
-		Container::addNotify();
-	}
+	virtual void toFront();
+	void setVisible(boolean b);
+	void pack();
+	void addNotify();
+	void removeNotify() { Container::removeNotify(); }
 };
 
 class Frame : extends Window {

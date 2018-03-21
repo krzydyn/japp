@@ -34,7 +34,7 @@ public:
 	}
 	boolean isWindowUnderMouse(awt::Window* w) {
 		long display = awt::x11::XToolkit::getDisplay();
-		int contentWindow = ((awt::x11::XWindow*)w->getPeer())->getContentWindow();
+		long contentWindow = ((awt::x11::XWindow*)w->getPeer())->getContentWindow();
 
 		awt::x11::XToolkit::awtLock();
 		Finalize(awt::x11::XToolkit::awtUnlock(););
@@ -123,7 +123,10 @@ GraphicsDevice& XGraphicsEnvironment::getDefaultScreenDevice() {
 class XComponentPeer : extends XWindow, implements awt::ComponentPeer {
 	const GraphicsConfiguration* graphicsConfig = null;
 public:
-	void setVisible(boolean v) {}
+	void setVisible(boolean b) {
+		LOGD(__FUNCTION__);
+		xSetVisible(b);
+	}
 	void setEnabled(boolean e) {}
 	void paint(Graphics& g) {}
 	//virtual void print(Graphics& g) {}
@@ -175,6 +178,15 @@ class XPanelPeer : extends XCanvasPeer, implements awt::PanelPeer {
 class XWindowPeer : extends XPanelPeer, implements awt::WindowPeer {
 public:
 	XWindowPeer(awt::Window* target) {
+	}
+	void setVisible(boolean vis) {
+		LOGD(__FUNCTION__);
+		if (!isVisible() && vis) {
+			//isBeforeFirstMapNotify = true;
+		}
+		//updateFocusability();
+		//promoteDefaultPosition();
+		XPanelPeer::setVisible(vis);
 	}
 	void toFront() {}
 	void toBack() {}

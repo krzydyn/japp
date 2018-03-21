@@ -15,22 +15,22 @@ class XlibWrapper {
 private:
 	XlibWrapper() {}
 	static int XDefaultScreen(long display);
-	static long XRootWindow(long display, int screen);
-	static long XBlackPixel(long display, int screen);
-	static long XWhitePixel(long display, int screen);
+	static long XRootWindow(long display, long screen);
+	static long XBlackPixel(long display, long screen);
+	static long XWhitePixel(long display, long screen);
 public:
 	static long XOpenDisplay(const String& name);
 	static void XCloseDisplay(long display);
 	static long XDisplayString(long display);
 	static void XSetCloseDownMode(long display, int close_mode);
 	static int DefaultScreen(long display) {return XDefaultScreen(display);}
-	static long ScreenOfDisplay(long display, int screen_number);
+	static long ScreenOfDisplay(long display, long screen_number);
 	static int DoesBackingStore(long screen);
-	static long DisplayWidth(long display, int screen);
-	static long DisplayWidthMM(long display, int screen);
-	static long DisplayHeight(long display, int screen);
-	static long DisplayHeightMM(long display, int screen);
-	static long RootWindow(long display, int screen) { return XRootWindow(display, screen); }
+	static long DisplayWidth(long display, long screen);
+	static long DisplayWidthMM(long display, long screen);
+	static long DisplayHeight(long display, long screen);
+	static long DisplayHeightMM(long display, long screen);
+	static long RootWindow(long display, long screen) { return XRootWindow(display, screen); }
 	static int ScreenCount(long display);
 
 	static long BlackPixel(long display, int screen) { return XBlackPixel(display, screen); }
@@ -55,6 +55,7 @@ public:
 	static void XUngrabServer(long display);
 
 	static void XMapWindow(long display, long window);
+	static void XUnmapWindow(long display, long window);
 	static void XMapRaised(long display, long window);
 	static void XRaiseWindow(long display, long window);
 

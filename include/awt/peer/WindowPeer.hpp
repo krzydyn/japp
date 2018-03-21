@@ -21,6 +21,12 @@ public:
 
 interface ComponentPeer : Interface {
 public:
+	static const int SET_LOCATION = 1;
+	static const int SET_SIZE = 2;
+	static const int SET_BOUNDS = 3;
+	static const int SET_CLIENT_SIZE = 4;
+	static const int RESET_OPERATION = 5;
+
 	//virtual boolean isObscured() = 0;
 	//virtual boolean canDetermineObscurity() = 0;
 	virtual void setVisible(boolean v) = 0;

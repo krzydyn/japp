@@ -9,24 +9,76 @@ namespace awt {
 
 Object Component::LOCK;
 
-void Component::setVisible(boolean b) {
-	if (visible == b) return ;
-	if (b == true) { //show
-	synchronized (getTreeLock()) {
-		visible = true;
-		//mixOnShowing();
-		if (peer != null) {
-			peer->setVisible(b);
-			if (instanceof<LightweightPeer>(peer)) repaint();
+void Component::setPreferredSize(const Dimension& preferredSize) {
+	Dimension old;
+	if (prefSizeSet) old = prefSize;
+	prefSize = preferredSize;
+	prefSizeSet = (preferredSize == null);
+	//firePropertyChange("preferredSize", old, preferredSize);
+}
+Dimension Component::getPreferredSize() {
+	Dimension dim;
+	if (!(isPreferredSizeSet() || isValid())) {
+		synchronized (getTreeLock()) {
+			prefSize = (peer != null) ? peer->getPreferredSize() : getMinimumSize();
+			dim = prefSize;
 		}
-		/*if (componentListener != null || (eventMask & AWTEvent::COMPONENT_EVENT_MASK) != 0 ||
-				Toolkit::enabledOnToolkit(AWTEvent::COMPONENT_EVENT_MASK)) {
-			ComponentEvent e = new ComponentEvent(this, ComponentEvent::COMPONENT_SHOWN);
-			Toolkit::getEventQueue().postEvent(e);
-		}*/
 	}
+	return dim;
+}
+void Component::setMinimumSize(const Dimension& minimumSize) {
+	Dimension old;
+	if (minSizeSet) old = minSize;
+	minSize = minimumSize;
+	minSizeSet = (minimumSize == null);
+	//firePropertyChange("minimumSize", old, minimumSize);
+}
+Dimension Component::getMinimumSize() {
+	Dimension dim;
+	if (!(isMinimumSizeSet() || isValid())) {
+		synchronized (getTreeLock()) {
+			minSize = (peer != null) ? peer->getMinimumSize() : getSize();
+			dim = minSize;
+		}
+	}
+	return dim;
+}
+
+void Component::setVisible(boolean b) {
+	LOGD("%s(%s)", __FUNCTION__, String::valueOf(b).cstr());
+	if (visible == b) { LOGW("Already visible"); return ; }
+	if (b == true) { //show
+		synchronized (getTreeLock()) {
+			visible = true;
+			//mixOnShowing();
+			if (peer != null) {
+				peer->setVisible(true);
+				if (instanceof<LightweightPeer>(peer)) repaint();
+				// updateCursorImmediately();
+			}
+			else {
+				LOGD("peer is null");
+			}
+			/*if (componentListener != null || (eventMask & AWTEvent::COMPONENT_EVENT_MASK) != 0 ||
+					Toolkit::enabledOnToolkit(AWTEvent::COMPONENT_EVENT_MASK)) {
+				ComponentEvent e = new ComponentEvent(this, ComponentEvent::COMPONENT_SHOWN);
+				Toolkit::getEventQueue().postEvent(e);
+			}*/
+		}
+		if (parent != null) parent->invalidate();
 	}
 	else { //hide
+		isPacked = false;
+		synchronized (getTreeLock()) {
+			visible = false;
+			//mixOnHiding(isLightweight());
+			if (peer != null) {
+				peer->setVisible(false);
+				if (instanceof<LightweightPeer>(peer)) repaint();
+				// updateCursorImmediately();
+			}
+		}
+		if (parent != null) parent->invalidate();
 	}
 }
 
@@ -109,6 +161,7 @@ Font& Component::getFont() {
 }
 
 void Component::setBounds(int x, int y, int width, int height) {
+	
 	synchronized (getTreeLock()) {
 		boolean resized = (this->width != width) || (this->height != height);
 		boolean moved = (this->x != x) || (this->y != y);
@@ -138,6 +191,7 @@ void Component::setBounds(int x, int y, int width, int height) {
 }
 
 void Component::addNotify() {
+	LOGD(__FUNCTION__);
 	synchronized (getTreeLock()) {
 		ComponentPeer *peer = this->peer;
 		if (peer == null || instanceof<LightweightPeer>(peer)) {
@@ -154,6 +208,7 @@ void Component::addNotify() {
 }
 
 boolean Container::updateGraphicsData(const GraphicsConfiguration& gc) {
+	LOGD(__FUNCTION__);
 	boolean ret = Component::updateGraphicsData(gc);
 	//for (Component comp : component) {
 	for (int i = 0; i < component.size(); i++) {
@@ -164,11 +219,24 @@ boolean Container::updateGraphicsData(const GraphicsConfiguration& gc) {
 	}
 	return ret;
 }
+Dimension Container::getPreferredSize() {
+	Dimension dim;
+	if (!(isPreferredSizeSet() || isValid())) {
+		synchronized (getTreeLock()) {
+			//prefSize = (layoutMgr != null) ? layoutMgr->getPreferredSize() : Component::getPreferredSize();
+			prefSize = Component::getPreferredSize();
+			dim = prefSize;
+		}
+	}
+	return dim;
+}
 
 void Window::setGraphicsConfiguration(const GraphicsConfiguration& gc) {
+	LOGD(__FUNCTION__);
 	Container::setGraphicsConfiguration(gc);
 }
 const GraphicsConfiguration& Window::initGC(const GraphicsConfiguration& gc) {
+	LOGD(__FUNCTION__);
 	const GraphicsConfiguration* rgc = &gc;
 	GraphicsEnvironment::checkHeadless();
 	if (gc == null) {
@@ -180,6 +248,7 @@ const GraphicsConfiguration& Window::initGC(const GraphicsConfiguration& gc) {
 }
 
 void Window::init(const GraphicsConfiguration& gc) {
+	LOGD(__FUNCTION__);
 	GraphicsEnvironment::checkHeadless();
 	visible = false;
 	const GraphicsConfiguration& rgc = initGC(gc);
@@ -195,8 +264,53 @@ void Window::init(const GraphicsConfiguration& gc) {
 }
 
 void Window::ownedInit(Window& owner) {
+	LOGD(__FUNCTION__);
 	this->parent = &owner;
 }
 
+void Window::pack() {
+	if (parent != null && parent->getPeer() == null) {
+		parent->addNotify();
+	}
+	if (peer == null) addNotify();
+	Dimension newSize = getPreferredSize();
+	if (peer != null) {
+		setClientSize(newSize.width, newSize.height);
+	}
+	if (beforeFirstShow) isPacked = true;
+	validateUnconditionally();
+}
+
+void Window::toFront() {
+	if (visible) {
+		WindowPeer* peer = (WindowPeer*)((void*)this->peer);
+		if (peer != null) peer->toFront();
+		//if (isModalBlocked()) modalBlocker.toFront();
+	}
+}
+void Window::setVisible(boolean b) {
+	LOGD(__FUNCTION__);
+	if (b) {
+		if (peer == null) addNotify();
+		validateUnconditionally();
+		isInShow = true;
+		if (visible) {
+			toFront();
+		}
+		else {
+			beforeFirstShow = false;
+			Container::setVisible(true);
+			//for (int i = 0; i < ownedWindowList.size(); i++) { }
+		}
+		isInShow = false;
+	}
+}
+
+void Window::addNotify() {
+	synchronized (getTreeLock()) {
+		if (peer == null) peer = getToolkit().createWindow(this);
+		Container::addNotify();
+	}
+}
 
 } //namespace
