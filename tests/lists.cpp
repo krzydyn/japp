@@ -28,6 +28,17 @@ static void test_ArrayList2() {
 	System.out.println("list.toString = " + list.toString());
 }
 
+static void test_ArrayListRangeLoop() {
+	ArrayList<String> list;
+	list.add("aaa");
+	list.add(String("bbb"));
+	list.add(String::valueOf(10.0));
+	System.out.println("range loop on string");
+	for (const String& s : list) {
+		System.out.println(s);
+	}
+}
+
 static void test_LinkedList() {
 }
 
@@ -49,5 +60,7 @@ int main(int argc, const char *argv[]) {
 	test_LinkedList();
 	System.out.println("test HashMap");
 	test_HashMap();
+	System.out.println("test RangeLoop");
+	test_ArrayListRangeLoop();
 	return 0;
 }

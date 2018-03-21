@@ -82,7 +82,7 @@ public:
 	List& operator=(List&& other) = delete;
 	virtual ~List() {}
 
-	List() {}
+	List() : mEnd(this) {}
 
 	virtual boolean contains(const T& v) const final {TRACE; return indexOf(v) < size(); }
 	virtual int size() const = 0;
@@ -117,6 +117,27 @@ public:
 	// generic queue interface (FIFO)
 	virtual void enqueue(const T& v) final {TRACE;add(-1,v);}
 	virtual T dequeue() final {TRACE;return removeAt(0U);}
+
+	// c++11 range-based for loops support
+	class ListRange {
+	friend class List;
+	private:
+		List<T>& ref;
+		int idx = 0;
+		ListRange(List<T>* a) : ref(*a) {}
+	public:
+		int operator++() { return ++idx; } //preincrement
+		//int operator++(int) { return idx++; } //postincrement
+		//int operator==(const ListRange& o) { return idx == o.idx; }
+		int operator!=(const ListRange& o) const { return idx != o.idx; }
+		T& operator*() {return ref.get(idx);}
+	};
+
+	ListRange begin() { mEnd.idx=size(); return ListRange(this); }
+	const ListRange& end() { return mEnd; }
+
+private:
+	ListRange mEnd;
 };
 
 template<class T>
