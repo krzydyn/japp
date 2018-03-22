@@ -1,3 +1,4 @@
+#include <lang/Number.hpp>
 #include <lang/System.hpp>
 #include <util/concurrent/Lock.hpp>
 
@@ -121,7 +122,10 @@ GraphicsDevice& XGraphicsEnvironment::getDefaultScreenDevice() {
 }
 
 class XComponentPeer : extends XWindow, implements awt::ComponentPeer {
+private:
 	const GraphicsConfiguration* graphicsConfig = null;
+protected:
+	XComponentPeer(XCreateWindowParams& params) : XWindow(params) { }
 public:
 	void setVisible(boolean b) {
 		LOGD(__FUNCTION__);
@@ -130,7 +134,16 @@ public:
 	void setEnabled(boolean e) {}
 	void paint(Graphics& g) {}
 	//virtual void print(Graphics& g) {}
-	void setBounds(int x, int y, int width, int height, int op) {}
+	void setBounds(int x, int y, int width, int height, int op) {
+		LOGD("XComponentPeer::%s(%d,%d,%d,%d)", __FUNCTION__, x, y, width, height);
+		this->x = x;
+		this->y = y;
+		this->width = width;
+		this->height = height;
+		xSetBounds(x,y,width,height);
+		//validateSurface();
+		//layout();
+	}
 	void handleEvent(const AWTEvent& e) {}
 	Point getLocationOnScreen() {return Point();}
 	Dimension getPreferredSize() {return Dimension();}
@@ -172,21 +185,28 @@ public:
 	}
 };
 class XCanvasPeer : extends XComponentPeer, implements awt::CanvasPeer {
+protected:
+	XCanvasPeer(XCreateWindowParams& params) : XComponentPeer(params) { }
 };
 class XPanelPeer : extends XCanvasPeer, implements awt::PanelPeer {
+protected:
+	XPanelPeer(XCreateWindowParams& params) : XCanvasPeer(params) { }
 };
 class XWindowPeer : extends XPanelPeer, implements awt::WindowPeer {
-public:
-	XWindowPeer(awt::Window* target) {
+protected:
+	XWindowPeer(XCreateWindowParams&& params) : XPanelPeer(params) {
 	}
-	void setVisible(boolean vis) {
-		LOGD(__FUNCTION__);
-		if (!isVisible() && vis) {
+public:
+	XWindowPeer(awt::Window* target) : XWindowPeer(XCreateWindowParams()) {
+	}
+	void setVisible(boolean b) {
+		LOGD("XWindowPeer::%s(%s)", __FUNCTION__, String::valueOf(b).cstr());
+		if (!isVisible() && b) {
 			//isBeforeFirstMapNotify = true;
 		}
 		//updateFocusability();
 		//promoteDefaultPosition();
-		XPanelPeer::setVisible(vis);
+		XPanelPeer::setVisible(b);
 	}
 	void toFront() {}
 	void toBack() {}
@@ -235,6 +255,9 @@ XToolkit::XToolkit() {
 
 awt::MouseInfoPeer& XToolkit::getMouseInfoPeer() {
 	return xPeer;
+}
+
+void XToolkit::addToWinMap(long window, XBaseWindow* xwin) {
 }
 
 void XToolkit::awtLock() {

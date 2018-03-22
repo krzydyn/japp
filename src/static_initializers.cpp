@@ -212,9 +212,21 @@ const Charset& getDefaultCharset() {
 	return (const Charset&)Object::null_obj;
 }
 
+class NullObject : extends Object {
+public:
+	NullObject() {}
+	virtual ~NullObject() {}
+	virtual String toString() const;
+};
+
+String name_NullObj = "null_obj";
+String NullObject::toString() const { return name_NullObj; }
+NullObject nullObject;
 }
 
 namespace lang {
+
+Object& Object::null_obj = nullObject;
 
 The_System::The_System() {
 	Thread::currentThread();

@@ -102,6 +102,7 @@ public:
 		return false;
 	}
 
+	using Collection<T>::addAll;
 	virtual boolean addAll(int index, const Collection<T>& c) {TRACE;
 		int ai=0;
 		for (SharedIterator<T> i = const_cast<Collection<T>&>(c).iterator(); i->hasNext(); ++ai) {

@@ -9,6 +9,19 @@ namespace awt {
 
 Object Component::LOCK;
 
+void Component::reshapeNativePeer(int x, int y, int width, int height, int op) {
+	LOGD("Component::%s(%d,%d,%d,%d)", __FUNCTION__, x, y, width, height);
+	// native peer might be offset by more than direct
+	// parent since parent might be lightweight.
+	int nativeX = x;
+	int nativeY = y;
+	for (Component* c = parent; (c != null) && (instanceof<LightweightPeer>(c->peer)); c = c->parent) {
+		nativeX += c->x;
+		nativeY += c->y;
+	}
+	peer->setBounds(nativeX, nativeY, width, height, op);
+}
+
 void Component::setPreferredSize(const Dimension& preferredSize) {
 	Dimension old;
 	if (prefSizeSet) old = prefSize;
@@ -45,7 +58,7 @@ Dimension Component::getMinimumSize() {
 }
 
 void Component::setVisible(boolean b) {
-	LOGD("%s(%s)", __FUNCTION__, String::valueOf(b).cstr());
+	LOGD("Component::%s(%s)", __FUNCTION__, String::valueOf(b).cstr());
 	if (visible == b) { LOGW("Already visible"); return ; }
 	if (b == true) { //show
 		synchronized (getTreeLock()) {
@@ -161,11 +174,17 @@ Font& Component::getFont() {
 }
 
 void Component::setBounds(int x, int y, int width, int height) {
-	
+	LOGD("Component::%s(%d,%d,%d,%d)", __FUNCTION__, x, y, width, height);
 	synchronized (getTreeLock()) {
+		setBoundsOp(ComponentPeer::SET_BOUNDS);
+		Finalize(setBoundsOp(ComponentPeer::RESET_OPERATION););
+
 		boolean resized = (this->width != width) || (this->height != height);
 		boolean moved = (this->x != x) || (this->y != y);
-		if (!resized && !moved) return ;
+		if (!resized && !moved) {
+			LOGD("nothing changed (location or size)");
+			return ;
+		}
 		int oldX = this->x;
 		int oldY = this->y;
 		int oldWidth = this->width;
@@ -176,14 +195,19 @@ void Component::setBounds(int x, int y, int width, int height) {
 		this->height = height;
 		if (resized) isPacked = false;
 
+		LOGD("%s: peer = %lx", __FUNCTION__, (long)peer);
 		boolean needNotify = true;
+		//mixOnReshaping();
 		if (peer != null) {
+			if (!(instanceof<LightweightPeer>(peer))) {
+				 reshapeNativePeer(x, y, width, height, getBoundsOp());
+			}
 			if (resized) invalidate();
 			if (instanceof<Window>(this)) {
 				needNotify = false;
 			}
 			//if (parent != null) parent->invalidateIfValid();
-			invalidateParent();
+			invalidateParent(); // the same as above
 		}
 		if (needNotify) notifyNewBounds(resized, moved);
 		repaintParentIfNeeded(oldX, oldY, oldWidth, oldHeight);
@@ -195,6 +219,7 @@ void Component::addNotify() {
 	synchronized (getTreeLock()) {
 		ComponentPeer *peer = this->peer;
 		if (peer == null || instanceof<LightweightPeer>(peer)) {
+			LOGD("Component::addNotify: creating peer");
 			this->peer = peer = getToolkit().createComponent(this);
 		}
 		else {
@@ -289,7 +314,7 @@ void Window::toFront() {
 	}
 }
 void Window::setVisible(boolean b) {
-	LOGD(__FUNCTION__);
+	LOGD("Window::%s(%s)", __FUNCTION__, String::valueOf(b).cstr());
 	if (b) {
 		if (peer == null) addNotify();
 		validateUnconditionally();
@@ -307,6 +332,7 @@ void Window::setVisible(boolean b) {
 }
 
 void Window::addNotify() {
+	LOGD("Window::%s()", __FUNCTION__);
 	synchronized (getTreeLock()) {
 		if (peer == null) peer = getToolkit().createWindow(this);
 		Container::addNotify();

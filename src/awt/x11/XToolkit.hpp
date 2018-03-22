@@ -13,7 +13,7 @@ public:
 	GraphicsDevice& getDefaultScreenDevice();
 };
 
-class XEvent {
+class XEvent : extends Object {
 private:
 	Shared<nio::ByteBuffer> pData;
 public:
@@ -25,13 +25,12 @@ public:
 	XEvent(Shared<nio::ByteBuffer> buf) {
 		pData = buf;
 	}
-	~XEvent() {
-	}
 	void *getPData() { return &(pData->array()[0]); }
 	void dispose() { pData.reset(); }
 	int get_type() { return pData->getInt(0); }
 };
 
+class XBaseWindow;
 class XToolkit : extends Toolkit, implements Runnable {
 private:
 	void init();
@@ -42,6 +41,10 @@ public:
 	static long getDisplay();
 	static long getDefaultRootWindow();
 	static boolean getSunAwtDisableGrab();
+	static void addToWinMap(long window, XBaseWindow* xwin);
+	static void removeFromWinMap(long window, XBaseWindow* xwin);
+	static XBaseWindow* windowToXWindow(long window);
+	//static void addEventDispatcher(long window, XEventDispatcher dispatcher);
 
 	XToolkit();
 	awt::FramePeer* createFrame(awt::Frame* target);

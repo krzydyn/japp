@@ -92,6 +92,8 @@ private:
 			unsigned hc = util::hash_code(e->getKey())%ns;
 			nmap[hc].add(std::move(*e));
 		}
+		delete [] map;
+		map = nmap;
 		mapsize = ns;
 	}
 	const MapEntry<K,V>* entry(int i) const {TRACE;
@@ -104,12 +106,27 @@ private:
 	}
 
 public:
+	HashMap(const HashMap& o) {
+		init(o.mapsize);
+		for (unsigned i=0; i < o.mapsize; ++i) {
+			map[i].addAll(o.map[i]);
+		}
+	}
+
 	HashMap() {TRACE;init(10);}
 	HashMap(unsigned s) {TRACE;init(s);}
-	~HashMap() {TRACE; if (map) delete []map; }
+	~HashMap() {TRACE;
+		clear();
+		if (map) delete []map;
+	}
 
 	int size() const {return (int)elems;}
 	boolean containsKey(const K& key) const {TRACE;
+		unsigned hc = util::hash_code(key)%mapsize;
+		const ArrayList<MapEntry<K,V> >& l=map[hc];
+		for (int i=0; i<l.size(); ++i) {
+			if (is_equal(l.get(i).getKey(), key)) return true;
+		}
 		return false;
 	}
 	boolean containsValue(const V& value) const {TRACE;
@@ -166,7 +183,8 @@ public:
 		return *((V*)&null_obj);
 	}
 	void clear() {TRACE;
-		for (unsigned i=0; i < mapsize; ++i) map[i].clear();
+		if (map)
+			for (unsigned i=0; i < mapsize; ++i) map[i].clear();
 		elems=0;
 	}
 

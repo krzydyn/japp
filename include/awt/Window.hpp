@@ -26,6 +26,7 @@ private:
 
 	void repaintParentIfNeeded(int oldX, int oldY, int oldWidth, int oldHeight);
 	void notifyNewBounds(boolean resized, boolean moved);
+	void reshapeNativePeer(int x, int y, int width, int height, int op);
 
 protected:
 	static Object LOCK;
@@ -43,15 +44,16 @@ protected:
 	boolean visible = false;
 	boolean enabled = false;
 	boolean isPacked = false;
+	int boundsOp = ComponentPeer::DEFAULT_OPERATION;
 
 	Dimension minSize;
-	boolean minSizeSet;
+	boolean minSizeSet = false;
 	Dimension prefSize;
-	boolean prefSizeSet;
+	boolean prefSizeSet = false;
 	Dimension maxSize;
-	boolean maxSizeSet;
+	boolean maxSizeSet = false;
 
-	Component() : peer(null) {
+	Component() : x(0),y(0),width(0),height(0) {
 		//appContext = AppContext.getAppContext();
 	}
 
@@ -64,7 +66,15 @@ protected:
 
 	virtual void invalidateParent();
 	virtual void setGraphicsConfiguration(const GraphicsConfiguration& gc);
-	virtual void setBoundsOp(int op) {}
+	virtual void setBoundsOp(int op) {
+		if (op == ComponentPeer::RESET_OPERATION) {
+			boundsOp = ComponentPeer::DEFAULT_OPERATION;
+		}
+		else if (boundsOp == ComponentPeer::DEFAULT_OPERATION) {
+			boundsOp = op;
+		}
+	}
+	virtual int getBoundsOp() const {return boundsOp;}
 
 public:
 	static constexpr float TOP_ALIGNMENT = 0.0f;
@@ -155,11 +165,16 @@ public:
 	virtual Graphics& getGraphics();
 	virtual Font& getFont();
 
-	virtual void setLocation(int x, int y) {setBounds(x, y, width, height);}
+	virtual void setLocation(int x, int y) {
+		synchronized(getTreeLock()) {
+			setBoundsOp(ComponentPeer::SET_LOCATION);
+			setBounds(x, y, width, height);
+		}
+	}
 	virtual Dimension getSize() { return Dimension(width, height); }
 	virtual void setSize(int width, int height) {
 		synchronized(getTreeLock()) {
-			//setBoundsOp(ComponentPeer.SET_SIZE);
+			setBoundsOp(ComponentPeer::SET_SIZE);
 			setBounds(x, y, width, height);
 		}
 	}
@@ -195,8 +210,11 @@ public:
 
 class Window : extends Container {
 private:
+	static const boolean locationByPlatformProp = true;
+
 	boolean beforeFirstShow = true;
 	boolean isInShow = false;
+	boolean locationByPlatform = locationByPlatformProp;
 
 	Window(const GraphicsConfiguration& gc) { init(gc); }
 	const GraphicsConfiguration& initGC(const GraphicsConfiguration& gc);
@@ -234,6 +252,12 @@ public:
 		ownedInit(owner);
 	}
 	void setBounds(int x, int y, int width, int height) {
+		synchronized (getTreeLock()) {
+			if (getBoundsOp() == ComponentPeer::SET_LOCATION || getBoundsOp() == ComponentPeer::SET_BOUNDS) {
+				locationByPlatform = false;
+			}
+			Container::setBounds(x, y, width, height);
+		}
 	}
 
 	virtual void toFront();

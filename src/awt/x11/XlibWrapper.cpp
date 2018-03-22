@@ -15,8 +15,9 @@ long XlibWrapper::XOpenDisplay(const String& name) {
 //void XlibWrapper::XSetCloseDownMode(long display, int close_mode);
 
 int XlibWrapper::XDefaultScreen(long display) {
-	LOGD(__FUNCTION__);
-	return ::XDefaultScreen((Display *)display);
+	int r = ::XDefaultScreen((Display *)display);
+	LOGD("%s(%lX) = %d", __FUNCTION__, display, r);
+	return r;
 }
 
 //long XlibWrapper::ScreenOfDisplay(long display, long screen_number);
@@ -26,8 +27,9 @@ int XlibWrapper::XDefaultScreen(long display) {
 //long XlibWrapper::DisplayHeight(long display, long screen);
 //long XlibWrapper::DisplayHeightMM(long display, long screen);
 long XlibWrapper::XRootWindow(long display, long screen) {
-	LOGD(__FUNCTION__);
-	return ::XRootWindow((Display *)display, (int)screen);
+	long r = ::XRootWindow((Display *)display, (int)screen);
+	LOGD("%s(%lX,%ld) = %d", __FUNCTION__, display, screen, r);
+	return r;
 }
 //int XlibWrapper::ScreenCount(long display);
 
@@ -40,8 +42,14 @@ long XlibWrapper::XWhitePixel(long display, long screen) {
 	return (long)::XWhitePixel((Display *)display, (int)screen);
 }
 
-//long XlibWrapper::XCreateWindow(long display, long parent, int x,int  y, int width, int height, int border_width, int depth, long wclass, long visual, long valuemask, long attributes);
-//void XlibWrapper::XDestroyWindow(long display, long window);
+long XlibWrapper::XCreateWindow(long display, long parent, int x,int  y, int width, int height, int border_width, int depth, long wclass, long visual, long valuemask, void* attributes) {
+	long r = ::XCreateWindow((Display *)display, parent, x, y, width, height, border_width, depth, (int)wclass, (Visual*)visual, valuemask, (XSetWindowAttributes*)attributes);
+	LOGD("%s(%lX,%ld,bounds=(%d,%d,%d,%d),depth=%d) = %lX", __FUNCTION__, display, parent, x, y, width, height, depth, r);
+	return r;
+}
+void XlibWrapper::XDestroyWindow(long display, long window) {
+	::XDestroyWindow((Display *)display, window);
+}
 
 //int XlibWrapper::XGrabPointer(long display, long grab_window, int owner_events, int event_mask, int pointer_mode, int keyboard_mode, long confine_to, long cursor, long time);
 

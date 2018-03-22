@@ -43,12 +43,7 @@ public:
 	boolean booleanValue() const {return value;}
 	String toString() const { return toString(value); }
 	jint hashCode() const {return Boolean::hashCode(value);}
-	boolean equals(const Object& o) const {
-		if (instanceof<Boolean>(&o)) {
-			return value == ((const Boolean&)o).booleanValue();
-		}
-		return false;
-	}
+	boolean equals(const Object& o) const;
 	int compareTo(const Boolean& b) const { return compare(value,b.value); }
 	operator int() const { return value?1:0; }
 };
@@ -74,7 +69,7 @@ public:
 	static jint hashCode(int value) {return (jint)value;}
 	static int compare(int x, int y) {return (x < y) ? -1 : ((x == y) ? 0 : 1);}
 
-	Integer(Integer&& o) : value(o.value) {}
+	Integer(const Integer& o) : value(o.value) {}
 	Integer(int value) : value(value) {}
 	byte byteValue() const {return (byte)value;}
 	short shortValue() const {return (short)value;}
@@ -117,7 +112,7 @@ public:
 	static jint hashCode(byte value) {return (jint)value;}
 	static int compare(byte x, byte y) {return x - y;}
 
-	Byte(Byte&& o) : value(o.value) {}
+	Byte(const Byte& o) : value(o.value) {}
 	Byte(byte value) : value(value) {}
 	Byte(String s) : value(parseByte(s, 10)) {}
 	byte byteValue() const {return (byte)value;}
@@ -164,7 +159,7 @@ public:
 	static jint hashCode(short value) {return (jint)value;}
 	static int compare(short x, short y) {return (x < y) ? -1 : ((x == y) ? 0 : 1);}
 
-	Short(Short&& o) : value(o.value) {}
+	Short(const Short& o) : value(o.value) {}
 	Short(short value) : value(value) {}
 	Short(String s) : value(parseShort(s, 10)) {}
 	byte byteValue() const {return (byte)value;}
@@ -212,7 +207,7 @@ public:
 	static jint hashCode(long value) { return (jint)(value ^ (value >> 32)); }
 	static int compare(long x, long y) {return (x < y) ? -1 : ((x == y) ? 0 : 1);}
 
-	Long(Long&& o) : value(o.value) {}
+	Long(const Long& o) : value(o.value) {}
 	Long(long value) : value(value) {}
 	byte byteValue() const {return (byte)value;}
 	short shortValue() const {return (short)value;}

@@ -122,10 +122,25 @@ public:
 		throw UnsupportedOperationException(__FUNCTION__);
 	}
 	jlong getLong(int index) const {
-		throw UnsupportedOperationException(__FUNCTION__);
+		int i = ix(checkIndex(index, 8));
+		jlong l = 0;
+		for (int j=0; j < 8; ++j) {
+			l <<= 8;
+			l |= (*hb)[i+j];
+		}
+		return l;
 	}
 	ByteBuffer& putLong(int index, jlong value) {
-		throw UnsupportedOperationException(__FUNCTION__);
+		int i = ix(checkIndex(index, 8));
+		(*hb)[i+0] = (byte)(value >> 56);
+		(*hb)[i+1] = (byte)(value >> 48);
+		(*hb)[i+2] = (byte)(value >> 40);
+		(*hb)[i+3] = (byte)(value >> 32);
+		(*hb)[i+4] = (byte)(value >> 24);
+		(*hb)[i+5] = (byte)(value >> 16);
+		(*hb)[i+6] = (byte)(value >> 8);
+		(*hb)[i+7] = (byte)value;
+		return *this;
 	}
 	//virtual Shared<LongBuffer> asLongBuffer() = 0;
 };

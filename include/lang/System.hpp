@@ -117,6 +117,7 @@ extern const Logger SystemLog;
 #define LOGI(fmt...) SystemLog.info(__FILE__,__LINE__,fmt)
 #define LOGN(fmt...) SystemLog.notice(__FILE__,__LINE__,fmt)
 
+#define LOGM(fmt...) SystemLog.method(__FILE__,__LINE__,__FUNCTION__,fmt)
 
 } //namespace lang
 

@@ -149,6 +149,7 @@ void signal_handle(int signum) {
 	t.printStackTrace();
 	terminate_hook();
 }
+
 [[noreturn]]
 void terminate_hook() {
 	std::set_terminate(null); // avoid loop
@@ -178,13 +179,6 @@ void terminate_hook() {
 	//std::abort();
 }
 
-String name_NullObj = "null_obj";
-
-class NullObj : extends Object {
-public:
-	String toString() const { return name_NullObj; }
-} nullObject;
-
 class ArrayClass : extends Class {
 public:
 	ArrayClass(const std::type_info& t) : Class(t) {}
@@ -195,7 +189,6 @@ public:
 
 namespace lang {
 
-Object& Object::null_obj = nullObject;
 long Object::null_val = 0;
 
 Throwable::Throwable(const String& msg, Throwable *c) : detailMessage(msg), cause(c) {
@@ -297,7 +290,7 @@ const Class& Object::getClass(const std::type_info& type) {
 Object& Object::clone() const {TRACE;
 	throw CloneNotSupportedException();
 }
-String Object::toString() {return ((const Object*)this)->toString();}
+String Object::toString() { return ((const Object*)this)->toString(); }
 String Object::toString() const {
 	return getClass().getName() + "@" + Integer::toHexString(hashCode());
 }

@@ -26,6 +26,7 @@ public:
 	static const int SET_BOUNDS = 3;
 	static const int SET_CLIENT_SIZE = 4;
 	static const int RESET_OPERATION = 5;
+	static const int DEFAULT_OPERATION = SET_BOUNDS;
 
 	//virtual boolean isObscured() = 0;
 	//virtual boolean canDetermineObscurity() = 0;

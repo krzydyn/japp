@@ -36,7 +36,7 @@ public:
 	static long BlackPixel(long display, int screen) { return XBlackPixel(display, screen); }
 	static long WhitePixel(long display, int screen) { return XWhitePixel(display, screen); }
 
-	static long XCreateWindow(long display, long parent, int x,int  y, int width, int height, int border_width, int depth, long wclass, long visual, long valuemask, long attributes);
+	static long XCreateWindow(long display, long parent, int x,int  y, int width, int height, int border_width, int depth, long wclass, long visual, long valuemask, void* attributes);
 	static void XDestroyWindow(long display, long window);
 
 	static int XGrabPointer(long display, long grab_window,

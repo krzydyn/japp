@@ -39,6 +39,13 @@ namespace lang {
 const Boolean Boolean::TRUE(true);
 const Boolean Boolean::FALSE(false);
 
+boolean Boolean::equals(const Object& o) const {
+	if (instanceof<Boolean>(&o)) {
+		return value == ((const Boolean&)o).booleanValue();
+	}
+	return false;
+}
+
 String Boolean::toString(boolean v) {
 	return v ? "true" : "false";
 }
