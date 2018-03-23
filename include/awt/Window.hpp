@@ -19,6 +19,7 @@ class Component : extends Object {
 private:
 	String  name;
 	boolean nameExplicitlySet = false;
+	boolean isAddNotifyComplete = false;
 	boolean valid = false;
 	boolean focusable = true;
 
@@ -27,6 +28,11 @@ private:
 	void repaintParentIfNeeded(int oldX, int oldY, int oldWidth, int oldHeight);
 	void notifyNewBounds(boolean resized, boolean moved);
 	void reshapeNativePeer(int x, int y, int width, int height, int op);
+	void mixOnShowing();
+	void applyCurrentShape();
+	void applyCurrentShapeBelowMe();
+	void subtractAndApplyShapeBelowMe();
+	boolean isMixingNeeded() { return false; }
 
 protected:
 	static Object LOCK;
@@ -200,21 +206,18 @@ public:
 	virtual void validateUnconditionally() final {
 	}
 	Dimension getPreferredSize();
-	void addNotify() {
-		Component::addNotify();
-		for (int i = 0; i < component.size(); i++) {
-			component.get(i)->addNotify();
-		}
-	}
+	void addNotify();
 };
 
 class Window : extends Container {
 private:
+	static const int OPENED = 0x01;
 	static const boolean locationByPlatformProp = true;
 
 	boolean beforeFirstShow = true;
 	boolean isInShow = false;
 	boolean locationByPlatform = locationByPlatformProp;
+	int state = 0;
 
 	Window(const GraphicsConfiguration& gc) { init(gc); }
 	const GraphicsConfiguration& initGC(const GraphicsConfiguration& gc);
@@ -264,7 +267,7 @@ public:
 	void setVisible(boolean b);
 	void pack();
 	void addNotify();
-	void removeNotify() { Container::removeNotify(); }
+	void removeNotify();
 };
 
 class Frame : extends Window {

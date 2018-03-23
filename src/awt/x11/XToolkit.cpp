@@ -196,9 +196,17 @@ class XWindowPeer : extends XPanelPeer, implements awt::WindowPeer {
 protected:
 	XWindowPeer(XCreateWindowParams&& params) : XPanelPeer(params) {
 	}
-public:
-	XWindowPeer(awt::Window* target) : XWindowPeer(XCreateWindowParams()) {
+	void preInit(XCreateWindowParams& params) {
 	}
+	void postInit(XCreateWindowParams& params) {
+	}
+public:
+	XWindowPeer(awt::Window* target) : XWindowPeer(
+			XCreateWindowParams()
+			.put<awt::Window*>(TARGET,target)
+			.put<Long>(PARENT_WINDOW, Long.valueOf(0))
+		) {}
+
 	void setVisible(boolean b) {
 		LOGD("XWindowPeer::%s(%s)", __FUNCTION__, String::valueOf(b).cstr());
 		if (!isVisible() && b) {
@@ -316,7 +324,7 @@ awt::LightweightPeer* XToolkit::createComponent(awt::Component* target) {
 	return null;
 }
 awt::WindowPeer* XToolkit::createWindow(awt::Window* target) {
-	LOGD("%s", __FUNCTION__);
+	LOGD("XToolkit::%s, creating XWindowPeer", __FUNCTION__);
 	awt::WindowPeer* peer = new XWindowPeer(target);
 	targetCreatedPeer(target, peer);
 	return peer;

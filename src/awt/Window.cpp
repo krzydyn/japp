@@ -2,7 +2,7 @@
 #include <lang/System.hpp>
 
 namespace {
-
+ArrayList<awt::Window*> allWindows;
 }
 
 namespace awt {
@@ -20,6 +20,27 @@ void Component::reshapeNativePeer(int x, int y, int width, int height, int op) {
 		nativeY += c->y;
 	}
 	peer->setBounds(nativeX, nativeY, width, height, op);
+}
+
+void Component::applyCurrentShape() {
+}
+void Component::applyCurrentShapeBelowMe() {
+	Container* parent = getContainer();
+	if (parent != null && parent->isShowing()) {
+	}
+}
+void Component::subtractAndApplyShapeBelowMe() {
+	Container* parent = getContainer();
+	if (parent != null && parent->isShowing()) {
+	}
+}
+
+void Component::mixOnShowing() {
+	synchronized (getTreeLock()) {
+		if (!isMixingNeeded()) return ;
+		if (isLightweight()) subtractAndApplyShapeBelowMe();
+		else applyCurrentShape();
+	}
 }
 
 void Component::setPreferredSize(const Dimension& preferredSize) {
@@ -229,6 +250,9 @@ void Component::addNotify() {
 			}
 		}
 		invalidate();
+
+		if (!isAddNotifyComplete) mixOnShowing();
+		isAddNotifyComplete = true;
 	}
 }
 
@@ -254,6 +278,18 @@ Dimension Container::getPreferredSize() {
 		}
 	}
 	return dim;
+}
+void Container::addNotify() {
+	synchronized (getTreeLock()) {
+		Component::addNotify();
+		if (! (instanceof<LightweightPeer>(peer))) {
+			//dispatcher = new LightweightDispatcher(this);
+		}
+
+		for (int i = 0; i < component.size(); i++) {
+			component.get(i)->addNotify();
+		}
+	}
 }
 
 void Window::setGraphicsConfiguration(const GraphicsConfiguration& gc) {
@@ -324,18 +360,41 @@ void Window::setVisible(boolean b) {
 		}
 		else {
 			beforeFirstShow = false;
+			//closeSplashScreen();
 			Container::setVisible(true);
+			synchronized (getTreeLock()) {
+				locationByPlatform = false;
+			}
 			//for (int i = 0; i < ownedWindowList.size(); i++) { }
 		}
 		isInShow = false;
+
+		if ((state & OPENED) == 0) {
+			//postWindowEvent(WindowEvent.WINDOW_OPENED);
+			state |= OPENED;
+		}
 	}
 }
 
 void Window::addNotify() {
 	LOGD("Window::%s()", __FUNCTION__);
 	synchronized (getTreeLock()) {
+		if (parent != null && parent->getPeer() == null) {
+			parent->addNotify();
+		}
 		if (peer == null) peer = getToolkit().createWindow(this);
+		synchronized (allWindows) {
+			allWindows.add(this);
+		}
 		Container::addNotify();
+	}
+}
+void Window::removeNotify() {
+	synchronized (getTreeLock()) {
+		synchronized (allWindows) {
+			allWindows.remove(this);
+		}
+		Container::removeNotify();
 	}
 }
 

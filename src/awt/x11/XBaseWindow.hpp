@@ -34,11 +34,12 @@ public:
 	}
 
 	template <class T>
-	void put(const String& key, const T& value) {
+	XCreateWindowParams& put(const String& key, const T& value) {
 		if (value != null) {
 			Object *o = new T(value);
 			util::HashMap<String,Object*>::put(key, o);
 		}
+		return *this;
 	}
 
 	template <class T>
@@ -60,7 +61,7 @@ private:
 	long screen = 0;
 
 	void checkParams(XCreateWindowParams& params);
-	void create(const XCreateWindowParams& params);
+	void create(XCreateWindowParams& params);
 
 protected:
 	int x;
@@ -70,12 +71,13 @@ protected:
 
 	// Creates an invisible InputOnly window without an associated Component.
 	XBaseWindow() : XBaseWindow(XCreateWindowParams()) {}
-	XBaseWindow(long parentWindow, const Rectangle& bounds) {}
+	XBaseWindow(long parentWindow, const Rectangle& bounds);
 	XBaseWindow(const Rectangle& bounds) {}
 	XBaseWindow(long parentWindow) {}
 
-	virtual void init(const XCreateWindowParams& params) final;
+	virtual void init(XCreateWindowParams& params) final;
 	virtual void ungrabInputImpl() {}
+
 public:
     static const char* PARENT_WINDOW; // parent window, Long
     static const char* BOUNDS; // bounds of the window, Rectangle
@@ -99,7 +101,7 @@ public:
 	static long getScreenOfWindow(long window);
 	static void ungrabInput();
 
-	XBaseWindow (const XCreateWindowParams& params) { init(params); }
+	XBaseWindow (const XCreateWindowParams& params);
 
 	virtual long getScreenNumber();
 	virtual long getScreen();

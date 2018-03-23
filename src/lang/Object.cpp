@@ -127,9 +127,7 @@ void captureStack2(Array<StackTraceElement>& stackTrace) {
 }
 #endif
 void signal_handle(int signum) {
-	System.err.print("\x1b[1;37m");
-	System.err.println("Received signal " + String::valueOf(signum));
-	System.err.print("\x1b[m");
+	System.err.printf("%sReceived signal %d %s\n", "\x1b[1;37m", signum, "\x1b[m");
 
 	Array<StackTraceElement> st;
 	captureStackTrace(st, 3);

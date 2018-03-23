@@ -128,7 +128,17 @@ const char* XBaseWindow::SAVE_UNDER = "save under";
 const char* XBaseWindow::BACKING_STORE = "backing store";
 const char* XBaseWindow::BIT_GRAVITY = "bit gravity";
 
-void XBaseWindow::init(const XCreateWindowParams& params) {
+XBaseWindow::XBaseWindow(const XCreateWindowParams& par) {
+	XCreateWindowParams params(par);
+	init(params);
+}
+
+XBaseWindow::XBaseWindow(long parentWindow, const Rectangle& bounds) {
+	XCreateWindowParams params;
+	params.put<Rectangle>(BOUNDS, bounds).put<Long>(PARENT_WINDOW, Long::valueOf(parentWindow));
+	init(params);
+}
+void XBaseWindow::init(XCreateWindowParams& params) {
 	embedded = Boolean::TRUE.equals(params.get<Boolean>(EMBEDDED));
 	visible = Boolean::TRUE.equals(params.get<Boolean>(VISIBLE));
 	if (!Boolean::TRUE.equals(params.get<Boolean>(DELAYED))) {
@@ -154,12 +164,11 @@ void XBaseWindow::checkParams(XCreateWindowParams& params) {
 	eventMask |= XConstants::PropertyChangeMask | XConstants::OwnerGrabButtonMask;
 	params.put<Long>(EVENT_MASK, Long::valueOf(eventMask));
 }
-void XBaseWindow::create(const XCreateWindowParams& par) {
+void XBaseWindow::create(XCreateWindowParams& params) {
 	LOGD("XBaseWindow::%s", __FUNCTION__);
 	XToolkit::awtLock();
 	Finalize(XToolkit::awtUnlock(););
 
-	XCreateWindowParams params(par);
 	checkParams(params);
 
 	XSetWindowAttributes xattr;
