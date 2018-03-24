@@ -4,14 +4,15 @@
 #include <util/HashMap.hpp>
 #include "XToolkit.hpp"
 
-namespace awt { namespace x11 {
+namespace awt {
+class Component;
+namespace x11 {
 
 class XBaseWindow;
-class Component;
 class XAwtState {
 public:
 	static void setComponentMouseEntered(Component* component);
-	static Component* getComponentMouseEntered();
+	static awt::Component* getComponentMouseEntered();
 	static boolean isManualGrab();
 	static void setGrabWindow(XBaseWindow* grabWindow);
 	static void setAutoGrabWindow(XBaseWindow* grabWindow);
@@ -32,7 +33,6 @@ public:
 		}
 		return *this;
 	}
-
 	template <class T>
 	XCreateWindowParams& put(const String& key, const T& value) {
 		if (value != null) {
@@ -41,12 +41,9 @@ public:
 		}
 		return *this;
 	}
-
 	template <class T>
 	T& get(const String& key) const {
-		if (!containsKey(key)) {
-			return (T&)null_obj;
-		}
+		if (!containsKey(key)) return (T&)null_obj;
 		Object *o = util::HashMap<String,Object*>::get(key);
 		return (T&)(*o);
 	}
@@ -54,14 +51,23 @@ public:
 
 class XBaseWindow : extends Object {
 private:
+	XCreateWindowParams delayedParams;
+
 	long window = 0;
 	boolean visible = false;
 	boolean mapped = false;
 	boolean embedded = false;
+	XBaseWindow* parentWindow;
+
 	long screen = 0;
 
-	void checkParams(XCreateWindowParams& params);
-	void create(XCreateWindowParams& params);
+	enum class InitialiseState {
+		INITIALISING,
+		NOT_INITIALISED,
+		INITIALISED,
+		FAILED_INITIALISATION
+	};
+	InitialiseState initialising;
 
 protected:
 	int x;
@@ -70,12 +76,18 @@ protected:
 	int height;
 
 	// Creates an invisible InputOnly window without an associated Component.
-	XBaseWindow() : XBaseWindow(XCreateWindowParams()) {}
+	//XBaseWindow() : XBaseWindow(XCreateWindowParams()) {}
+	XBaseWindow() {} //dummy
+
 	XBaseWindow(long parentWindow, const Rectangle& bounds);
 	XBaseWindow(const Rectangle& bounds) {}
 	XBaseWindow(long parentWindow) {}
 
 	virtual void init(XCreateWindowParams& params) final;
+	virtual void checkParams(XCreateWindowParams& params);
+	virtual void preInit(XCreateWindowParams& params);
+	virtual void create(XCreateWindowParams& params);
+	virtual void postInit(XCreateWindowParams& params);
 	virtual void ungrabInputImpl() {}
 
 public:
@@ -101,7 +113,7 @@ public:
 	static long getScreenOfWindow(long window);
 	static void ungrabInput();
 
-	XBaseWindow (const XCreateWindowParams& params);
+	XBaseWindow(XCreateWindowParams& params) { init(params); }
 
 	virtual long getScreenNumber();
 	virtual long getScreen();
@@ -120,15 +132,26 @@ public:
 };
 
 class XWindow : extends XBaseWindow {
+private:
+	int savedState;
+	boolean reparented;
+	XWindow *parent;
+	awt::Component *target;
+
 protected:
-	XWindow(XCreateWindowParams& params) : XBaseWindow(params) { }
-	XWindow() {}
-	XWindow(Component* target, long parentWindow, const Rectangle& bounds) {
-	}
-	XWindow(Object* target) : XWindow() {
-	}
-	XWindow(long parentWindow) {
-	}
+	XWindow() { throw RuntimeException("not supp"); }
+	XWindow(XCreateWindowParams& params) { init(params); }
+	XWindow(awt::Component* target, long parentWindow, const Rectangle& bounds);
+	XWindow(Object* target) { throw RuntimeException("not supp"); }
+	XWindow(long parentWindow);
+
+	void preInit(XCreateWindowParams& params) override;
+	void postInit(XCreateWindowParams& params) override;
+public:
+	static const char* TARGET;
+	static const char* REPARENTED;
+
+	void xSetBackground(const Color& c);
 };
 
 }}

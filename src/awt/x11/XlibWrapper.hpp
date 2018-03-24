@@ -131,7 +131,7 @@ public:
 	static void XFreePixmap(long display, long pixmap);
 	static long XCreatePixmapCursor(long display, long source, long mask, long fore, long back, int x, int y);
 	static boolean XQueryBestCursor(long display, long drawable, int width, int height, long width_return, long height_return);
-	static boolean XAllocColor( long display, long colormap, long screen_in_out);
+	static boolean XAllocColor( long display, long colormap, int& screen_in_out);
 
 
 	static long SetToolkitErrorHandler();

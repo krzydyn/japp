@@ -74,6 +74,7 @@ long display;
 int arrowCursor;
 long eventNumber;
 long awt_defaultFg;
+HashMap<Long,awt::x11::XBaseWindow*> winMap;
 
 awt::GraphicsDevice& XGraphicsConfiguration::getDevice() {
 	return *(screens[0]);
@@ -194,17 +195,21 @@ protected:
 };
 class XWindowPeer : extends XPanelPeer, implements awt::WindowPeer {
 protected:
-	XWindowPeer(XCreateWindowParams&& params) : XPanelPeer(params) {
+	XWindowPeer(XCreateWindowParams& params) : XPanelPeer(params) {
 	}
 	void preInit(XCreateWindowParams& params) {
+		LOGD("XWindowPeer::%s", __FUNCTION__);
+		XPanelPeer::preInit(params);
 	}
 	void postInit(XCreateWindowParams& params) {
+		LOGD("XWindowPeer::%s", __FUNCTION__);
+		XPanelPeer::postInit(params);
 	}
 public:
 	XWindowPeer(awt::Window* target) : XWindowPeer(
 			XCreateWindowParams()
-			.put<awt::Window*>(TARGET,target)
-			.put<Long>(PARENT_WINDOW, Long.valueOf(0))
+			.put<Long>(TARGET,Long::valueOf((long)target))
+			//.put<Long>(PARENT_WINDOW, Long::valueOf(0))
 		) {}
 
 	void setVisible(boolean b) {
@@ -266,6 +271,20 @@ awt::MouseInfoPeer& XToolkit::getMouseInfoPeer() {
 }
 
 void XToolkit::addToWinMap(long window, XBaseWindow* xwin) {
+	synchronized(winMap) {
+		winMap.put(Long::valueOf(window), xwin);
+	}
+}
+void XToolkit::removeFromWinMap(long window, XBaseWindow* xwin) {
+	synchronized(winMap) {
+		winMap.remove(Long::valueOf(window));
+	}
+}
+XBaseWindow* XToolkit::windowToXWindow(long window) {
+	synchronized(winMap) {
+		return (XBaseWindow*) winMap.get(Long::valueOf(window));
+	}
+	return null;
 }
 
 void XToolkit::awtLock() {
@@ -279,6 +298,7 @@ long XToolkit::getNextTaskTime() {
 	awtLock();
 	Finalize(awtUnlock(););
 	//return (Long)timeoutTasks.firstKey();
+	Thread::sleep(1000);
 	return -1L;
 }
 
@@ -286,6 +306,7 @@ long XToolkit::getDisplay() {
 	return display;
 }
 long XToolkit::getDefaultRootWindow() {
+	LOGD("XToolkit::%s", __FUNCTION__);
 	awtLock();
 	Finalize(awtUnlock(););
 	long res = XlibWrapper::RootWindow(XToolkit::getDisplay(), XlibWrapper::DefaultScreen(XToolkit::getDisplay()));
@@ -314,23 +335,23 @@ void XToolkit::init() {
 }
 
 awt::FramePeer* XToolkit::createFrame(awt::Frame* target) {
-	LOGD("%s", __FUNCTION__);
+	LOGD("XToolkit::%s", __FUNCTION__);
 	awt::FramePeer* peer = new XFramePeer(target);
 	targetCreatedPeer(target, peer);
 	return peer;
 }
 awt::LightweightPeer* XToolkit::createComponent(awt::Component* target) {
-	LOGD("%s", __FUNCTION__);
+	LOGD("XToolkit::%s", __FUNCTION__);
 	return null;
 }
 awt::WindowPeer* XToolkit::createWindow(awt::Window* target) {
-	LOGD("XToolkit::%s, creating XWindowPeer", __FUNCTION__);
+	LOGD("XToolkit::%s", __FUNCTION__);
 	awt::WindowPeer* peer = new XWindowPeer(target);
 	targetCreatedPeer(target, peer);
 	return peer;
 }
 awt::DialogPeer* XToolkit::createDialog(awt::Dialog* target) {
-	LOGD("%s", __FUNCTION__);
+	LOGD("XToolkit::%s", __FUNCTION__);
 	return null;
 }
 

@@ -3,7 +3,7 @@
 
 namespace awt { namespace x11 {
 
-class XConstants {
+class XConstants final {
 private:
 	XConstants(){}
 public:
@@ -615,6 +615,117 @@ public:
     static const long XkbKeySymsMask = (1L<<1);
     static const long XkbModifierMapMask = (1L<<2);
     static const long XkbVirtualModsMask = (1L<<6); //server map
+};
+
+class XUtilConstants final {
+private:
+	XUtilConstants(){}
+public:
+    /*
+     * Bitmask returned by XParseGeometry().  Each bit tells if the corresponding
+     * value (x, y, width, height) was found in the parsed string.
+     */
+    static const int NoValue = 0x0000 ;
+    static const int XValue = 0x0001 ;
+    static const int YValue = 0x0002 ;
+    static const int WidthValue = 0x0004 ;
+    static const int HeightValue = 0x0008 ;
+    static const int AllValues = 0x000F ;
+    static const int XNegative = 0x0010 ;
+    static const int YNegative = 0x0020 ;
+
+    /*
+     * The next block of definitions are for window manager properties that
+     * clients and applications use for communication.
+     */
+
+    /* flags argument in size hints */
+    static const long USPosition = 1L << 0; /* user specified x, y */
+    static const long USSize = 1L << 1; /* user specified width, height */
+
+    static const long PPosition = 1L << 2; /* program specified position */
+    static const long PSize = 1L << 3; /* program specified size */
+    static const long PMinSize = 1L << 4; /* program specified minimum size */
+    static const long PMaxSize = 1L << 5; /* program specified maximum size */
+    static const long PResizeInc = 1L << 6; /* program specified resize increments */
+    static const long PAspect = 1L << 7; /* program specified min and max aspect ratios */
+    static const long PBaseSize = 1L << 8; /* program specified base for incrementing */
+    static const long PWinGravity = 1L << 9; /* program specified window gravity */
+
+    /* obsolete */
+    static const long PAllHints = (PPosition|PSize|PMinSize|PMaxSize|PResizeInc|PAspect) ;
+
+    /* definition for flags of XWMHints */
+
+    static const long InputHint = 1L << 0;
+    static const long StateHint = 1L << 1;
+    static const long IconPixmapHint = 1L << 2;
+    static const long IconWindowHint = 1L << 3;
+    static const long IconPositionHint = 1L << 4;
+    static const long IconMaskHint = 1L << 5;
+    static const long WindowGroupHint = 1L << 6;
+    static const long AllHints = (InputHint|StateHint|IconPixmapHint|IconWindowHint|
+        IconPositionHint|IconMaskHint|WindowGroupHint);
+    static const long XUrgencyHint = 1L << 8;
+
+    /* definitions for initial window state */
+    static const int WithdrawnState = 0 ; /* for windows that are not mapped */
+    static const int NormalState = 1 ; /* most applications want to start this way */
+    static const int IconicState = 3 ; /* application wants to start as an icon */
+
+    /*
+     * Obsolete states no longer defined by ICCCM
+     */
+    static const int DontCareState = 0 ; /* don't know or care */
+    static const int ZoomState = 2 ; /* application wants to start zoomed */
+    /* application believes it is seldom used; some wm's may put it on inactive menu */
+    static const int InactiveState = 4 ;
+
+    static const int XNoMemory = -1 ;
+    static const int XLocaleNotSupported = -2 ;
+    static const int XConverterNotFound = -3 ;
+
+    /* Return values from XRectInRegion() */
+    static const int RectangleOut = 0 ;
+    static const int RectangleIn = 1 ;
+    static const int RectanglePart = 2 ;
+
+    /*
+     * Information used by the visual utility routines to find desired visual
+     * type from the many visuals a display may support.
+     */
+    static const int VisualNoMask = 0x0 ;
+    static const int VisualIDMask = 0x1 ;
+    static const int VisualScreenMask = 0x2 ;
+    static const int VisualDepthMask = 0x4 ;
+    static const int VisualClassMask = 0x8 ;
+    static const int VisualRedMaskMask = 0x10 ;
+    static const int VisualGreenMaskMask = 0x20 ;
+    static const int VisualBlueMaskMask = 0x40 ;
+    static const int VisualColormapSizeMask = 0x80 ;
+    static const int VisualBitsPerRGBMask = 0x100 ;
+    static const int VisualAllMask = 0x1FF ;
+
+    /*
+     * return codes for XReadBitmapFile and XWriteBitmapFile
+     */
+    static const int BitmapSuccess = 0 ;
+    static const int BitmapOpenFailed = 1 ;
+    static const int BitmapFileInvalid = 2 ;
+    static const int BitmapNoMemory = 3 ;
+
+    /****************************************************************
+     *
+     * Context Management
+     *
+     ****************************************************************
+     */
+    /* Associative lookup table return codes */
+    static const int XCSUCCESS = 0 ; /* No error. */
+    static const int XCNOMEM = 1 ; /* Out of memory */
+    static const int XCNOENT = 2 ; /* No entry in table */
+
+    // typedef int XContext;
 };
 
 }}

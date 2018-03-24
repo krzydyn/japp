@@ -43,6 +43,12 @@ void Component::mixOnShowing() {
 	}
 }
 
+Color Component::getBackground() const {
+	Color background = this->background;
+	if (background != null) return background;
+	return (parent != null) ? parent->getBackground() : Color();
+}
+
 void Component::setPreferredSize(const Dimension& preferredSize) {
 	Dimension old;
 	if (prefSizeSet) old = prefSize;

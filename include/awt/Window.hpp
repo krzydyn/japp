@@ -168,6 +168,20 @@ public:
 	virtual void revalidate() {
 	}
 
+	virtual Color getBackground() const;
+	virtual void setBackground(const Color& c) {
+        Color oldColor = background;
+		ComponentPeer* peer = this->peer;
+		background = c;
+		if (peer != null) {
+			Color cc = getBackground();
+			if (cc != null) peer->setBackground(cc);
+		}
+		//firePropertyChange("background", oldColor, c);
+	}
+	virtual boolean isBackgroundSet() {
+		return (background != null);
+	}
 	virtual Graphics& getGraphics();
 	virtual Font& getFont();
 
@@ -184,7 +198,9 @@ public:
 			setBounds(x, y, width, height);
 		}
 	}
+	virtual Rectangle getBounds() { return Rectangle(x, y, width, height); }
 	virtual void setBounds(int x, int y, int width, int height);
+	virtual void setBounds(const Rectangle& r) { setBounds(r.x, r.y, r.width, r.height); }
 	virtual int getX() { return x; }
 	virtual int getY() { return y; }
 	virtual int getWidth() { return width; }

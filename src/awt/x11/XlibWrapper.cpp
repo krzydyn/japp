@@ -131,7 +131,10 @@ boolean XlibWrapper::XQueryPointer(long display, long window, long& root_return,
 	return r;
 }
 //void XlibWrapper::XFreeCursor(long display, long cursor);
-//void XlibWrapper::XSetWindowBackground(long display, long window, long background_pixel);
+void XlibWrapper::XSetWindowBackground(long display, long window, long background_pixel) {
+	LOGD("XlibWrapper::%s(%lX,%lX,bg_pixel=%lx)",__FUNCTION__,display,window,background_pixel);
+	::XSetWindowBackground((Display*)display, window, background_pixel);
+}
 int XlibWrapper::XEventsQueued(long display, int mode) {
 	return ::XEventsQueued((Display*)display, mode);
 }
@@ -177,7 +180,18 @@ int XlibWrapper::XCreateFontCursor(long display, int shape) {
 //void XlibWrapper::XFreePixmap(long display, long pixmap);
 //long XlibWrapper::XCreatePixmapCursor(long display, long source, long mask, long fore, long back, int x, int y);
 //boolean XlibWrapper::XQueryBestCursor(long display, long drawable, int width, int height, long width_return, long height_return);
-//boolean XlibWrapper::XAllocColor( long display, long colormap, long screen_in_out);
+boolean XlibWrapper::XAllocColor(long display, long colormap, int& screen_in_out) {
+	XColor c;
+	int r = ((screen_in_out>>16)&0xff) * 256;
+	int g = ((screen_in_out>>8)&0xff) * 256;
+	int b = (screen_in_out&0xff) * 256;
+	c.red = (short)r;
+	c.green = (short)g;
+	c.blue = (short)b;
+	boolean ret =  ::XAllocColor((Display*)display, DefaultColormap(display,0), &c);
+	screen_in_out = (int)c.pixel;
+	return ret;
+}
 
 
 //long XlibWrapper::SetToolkitErrorHandler();
@@ -216,7 +230,10 @@ int XlibWrapper::XCreateFontCursor(long display, int shape) {
 //long XCreateGC(long display, long drawable, long valuemask, long values);
 //void XFreeGC(long display, long gc);
 //void XSetWindowBackgroundPixmap(long display, long window, long pixmap);
-//void XClearWindow(long display, long window);
+void XlibWrapper::XClearWindow(long display, long window) {
+	LOGD(__FUNCTION__);
+	::XCreateFontCursor((Display*)display, (unsigned)window);
+}
 //int XGetIconSizes(long display, long window, long ret_sizes, long ret_count);
 //int XdbeQueryExtension(long display, long major_version_return, long minor_version_return);
 //boolean XQueryExtension(long display, const String& name, long mop_return, long feve_return, long err_return);

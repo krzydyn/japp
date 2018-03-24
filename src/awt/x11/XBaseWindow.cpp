@@ -1,4 +1,5 @@
 #include <lang/Number.hpp>
+#include <awt/Window.hpp>
 
 #include "XBaseWindow.hpp"
 #include "XConstants.hpp"
@@ -9,7 +10,7 @@ const int MIN_SIZE = 1;
 const int DEF_LOCATION = 1;
 
 boolean inManualGrab = false;
-awt::x11::Component* componentMouseEnteredRef = null;
+awt::Component* componentMouseEnteredRef = null;
 awt::x11::XBaseWindow* grabWindowRef = null;
 
 void _setGrabWindow(awt::x11::XBaseWindow* grabWindow, boolean isAutoGrab) {
@@ -23,6 +24,20 @@ void _setGrabWindow(awt::x11::XBaseWindow* grabWindow, boolean isAutoGrab) {
 		return ;
 	}
 	grabWindowRef = grabWindow;
+}
+
+awt::x11::XWindow* getParentXWindowObject(awt::Component* target) {
+	if (target == null) return null;
+	awt::Component* temp = target->getParent();
+	if (temp == null) return null;
+	awt::ComponentPeer* peer = temp->getPeer();
+	if (peer == null) return null;
+	while ((peer != null) && !(instanceof<awt::x11::XWindow>(peer))) {
+		temp = temp->getParent();
+		peer = temp->getPeer();
+	}
+	if (peer != null && (instanceof<awt::x11::XWindow>(peer))) return (awt::x11::XWindow*) peer;
+	return null;
 }
 
 }
@@ -128,24 +143,55 @@ const char* XBaseWindow::SAVE_UNDER = "save under";
 const char* XBaseWindow::BACKING_STORE = "backing store";
 const char* XBaseWindow::BIT_GRAVITY = "bit gravity";
 
-XBaseWindow::XBaseWindow(const XCreateWindowParams& par) {
-	XCreateWindowParams params(par);
-	init(params);
-}
+const char* XWindow::TARGET = "target";
+const char* XWindow::REPARENTED = "reparented";
 
 XBaseWindow::XBaseWindow(long parentWindow, const Rectangle& bounds) {
+	LOGD("%s(parentWin=%ld, bounds=%s)", __FUNCTION__, parentWindow, bounds.toString().cstr());
 	XCreateWindowParams params;
-	params.put<Rectangle>(BOUNDS, bounds).put<Long>(PARENT_WINDOW, Long::valueOf(parentWindow));
+	params.put<Rectangle>(BOUNDS, bounds).put<Long>(PARENT_WINDOW, parentWindow);
 	init(params);
 }
-void XBaseWindow::init(XCreateWindowParams& params) {
+void XBaseWindow::preInit(XCreateWindowParams& params) {
+	LOGD("XBaseWindow::%s", __FUNCTION__);
+	initialising = InitialiseState::NOT_INITIALISED;
 	embedded = Boolean::TRUE.equals(params.get<Boolean>(EMBEDDED));
 	visible = Boolean::TRUE.equals(params.get<Boolean>(VISIBLE));
-	if (!Boolean::TRUE.equals(params.get<Boolean>(DELAYED))) {
-		//preInit(params);
-		create(params);
-		//postInit(params);
+
+	Object* parent = null;
+	Long& l = params.get<Long>(PARENT);
+	if (l != null) parent = (Object*)l.longValue();
+	if (instanceof<XBaseWindow>(parent)) {
+		parentWindow = (XBaseWindow*)parent;
 	}
+	else {
+		Long& parentWindowID = params.get<Long>(PARENT_WINDOW);
+		if (parentWindowID != null) {
+			 parentWindow = XToolkit::windowToXWindow(parentWindowID);
+		}
+	}
+
+	Long& eventMask = params.get<Long>(EVENT_MASK);
+	if (eventMask != null) {
+		long mask = eventMask.longValue();
+		mask |= XConstants::SubstructureNotifyMask;
+		params.put<Long>(EVENT_MASK, mask);
+	}
+
+	screen = -1;
+}
+void XBaseWindow::postInit(XCreateWindowParams& params) {
+	//updateWMName();
+	//initClientLeader();
+}
+void XBaseWindow::init(XCreateWindowParams& params) {
+	initialising = InitialiseState::INITIALISING;
+	if (!Boolean::TRUE.equals(params.get<Boolean>(DELAYED))) {
+		preInit(params);
+		create(params);
+		postInit(params);
+	}
+	initialising = InitialiseState::INITIALISED;
 }
 void XBaseWindow::checkParams(XCreateWindowParams& params) {
 	params.putIfNull<Long>(PARENT_WINDOW, Long::valueOf(XToolkit::getDefaultRootWindow()));
@@ -181,18 +227,21 @@ void XBaseWindow::create(XCreateWindowParams& params) {
 
 	Long& border_pixel = params.get<Long>(BORDER_PIXEL);
 	if (border_pixel != null) {
+		LOGD("xattr: add BORDER_PX");
 		xattr.set_border_pixel(border_pixel.longValue());
 		value_mask |= XConstants::CWBorderPixel;
 	}
 
 	Long& colormap = params.get<Long>(COLORMAP);
 	if (colormap != null) {
+		LOGD("xattr: add COLORMAP");
 		xattr.set_colormap(colormap.longValue());
 		value_mask |= XConstants::CWColormap;
 	}
 
 	Long& background_pixmap = params.get<Long>(BACKGROUND_PIXMAP);
 	if (background_pixmap != null) {
+		LOGD("xattr: add BG_PIXMAP");
 		xattr.set_background_pixmap(background_pixmap.longValue());
 		value_mask |= XConstants::CWBackPixmap;
 	}
@@ -274,6 +323,75 @@ void XBaseWindow::ungrabInput() {
 void XBaseWindow::dispatchToWindow(const XEvent& ev) {
 }
 void XBaseWindow::dispatchEvent(const XEvent& ev) {
+}
+
+
+XWindow::XWindow(Component* target, long parentWindow, const Rectangle& bounds) : XBaseWindow(
+		XCreateWindowParams()
+			.put<Long>(TARGET, (long)target)
+			.put<Long>(PARENT_WINDOW, parentWindow)
+			.put<Rectangle>(BOUNDS, bounds)
+	){
+}
+XWindow::XWindow(long parentWindow) : XBaseWindow(
+		XCreateWindowParams()
+			.put<Long>(PARENT_WINDOW, parentWindow)
+			.put<Boolean>(REPARENTED, Boolean::TRUE)
+			.put<Boolean>(EMBEDDED, Boolean::TRUE)
+	){
+}
+
+void XWindow::preInit(XCreateWindowParams& params) {
+	LOGD("XWindow::%s", __FUNCTION__);
+	XBaseWindow::preInit(params);
+	reparented = Boolean::TRUE.equals(params.get<Boolean>(REPARENTED));
+
+	target = (Component*)params.get<Long>(TARGET).longValue();
+	//initGraphicsConfiguration();
+
+	if (target != null) {
+		params.putIfNull<Rectangle>(BOUNDS, target->getBounds());
+	}
+	else {
+		params.putIfNull<Rectangle>(BOUNDS, Rectangle(0, 0, MIN_SIZE, MIN_SIZE));
+	}
+
+	//params.putIfNull(COLORMAP, gData.get_awt_cmap());
+	//params.putIfNull(DEPTH, gData.get_awt_depth());
+	params.putIfNull<Integer>(VISUAL_CLASS, (int)XConstants::InputOutput);
+	//params.putIfNull(VISUAL, visInfo.get_visual());
+	//params.putIfNull<Long>(VALUE_MASK, XConstants::CWBorderPixel | XConstants::CWEventMask | XConstants::CWColormap);
+	Long& parentWindow = params.get<Long>(PARENT_WINDOW);
+	if (parentWindow == null || parentWindow.longValue() == 0) {
+		XToolkit::awtLock();
+		Finalize(XToolkit::awtUnlock(););
+		//int screen = visInfo.get_screen();
+	}
+	if (target != null) this->parent = getParentXWindowObject(target->getParent());
+
+	//params.putIfNull(BACKING_STORE, XToolkit::getBackingStoreType());
+
+	savedState = XUtilConstants::WithdrawnState;
+}
+void XWindow::postInit(XCreateWindowParams& params) {
+	XBaseWindow::postInit(params);
+
+	Color c;
+	if (target != null && (c = target->getBackground()) != null) {
+		xSetBackground(c);
+	}
+}
+
+void XWindow::xSetBackground(const Color& c) {
+	XToolkit::awtLock();
+	Finalize(XToolkit::awtUnlock(););
+	//ColorModel cm = getColorModel();
+	//int pixel = PixelConverter.instance.rgbToPixel(c.getRGB(), cm);
+	//int pixel = c.getRGB()|0xff000000;
+	int pixel = c.getRGB();
+	XlibWrapper::XAllocColor(XToolkit::getDisplay(), XToolkit::getDisplay(), pixel);
+	XlibWrapper::XSetWindowBackground(XToolkit::getDisplay(), getContentWindow(), pixel);
+	XlibWrapper::XClearWindow(XToolkit::getDisplay(), getContentWindow());
 }
 
 }}

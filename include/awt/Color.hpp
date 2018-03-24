@@ -16,6 +16,10 @@ private:
 public:
 	Color() : value(0) {}
 	Color(const Color& o) : value(o.value) {}
+	Color& operator=(const Color& o) {
+		value = o.value;
+		return *this;
+	}
 	Color(int r, int g, int b) : Color(r, g, b, 255) {}
 	Color(int r, int g, int b, int a) {
 		value = ((a & 0xFF) << 24) |

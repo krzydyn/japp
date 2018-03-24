@@ -207,8 +207,14 @@ public:
 	static jint hashCode(long value) { return (jint)(value ^ (value >> 32)); }
 	static int compare(long x, long y) {return (x < y) ? -1 : ((x == y) ? 0 : 1);}
 
+	Long(Long&& o) : value(o.value) {}
 	Long(const Long& o) : value(o.value) {}
+	Long() : value(0) {}
 	Long(long value) : value(value) {}
+	Long& operator=(const Long& o) {
+		value = o.value;
+		return *this;
+	}
 	byte byteValue() const {return (byte)value;}
 	short shortValue() const {return (short)value;}
 	int intValue() const {return (int)value;}
