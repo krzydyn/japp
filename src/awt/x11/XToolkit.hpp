@@ -7,10 +7,14 @@
 
 namespace awt { namespace x11 {
 
-class XGraphicsEnvironment : extends GraphicsEnvironment {
+// http://www.grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/8u40-b25/sun/awt/X11GraphicsEnvironment.java
+// iX11GraphicsEnvironment -> SunGraphicsEnvironment -> GraphicsEnvironment
+class X11GraphicsEnvironment : extends GraphicsEnvironment {
 public:
-	Array<GraphicsDevice*> getScreenDevices();
+	X11GraphicsEnvironment();
+	Array<GraphicsDevice*>& getScreenDevices();
 	GraphicsDevice& getDefaultScreenDevice();
+	boolean isDisplayLocal() {return true;}
 };
 
 class XEvent : extends Object {
@@ -28,6 +32,41 @@ public:
 	void *getPData() { return &(pData->array()[0]); }
 	void dispose() { pData.reset(); }
 	int get_type() { return pData->getInt(0); }
+};
+
+class X11GraphicsConfig;
+class X11GraphicsDevice : extends awt::GraphicsDevice {
+private:
+	int screen;
+	X11GraphicsConfig *defaultConfig = null;
+public:
+	X11GraphicsDevice(int screennum) : screen(screennum) {}
+	const awt::GraphicsConfiguration& getDefaultConfiguration();
+	int getScreen() { return screen; }
+	//long getDisplay();
+};
+
+class X11GraphicsConfig : extends awt::GraphicsConfiguration {
+private:
+	void init(int visualNum, int screen);
+protected:
+	X11GraphicsDevice* screen;
+	int visual;
+	int depth;
+	int colormap;
+	boolean doubleBuffer;
+public:
+	X11GraphicsConfig(X11GraphicsDevice* device, int visualnum, int depth, int colormap, boolean doubleBuffer);
+	//deprecated, replaced by device->getConfig(....)
+	//static X11GraphicsConfig& getConfig(X11GraphicsDevice* device, int visualnum, int depth, int colormap, int type);
+
+	GraphicsDevice& getDevice();
+	ColorModel getColorModel() const;
+	ColorModel getColorModel(int transparency) const;
+	//virtual AffineTransform getDefaultTransform();
+	//virtual AffineTransform getNormalizingTransform();
+	Rectangle getBounds() const;
+	boolean isTranslucencyCapable() const {return false;}
 };
 
 class XBaseWindow;

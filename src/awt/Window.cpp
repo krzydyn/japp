@@ -209,7 +209,7 @@ void Component::setBounds(int x, int y, int width, int height) {
 		boolean resized = (this->width != width) || (this->height != height);
 		boolean moved = (this->x != x) || (this->y != y);
 		if (!resized && !moved) {
-			LOGD("nothing changed (location or size)");
+			LOGD("  nothing changed (location or size)");
 			return ;
 		}
 		int oldX = this->x;
@@ -222,7 +222,7 @@ void Component::setBounds(int x, int y, int width, int height) {
 		this->height = height;
 		if (resized) isPacked = false;
 
-		LOGD("%s: peer = %lx", __FUNCTION__, (long)peer);
+		LOGD("  peer = %lx", (long)peer);
 		boolean needNotify = true;
 		//mixOnReshaping();
 		if (peer != null) {

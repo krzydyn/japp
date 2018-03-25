@@ -45,6 +45,7 @@ public:
 	jint hashCode() const {return Boolean::hashCode(value);}
 	boolean equals(const Object& o) const;
 	int compareTo(const Boolean& b) const { return compare(value,b.value); }
+
 	operator int() const { return value?1:0; }
 };
 
@@ -85,13 +86,12 @@ public:
 		return false;
 	}
 	int compareTo(const Integer& b) const { return compare(value,b.value); }
+
 	operator int() const { return value; }
-
-	Integer operator+(int v) const {TRACE; return value+v;}
-	Integer operator+(Integer v) const {TRACE; return value+v.value;}
-	Integer& operator+=(int v) {TRACE; value+=v; return *this;}
-	Integer& operator+=(Integer v) {TRACE; value+=v.value; return *this;}
-
+	Integer operator+(int v) const { return value+v;}
+	Integer operator+(Integer v) const { return value+v.value;}
+	Integer& operator+=(int v) { value+=v; return *this;}
+	Integer& operator+=(Integer v) { value+=v.value; return *this;}
 };
 
 class Byte : extends Number, implements Comparable<Byte> {
@@ -130,13 +130,22 @@ public:
 		return false;
 	}
 	int compareTo(const Byte& b) const { return compare(value,b.value); }
+
 	operator byte() const { return value; }
+	operator int() const { return value; }
+	Byte operator+(byte v) const { return (byte)(value+v);}
+	Byte operator+(Byte v) const { return (byte)(value+v.value);}
+	Byte& operator+=(byte v) { value=(byte)(value+v); return *this;}
+	Byte& operator+=(Byte v) { value=(byte)(value+v.value); return *this;}
+	Integer operator+(int v) const { return value+v;}
+	Integer operator+(Integer v) const { return value+v.intValue();}
 };
 
 class Short : extends Number, implements Comparable<Short> {
 private:
 	short value;
 public:
+	static const int SIZE = 16;
 	static const short MIN_VALUE = -32768;
 	static const short MAX_VALUE = 32767;
 	static String toString(short s) { return Integer::toString((int)s, 10); }
@@ -177,15 +186,15 @@ public:
 		return false;
 	}
 	int compareTo(const Short& b) const { return compare(value,b.value); }
+
 	operator short() const { return value; }
-
-	Short operator+(short v) const {TRACE; return (short)(value+v);}
-	Short operator+(Short v) const {TRACE; return (short)(value+v.shortValue());}
-	Short& operator+=(short v) {TRACE; value=(short)(value+v); return *this;}
-	Short& operator+=(Short v) {TRACE; value=(short)(value+v.shortValue()); return *this;}
-
-	Integer operator+(int v) const {TRACE; return value+v;}
-	Integer operator+(Integer v) const {TRACE; return value+v.intValue();}
+	operator int() const { return value; }
+	Short operator+(short v) const { return (short)(value+v);}
+	Short operator+(Short v) const { return (short)(value+v.shortValue());}
+	Short& operator+=(short v) { value=(short)(value+v); return *this;}
+	Short& operator+=(Short v) { value=(short)(value+v.shortValue()); return *this;}
+	Integer operator+(int v) const { return value+v;}
+	Integer operator+(Integer v) const { return value+v.intValue();}
 };
 
 class Long : extends Number, implements Comparable<Long> {
@@ -232,10 +241,10 @@ public:
 	int compareTo(const Long& b) const { return compare(value,b.value); }
 	operator long() const { return value; }
 
-	Long operator+(long v) const {TRACE; return value+v;}
-	Long operator+(Long v) const {TRACE; return value+v.value;}
-	Long& operator+=(long v) {TRACE; value+=v; return *this;}
-	Long& operator+=(Long v) {TRACE; value+=v.value; return *this;}
+	Long operator+(long v) const { return value+v;}
+	Long operator+(Long v) const { return value+v.value;}
+	Long& operator+=(long v) { value+=v; return *this;}
+	Long& operator+=(Long v) { value+=v.value; return *this;}
 };
 
 } //namespace lang

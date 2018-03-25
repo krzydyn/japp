@@ -7,16 +7,19 @@
 namespace awt { namespace x11 {
 
 long XlibWrapper::XOpenDisplay(const String& name) {
-	LOGD(__FUNCTION__);
+	LOGD("XlibWrapper::%s",__FUNCTION__);
 	return (long)::XOpenDisplay(name.cstr());
 }
 //void XlibWrapper::XCloseDisplay(long display);
+int XlibWrapper::XScreenCount(long display) {
+	return ::XScreenCount((Display *)display);
+}
 //long XlibWrapper::XDisplayString(long display);
 //void XlibWrapper::XSetCloseDownMode(long display, int close_mode);
 
 int XlibWrapper::XDefaultScreen(long display) {
 	int r = ::XDefaultScreen((Display *)display);
-	LOGD("%s(%lX) = %d", __FUNCTION__, display, r);
+	LOGD("XlibWrapper::%s(%lX) = %d", __FUNCTION__, display, r);
 	return r;
 }
 
@@ -28,23 +31,23 @@ int XlibWrapper::XDefaultScreen(long display) {
 //long XlibWrapper::DisplayHeightMM(long display, long screen);
 long XlibWrapper::XRootWindow(long display, long screen) {
 	long r = ::XRootWindow((Display *)display, (int)screen);
-	LOGD("%s(%lX,%ld) = %d", __FUNCTION__, display, screen, r);
+	LOGD("XlibWrapper::%s(%lX,%ld) = %d", __FUNCTION__, display, screen, r);
 	return r;
 }
 //int XlibWrapper::ScreenCount(long display);
 
 long XlibWrapper::XBlackPixel(long display, long screen) {
-	LOGD(__FUNCTION__);
+	LOGD("XlibWrapper::%s",__FUNCTION__);
 	return (long)::XBlackPixel((Display *)display, (int)screen);
 }
 long XlibWrapper::XWhitePixel(long display, long screen) {
-	LOGD(__FUNCTION__);
+	LOGD("XlibWrapper::%s",__FUNCTION__);
 	return (long)::XWhitePixel((Display *)display, (int)screen);
 }
 
 long XlibWrapper::XCreateWindow(long display, long parent, int x,int  y, int width, int height, int border_width, int depth, long wclass, long visual, long valuemask, void* attributes) {
 	long r = ::XCreateWindow((Display *)display, parent, x, y, width, height, border_width, depth, (int)wclass, (Visual*)visual, valuemask, (XSetWindowAttributes*)attributes);
-	LOGD("%s(%lX,%ld,bounds=(%d,%d,%d,%d),depth=%d) = %lX", __FUNCTION__, display, parent, x, y, width, height, depth, r);
+	LOGD("XlibWrapper::%s(%lX,%ld,bounds=(%d,%d,%d,%d),depth=%d) = %lX", __FUNCTION__, display, parent, x, y, width, height, depth, r);
 	return r;
 }
 void XlibWrapper::XDestroyWindow(long display, long window) {
@@ -54,14 +57,14 @@ void XlibWrapper::XDestroyWindow(long display, long window) {
 //int XlibWrapper::XGrabPointer(long display, long grab_window, int owner_events, int event_mask, int pointer_mode, int keyboard_mode, long confine_to, long cursor, long time);
 
 void XlibWrapper::XUngrabPointer(long display, long time) {
-	LOGD(__FUNCTION__);
+	LOGD("XlibWrapper::%s",__FUNCTION__);
 	::XUngrabPointer((Display *)display, time);
 }
 
 //int XlibWrapper::XGrabKeyboard(long display, long grab_window, int owner_events, int pointer_mode, int keyboard_mode, long time);
 
 void XlibWrapper::XUngrabKeyboard(long display, long time) {
-	LOGD(__FUNCTION__);
+	LOGD("XlibWrapper::%s",__FUNCTION__);
 	::XUngrabKeyboard((Display *)display, time);
 }
 
@@ -69,12 +72,12 @@ void XlibWrapper::XUngrabKeyboard(long display, long time) {
 //void XlibWrapper::XUngrabServer(long display);
 
 void XlibWrapper::XMapWindow(long display, long window) {
-	LOGD("%s(%lX,%lX)", __FUNCTION__, display, window);
+	LOGD("XlibWrapper::%s(%lX,%lX)", __FUNCTION__, display, window);
 	//if (!window) throw NullPointerException();
 	::XMapWindow((Display *)display, window);
 }
 void XlibWrapper::XUnmapWindow(long display, long window) {
-	LOGD(__FUNCTION__);
+	LOGD("XlibWrapper::%s",__FUNCTION__);
 	::XUnmapWindow((Display *)display, window);
 }
 //void XlibWrapper::XMapRaised(long display, long window);
@@ -88,44 +91,51 @@ void XlibWrapper::XUnmapWindow(long display, long window) {
 //long XlibWrapper::XGetInputFocus(long display);
 
 void XlibWrapper::XSelectInput(long display, long window, long event_mask) {
-	LOGD(__FUNCTION__);
+	LOGD("XlibWrapper::%s",__FUNCTION__);
 	::XSelectInput((Display*)display, window, event_mask);
 }
 void XlibWrapper::XNextEvent(long display, void* ptr) {
-	LOGD(__FUNCTION__);
+	LOGD("XlibWrapper::%s",__FUNCTION__);
 	::XNextEvent((Display*)display, (XEvent*)ptr);
 }
 //void XlibWrapper::XMaskEvent(long display, long event_mask, long event_return);
 //void XlibWrapper::XWindowEvent(long display, long window, long event_mask, long event_return);
 //boolean XlibWrapper::XFilterEvent(void* ptr, long window);
 boolean XlibWrapper::XSupportsLocale() {
-	LOGD(__FUNCTION__);
+	LOGD("XlibWrapper::%s",__FUNCTION__);
 	return ::XSupportsLocale();
 }
 String XlibWrapper::XSetLocaleModifiers(const String& modifier_list) {
-	LOGD(__FUNCTION__);
+	LOGD("XlibWrapper::%s",__FUNCTION__);
 	return ::XSetLocaleModifiers(modifier_list.cstr());
 }
 //int XlibWrapper::XTranslateCoordinates( long display, long src_w, long dest_w, long src_x, long src_y, long dest_x_return, long dest_y_return, long child_return);
 //void XlibWrapper::XPeekEvent(long display,void* ptr);
 void XlibWrapper::XFlush(long display) {
-	LOGD(__FUNCTION__);
+	LOGD("XlibWrapper::%s",__FUNCTION__);
 	::XFlush((Display*)display);
 }
-//void XlibWrapper::XSync(long display,int discard);
+void XlibWrapper::XSync(long display,int discard) {
+	::XSync((Display*)display,discard);
+}
 void XlibWrapper::XMoveResizeWindow(long display, long window, int x, int y, int width, int height) {
-	LOGD(__FUNCTION__);
+	LOGD("XlibWrapper::%s",__FUNCTION__);
 	::XMoveResizeWindow((Display*)display, window, x, y, width, height);
 }
-//void XlibWrapper::XResizeWindow(long display, long window, int width, int height);
-//void XlibWrapper::XMoveWindow(long display, long window, int x, int y);
+void XlibWrapper::XResizeWindow(long display, long window, int width, int height) {
+	LOGD("XlibWrapper::%s",__FUNCTION__);
+	::XResizeWindow((Display*)display, window, width, height);
+}
+void XlibWrapper::XMoveWindow(long display, long window, int x, int y) {
+	LOGD("XlibWrapper::%s",__FUNCTION__);
+	::XMoveWindow((Display*)display, window, x, y);
+}
 
-//int XQueryPointer(Display*, Window, Window*, Window*, int*, int*, int*, int*, unsigned int*)
 boolean XlibWrapper::XQueryPointer(long display, long window, long& root_return, long& child_return, long& root_x_return, long& root_y_return, long& win_x_return, long& win_y_return, long& mask_return) {
 	Window l_root_return, l_child_return;
 	int l_root_x_return, l_root_y_return, l_win_x_return, l_win_y_return;
 	unsigned l_mask_return;
-	LOGD(__FUNCTION__);
+	LOGD("XlibWrapper::%s",__FUNCTION__);
 	boolean r = ::XQueryPointer((Display*)display, window, &l_root_return, &l_child_return, &l_root_x_return, &l_root_y_return, &l_win_x_return, &l_win_y_return, &l_mask_return);
 	root_return = (long)l_root_return;
 	return r;
@@ -157,11 +167,11 @@ int XlibWrapper::XEventsQueued(long display, int mode) {
 //int XlibWrapper::XGetPointerMapping(long display, long map, int buttonNumber);
 //String XlibWrapper::XGetDefault(long display, const String& program, const String& option);
 long XlibWrapper::getScreenOfWindow(long display, long window) {
-	LOGD(__FUNCTION__);
+	LOGD("XlibWrapper::%s",__FUNCTION__);
 	return (long)::_XScreenOfWindow((Display*)display, (int)window);
 }
 long XlibWrapper::XScreenNumberOfScreen(long screen) {
-	LOGD(__FUNCTION__);
+	LOGD("XlibWrapper::%s",__FUNCTION__);
 	return ::XScreenNumberOfScreen((Screen*)screen);
 }
 //int XlibWrapper::XIconifyWindow(long display, long window, long screenNumber);
@@ -173,7 +183,7 @@ long XlibWrapper::XScreenNumberOfScreen(long screen) {
 
 //void XlibWrapper::XBell(long display, int percent);
 int XlibWrapper::XCreateFontCursor(long display, int shape) {
-	LOGD(__FUNCTION__);
+	LOGD("XlibWrapper::%s",__FUNCTION__);
 	return (int)::XCreateFontCursor((Display*)display, shape);
 }
 //long XlibWrapper::XCreateBitmapFromData(long display, long drawable, long data, int width, int height);
@@ -188,7 +198,7 @@ boolean XlibWrapper::XAllocColor(long display, long colormap, int& screen_in_out
 	c.red = (short)r;
 	c.green = (short)g;
 	c.blue = (short)b;
-	boolean ret =  ::XAllocColor((Display*)display, DefaultColormap(display,0), &c);
+	boolean ret =  ::XAllocColor((Display*)display, colormap, &c);
 	screen_in_out = (int)c.pixel;
 	return ret;
 }
@@ -231,7 +241,7 @@ boolean XlibWrapper::XAllocColor(long display, long colormap, int& screen_in_out
 //void XFreeGC(long display, long gc);
 //void XSetWindowBackgroundPixmap(long display, long window, long pixmap);
 void XlibWrapper::XClearWindow(long display, long window) {
-	LOGD(__FUNCTION__);
+	LOGD("XlibWrapper::%s",__FUNCTION__);
 	::XCreateFontCursor((Display*)display, (unsigned)window);
 }
 //int XGetIconSizes(long display, long window, long ret_sizes, long ret_count);
@@ -270,7 +280,7 @@ void XlibWrapper::XClearWindow(long display, long window) {
 //void XChangeActivePointerGrab(long display, int mask, long cursor, long time);
 //int XSynchronize(long display, boolean onoff);
 boolean XlibWrapper::XNextSecondaryLoopEvent(long display, void *ptr) {
-	LOGD(__FUNCTION__);
+	LOGD("XlibWrapper::%s",__FUNCTION__);
 	return false;
 }
 //void ExitSecondaryLoop();

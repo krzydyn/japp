@@ -7,7 +7,7 @@ namespace {
 
 class HeadlessGraphicsEnvironment : extends awt::GraphicsEnvironment {
 public:
-	Array<awt::GraphicsDevice*> getScreenDevices() {throw awt::HeadlessException();}
+	Array<awt::GraphicsDevice*>& getScreenDevices() {throw awt::HeadlessException();}
 	awt::GraphicsDevice& getDefaultScreenDevice() {throw awt::HeadlessException();}
 };
 
@@ -17,7 +17,7 @@ awt::GraphicsEnvironment *crateGE() {
 	if (awt::GraphicsEnvironment::isHeadless())
 		ge = new HeadlessGraphicsEnvironment();
 	else
-		ge = new awt::x11::XGraphicsEnvironment();
+		ge = new awt::x11::X11GraphicsEnvironment();
 	return ge;
 }
 
@@ -37,6 +37,7 @@ int MouseInfo::getNumberOfButtons() {
 }
 
 GraphicsEnvironment& GraphicsEnvironment::getLocalGraphicsEnvironment() {
+	LOGD("GraphicsEnvironment::%s",__FUNCTION__);
 	if (localEnv == null) localEnv = crateGE();
 	return *localEnv;
 }

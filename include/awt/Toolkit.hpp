@@ -6,6 +6,10 @@
 
 namespace awt {
 
+class AWTError : extends Error {
+	using Error::Error;
+};
+
 class HeadlessException : extends UnsupportedOperationException {
 	using UnsupportedOperationException::UnsupportedOperationException;
 };
@@ -24,8 +28,11 @@ public:
 		if (isHeadless()) throw HeadlessException();
 	}
 	static GraphicsEnvironment& getLocalGraphicsEnvironment();
-	virtual Array<GraphicsDevice*> getScreenDevices() = 0;
+	virtual Array<GraphicsDevice*>& getScreenDevices() = 0;
 	virtual GraphicsDevice& getDefaultScreenDevice() = 0;
+};
+
+class ColorModel : extends Object {
 };
 
 class GraphicsConfiguration : extends Object {
@@ -33,7 +40,12 @@ protected:
 	GraphicsConfiguration(){}
 public:
 	virtual GraphicsDevice& getDevice() = 0;
+	virtual ColorModel getColorModel() const = 0;
+	virtual ColorModel getColorModel(int transparency) const = 0;
+	//virtual AffineTransform getDefaultTransform() = 0;
+	//virtual AffineTransform getNormalizingTransform() = 0;
 	virtual Rectangle getBounds() const = 0;
+	virtual boolean isTranslucencyCapable() const {return false;}
 };
 
 

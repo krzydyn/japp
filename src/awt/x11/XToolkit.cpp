@@ -49,24 +49,11 @@ public:
 	}
 };
 
-class XGraphicsConfiguration : extends awt::GraphicsConfiguration {
-public:
-	awt::GraphicsDevice& getDevice();
-	awt::Rectangle getBounds() const;
-};
-
-class XGraphicsDevice : extends awt::GraphicsDevice {
-public:
-	XGraphicsDevice() {}
-	const awt::GraphicsConfiguration& getDefaultConfiguration();
-};
-
 const boolean PRIMARY_LOOP = false;
 const boolean SECONDARY_LOOP = true;
 
 util::concurrent::ReentrantLock AWT_LOCK;
 XMouseInfoPeer xPeer;
-XGraphicsConfiguration xGraphicsConfig;
 Array<awt::GraphicsDevice*> screens;
 
 Thread toolkitThread;
@@ -76,22 +63,20 @@ long eventNumber;
 long awt_defaultFg;
 HashMap<Long,awt::x11::XBaseWindow*> winMap;
 
-awt::GraphicsDevice& XGraphicsConfiguration::getDevice() {
-	return *(screens[0]);
-}
-awt::Rectangle XGraphicsConfiguration::getBounds() const {
-	return awt::Rectangle(0,0,1000,800);
-}
-
-const awt::GraphicsConfiguration& XGraphicsDevice::getDefaultConfiguration() {
-	return xGraphicsConfig;
-}
 int getNumScreens() {
-	return 1;
+	return awt::x11::XlibWrapper::XScreenCount(display);
 }
 
 awt::GraphicsDevice* makeScreenDevice(int screennum) {
-	return new XGraphicsDevice();
+	return new awt::x11::X11GraphicsDevice(screennum);
+}
+
+// initialize the X11 display connection
+void initDisplay(boolean glxRequested) {
+	awt::Toolkit::getDefaultToolkit();
+}
+int getDefaultScreenNum() {
+	return 0;
 }
 
 void awt_toolkit_init() {
@@ -105,10 +90,19 @@ void processException(const Throwable& thr) {
 	thr.printStackTrace();
 }
 
+awt::Rectangle pGetBounds(int screenNum) {
+	//X11GraphicsDevice& dev = screens[screenNum];
+	return awt::Rectangle(0,0,1000,1000);
+}
+
 }//anonymous namespace
 
 namespace awt { namespace x11 {
-Array<awt::GraphicsDevice*> XGraphicsEnvironment::getScreenDevices() {
+X11GraphicsEnvironment::X11GraphicsEnvironment() {
+	initDisplay(false);
+}
+Array<awt::GraphicsDevice*>& X11GraphicsEnvironment::getScreenDevices() {
+	LOGD("X11GraphicsEnvironment::%s",__FUNCTION__);
 	if (screens.length == 0) {
 		int num = getNumScreens();
 		screens = Array<awt::GraphicsDevice*>(num);
@@ -118,9 +112,44 @@ Array<awt::GraphicsDevice*> XGraphicsEnvironment::getScreenDevices() {
 	}
 	return screens;
 }
-GraphicsDevice& XGraphicsEnvironment::getDefaultScreenDevice() {
-	return *(getScreenDevices()[0]);
+GraphicsDevice& X11GraphicsEnvironment::getDefaultScreenDevice() {
+	LOGD("X11GraphicsEnvironment::%s",__FUNCTION__);
+	Array<awt::GraphicsDevice*>& screens = getScreenDevices();
+	if (screens.length == 0) throw AWTError("no screen devices");
+	int index = getDefaultScreenNum();
+	return *screens[0 < index && index < screens.length ? index : 0];
 }
+
+const awt::GraphicsConfiguration& X11GraphicsDevice::getDefaultConfiguration() {
+	if (defaultConfig == null) {
+		defaultConfig = new X11GraphicsConfig(this, 1, 0, 0, false);
+	}
+	return *defaultConfig;
+}
+
+void X11GraphicsConfig::init(int visualNum, int screen) {
+}
+X11GraphicsConfig::X11GraphicsConfig(X11GraphicsDevice* device, int visualnum, int depth, int colormap, boolean doubleBuffer) {
+	this->screen = device;
+	this->visual = visualnum;
+	this->depth = depth;
+	this->colormap = colormap;
+	this->doubleBuffer = doubleBuffer;
+	init (visualnum, screen->getScreen());
+}
+GraphicsDevice& X11GraphicsConfig::getDevice() {
+	return *screen;
+}
+Rectangle X11GraphicsConfig::getBounds() const {
+	return pGetBounds(screen->getScreen());
+}
+ColorModel X11GraphicsConfig::getColorModel() const {
+	return awt::ColorModel();
+}
+ColorModel X11GraphicsConfig::getColorModel(int transparency) const {
+	return awt::ColorModel();
+}
+
 
 class XComponentPeer : extends XWindow, implements awt::ComponentPeer {
 private:

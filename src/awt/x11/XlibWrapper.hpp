@@ -21,6 +21,7 @@ private:
 public:
 	static long XOpenDisplay(const String& name);
 	static void XCloseDisplay(long display);
+	static int XScreenCount(long display);
 	static long XDisplayString(long display);
 	static void XSetCloseDownMode(long display, int close_mode);
 	static int DefaultScreen(long display) {return XDefaultScreen(display);}

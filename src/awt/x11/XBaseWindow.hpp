@@ -2,6 +2,7 @@
 #define __AWT_X11_XBASEWINDOW_HPP
  
 #include <util/HashMap.hpp>
+
 #include "XToolkit.hpp"
 
 namespace awt {
@@ -19,33 +20,126 @@ public:
 	static XBaseWindow *getGrabWindow();
 };
 
-class XCreateWindowParams : extends util::HashMap<String,Object*> {
+class XVisualInfo : extends Object {
+private:
+	Shared<nio::ByteBuffer> pData;
+	boolean getBool(int offs) { return pData->get(offs) != 0; }
+	void putBool(int offs, boolean b) { pData->put(offs, b?1:0); }
+	static int getLongSize() {return 8;}
 public:
-	XCreateWindowParams(const XCreateWindowParams& o) : util::HashMap<String,Object*>(o) {
-	}
+	static int getSize() { return 64; }
+	XVisualInfo() { pData = nio::ByteBuffer::allocate(getSize()); }
+	XVisualInfo(Shared<nio::ByteBuffer> buf) { pData = buf; }
+	void *getPData() { return &(pData->array()[0]); }
+	void dispose() { pData.reset(); }
+
+	long get_visual(int index) { return pData->getLong(0)+index*getLongSize(); }
+	long get_visual() { return pData->getLong(0); }
+	void set_visual(long v) { pData->putLong(0, v); }
+	long get_visualid() { return (pData->getLong(8)); }
+	void set_visualid(long v) { pData->putLong(8, v); }
+	int get_screen() { return (pData->getInt(16)); }
+	void set_screen(int v) { pData->putInt(16, v); }
+	int get_depth() { return (pData->getInt(20)); }
+	void set_depth(int v) { pData->putInt(20, v); }
+	int get_class() { return (pData->getInt(24)); }
+	void set_class(int v) { pData->putInt(24, v); }
+	long get_red_mask() { return (pData->getLong(32)); }
+	void set_red_mask(long v) { pData->putLong(32, v); }
+	long get_green_mask() { return (pData->getLong(40)); }
+	void set_green_mask(long v) { pData->putLong(40, v); }
+	long get_blue_mask() { return (pData->getLong(48)); }
+	void set_blue_mask(long v) { pData->putLong(48, v); }
+	int get_colormap_size() { return (pData->getInt(56)); }
+	void set_colormap_size(int v) { pData->putInt(56, v); }
+	int get_bits_per_rgb() { return (pData->getInt(60)); }
+	void set_bits_per_rgb(int v) { pData->putInt(60, v); }
+};
+
+class AwtGraphicsConfigData : extends Object {
+private:
+	Shared<nio::ByteBuffer> pData;
+	boolean getBool(int offs) { return pData->get(offs) != 0; }
+	void putBool(int offs, boolean b) { pData->put(offs, b?1:0); }
+	static int getLongSize() {return 8;}
+public:
+	static int getSize() { return 208; }
+	AwtGraphicsConfigData() { pData = nio::ByteBuffer::allocate(getSize()); }
+	AwtGraphicsConfigData(Shared<nio::ByteBuffer> buf) { pData = buf; }
+	void *getPData() { return &(pData->array()[0]); }
+	void dispose() { pData.reset(); }
+
+	int get_awt_depth() { return (pData->getInt(0)); }
+	void set_awt_depth(int v) { pData->putInt(0, v); }
+	long get_awt_cmap() { return (pData->getLong(8)); }
+	void set_awt_cmap(long v) { pData->putLong(8, v); }
+	XVisualInfo get_awt_visInfo() { return XVisualInfo(nio::ByteBuffer::wrap(pData->array(), 16, 64)); }
+	int get_awt_num_colors() { return (pData->getInt(80)); }
+	void set_awt_num_colors(int v) { pData->putInt(80, v); }
+	//awtImageData get_awtImage(int index) { return (pData->getLong(88) != 0)?(new awtImageData(Native.getLong(pData+88)+index*560)):(null); }
+	long get_awtImage() { return pData->getLong(88); }
+	void set_awtImage(long v) { pData->putLong(88, v); }
+	long get_AwtColorMatch(int index) { return pData->getLong(96)+index*getLongSize(); }
+	long get_AwtColorMatch() { return pData->getLong(96); }
+	void set_AwtColorMatch(long v) { pData->putLong(96, v); }
+	long get_monoImage(int index) { return pData->getLong(104)+index*getLongSize(); }
+	long get_monoImage() { return pData->getLong(104); }
+	void set_monoImage(long v) { pData->putLong(104, v); }
+	long get_monoPixmap() { return (pData->getLong(112)); }
+	void set_monoPixmap(long v) { pData->putLong(112, v); }
+	int get_monoPixmapWidth() { return (pData->getInt(120)); }
+	void set_monoPixmapWidth(int v) { pData->putInt(120, v); }
+	int get_monoPixmapHeight() { return (pData->getInt(124)); }
+	void set_monoPixmapHeight(int v) { pData->putInt(124, v); }
+	long get_monoPixmapGC() { return (pData->getLong(128)); }
+	void set_monoPixmapGC(long v) { pData->putLong(128, v); }
+	int get_pixelStride() { return (pData->getInt(136)); }
+	void set_pixelStride(int v) { pData->putInt(136, v); }
+	//ColorData get_color_data(int index) { return (pData->getLong(144) != 0)?(new ColorData(Native.getLong(pData+144)+index*88)):(null); }
+	long get_color_data() { return pData->getLong(144); }
+	void set_color_data(long v) { pData->putLong(144, v); }
+	long get_glxInfo(int index) { return pData->getLong(152)+index*getLongSize(); }
+	long get_glxInfo() { return pData->getLong(152); }
+	void set_glxInfo(long v) { pData->putLong(152, v); }
+	int get_isTranslucencySupported() { return (pData->getInt(160)); }
+	void set_isTranslucencySupported(int v) { pData->putInt(160, v); }
+	//XRenderPictFormat get_renderPictFormat() { return new XRenderPictFormat(pData + 168); }
+};
+
+class XCreateWindowParams : extends Object {
+private:
+	util::HashMap<String,Object*> params;
+public:
+	XCreateWindowParams(const XCreateWindowParams& o) : params(o.params) {}
 	XCreateWindowParams() {}
 
-	template <class T>
+	template<class T, class std::enable_if<std::is_base_of<Object,T>::value,Object>::type* = nullptr>
 	XCreateWindowParams& putIfNull(const String& key, const T& value) {
 		if (value != null) {
-			Object *o = new T(value);
-			if (!containsKey(key)) util::HashMap<String,Object*>::put(key, o);
+			if (!params.containsKey(key)) params.put(key, new T(value));
 		}
 		return *this;
 	}
-	template <class T>
+	XCreateWindowParams& putIfNull(const String& key, long value) { return putIfNull(key, Long(value)); }
+
+	template<class T, class std::enable_if<std::is_base_of<Object,T>::value,Object>::type* = nullptr>
 	XCreateWindowParams& put(const String& key, const T& value) {
 		if (value != null) {
-			Object *o = new T(value);
-			util::HashMap<String,Object*>::put(key, o);
+			params.put(key, new T(value));
 		}
 		return *this;
 	}
-	template <class T>
+	XCreateWindowParams& put(const String& key, long value) { return put(key, Long(value)); }
+
+	template<class T>
 	T& get(const String& key) const {
-		if (!containsKey(key)) return (T&)null_obj;
-		Object *o = util::HashMap<String,Object*>::get(key);
+		if (!params.containsKey(key)) return (T&)null_obj;
+		Object *o = params.get(key);
 		return (T&)(*o);
+	}
+	XCreateWindowParams& remove(const String& key) {
+		params.remove(key);
+		return *this;
 	}
 };
 
@@ -138,13 +232,17 @@ private:
 	XWindow *parent;
 	awt::Component *target;
 
+	awt::GraphicsConfiguration *graphicsConfig = null;
+	AwtGraphicsConfigData *graphicsConfigData = null;
 protected:
+
 	XWindow() { throw RuntimeException("not supp"); }
 	XWindow(XCreateWindowParams& params) { init(params); }
 	XWindow(awt::Component* target, long parentWindow, const Rectangle& bounds);
 	XWindow(Object* target) { throw RuntimeException("not supp"); }
 	XWindow(long parentWindow);
 
+	void initGraphicsConfiguration();
 	void preInit(XCreateWindowParams& params) override;
 	void postInit(XCreateWindowParams& params) override;
 public:
@@ -152,6 +250,16 @@ public:
 	static const char* REPARENTED;
 
 	void xSetBackground(const Color& c);
+	const GraphicsConfiguration& getGraphicsConfiguration() {
+		if (graphicsConfig == null) initGraphicsConfiguration();
+		if (graphicsConfig == null) throw RuntimeException("Can't get GraphicsConfiguration");
+		return *graphicsConfig;
+	}
+	const AwtGraphicsConfigData& getGraphicsConfigurationData() {
+		if (graphicsConfigData == null) initGraphicsConfiguration();
+		if (graphicsConfigData == null) throw RuntimeException("Can't get GraphicsConfigurationData");
+		return *graphicsConfigData;
+	}
 };
 
 }}

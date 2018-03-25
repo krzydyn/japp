@@ -51,14 +51,8 @@ private:
 	void putBool(int offs, boolean b) { pData->put(offs, b?1:0); }
 public:
 	static int getSize() { return 112; }
-
-	XSetWindowAttributes() {
-		pData = nio::ByteBuffer::allocate(getSize());
-	}
-	XSetWindowAttributes(Shared<nio::ByteBuffer> buf) {
-		pData = buf;
-	}
-
+	XSetWindowAttributes() { pData = nio::ByteBuffer::allocate(getSize()); }
+	XSetWindowAttributes(Shared<nio::ByteBuffer> buf) { pData = buf; }
 	void *getPData() { return &(pData->array()[0]); }
 	void dispose() { pData.reset(); }
 
@@ -163,11 +157,16 @@ void XBaseWindow::preInit(XCreateWindowParams& params) {
 	if (l != null) parent = (Object*)l.longValue();
 	if (instanceof<XBaseWindow>(parent)) {
 		parentWindow = (XBaseWindow*)parent;
+		LOGD("  parentWondow is XBaseWindow");
 	}
 	else {
 		Long& parentWindowID = params.get<Long>(PARENT_WINDOW);
 		if (parentWindowID != null) {
-			 parentWindow = XToolkit::windowToXWindow(parentWindowID);
+			LOGD("  parentWondow is id=%d", parentWindowID.longValue());
+			parentWindow = XToolkit::windowToXWindow(parentWindowID);
+		}
+		else {
+			LOGD("  parentWondow is null");
 		}
 	}
 
@@ -341,6 +340,14 @@ XWindow::XWindow(long parentWindow) : XBaseWindow(
 	){
 }
 
+void XWindow::initGraphicsConfiguration() {
+	LOGD("XWindow::%s: target is %s",__FUNCTION__,target->getClass().getName().cstr());
+	graphicsConfig = (X11GraphicsConfig*) &target->getGraphicsConfiguration();
+	LOGD("XWindow::%s: GraphicsConfiguration is %s",__FUNCTION__,graphicsConfig->getClass().getName().cstr());
+	//graphicsConfigData = new AwtGraphicsConfigData(graphicsConfig->getAData());
+	graphicsConfigData = new AwtGraphicsConfigData();
+}
+
 void XWindow::preInit(XCreateWindowParams& params) {
 	LOGD("XWindow::%s", __FUNCTION__);
 	XBaseWindow::preInit(params);
@@ -349,6 +356,10 @@ void XWindow::preInit(XCreateWindowParams& params) {
 	target = (Component*)params.get<Long>(TARGET).longValue();
 	//initGraphicsConfiguration();
 
+	params.putIfNull(EVENT_MASK, XConstants::KeyPressMask | XConstants::KeyReleaseMask
+		| XConstants::FocusChangeMask | XConstants::ButtonPressMask | XConstants::ButtonReleaseMask
+		| XConstants::EnterWindowMask | XConstants::LeaveWindowMask | XConstants::PointerMotionMask
+		| XConstants::ButtonMotionMask | XConstants::ExposureMask | XConstants::StructureNotifyMask);
 	if (target != null) {
 		params.putIfNull<Rectangle>(BOUNDS, target->getBounds());
 	}
@@ -356,6 +367,10 @@ void XWindow::preInit(XCreateWindowParams& params) {
 		params.putIfNull<Rectangle>(BOUNDS, Rectangle(0, 0, MIN_SIZE, MIN_SIZE));
 	}
 
+	AwtGraphicsConfigData gData = getGraphicsConfigurationData();
+	XVisualInfo visInfo = gData.get_awt_visInfo();
+
+	params.putIfNull(BORDER_PIXEL, Long::valueOf(0));
 	//params.putIfNull(COLORMAP, gData.get_awt_cmap());
 	//params.putIfNull(DEPTH, gData.get_awt_depth());
 	params.putIfNull<Integer>(VISUAL_CLASS, (int)XConstants::InputOutput);
@@ -365,8 +380,12 @@ void XWindow::preInit(XCreateWindowParams& params) {
 	if (parentWindow == null || parentWindow.longValue() == 0) {
 		XToolkit::awtLock();
 		Finalize(XToolkit::awtUnlock(););
-		//int screen = visInfo.get_screen();
+		int screen = visInfo.get_screen();
+		if (screen != -1) params.put(PARENT_WINDOW, XlibWrapper::RootWindow(XToolkit::getDisplay(), screen));
+		else params.put(PARENT_WINDOW, XToolkit::getDefaultRootWindow());
 	}
+
+	//this->paintArea = new XRepaintArea();
 	if (target != null) this->parent = getParentXWindowObject(target->getParent());
 
 	//params.putIfNull(BACKING_STORE, XToolkit::getBackingStoreType());
@@ -389,7 +408,7 @@ void XWindow::xSetBackground(const Color& c) {
 	//int pixel = PixelConverter.instance.rgbToPixel(c.getRGB(), cm);
 	//int pixel = c.getRGB()|0xff000000;
 	int pixel = c.getRGB();
-	XlibWrapper::XAllocColor(XToolkit::getDisplay(), XToolkit::getDisplay(), pixel);
+	//XlibWrapper::XAllocColor(XToolkit::getDisplay(), XToolkit::getDisplay(), pixel);
 	XlibWrapper::XSetWindowBackground(XToolkit::getDisplay(), getContentWindow(), pixel);
 	XlibWrapper::XClearWindow(XToolkit::getDisplay(), getContentWindow());
 }
