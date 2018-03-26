@@ -20,6 +20,7 @@ public:
 	static XBaseWindow *getGrabWindow();
 };
 
+// from XVisualInfo *XGetVisualInfo( Display* display, long vinfo_mask, XVisualInfo* vinfo_template, int* nitems_return);
 class XVisualInfo : extends Object {
 private:
 	Shared<nio::ByteBuffer> pData;

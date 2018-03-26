@@ -57,7 +57,7 @@ protected:
 	boolean doubleBuffer;
 public:
 	X11GraphicsConfig(X11GraphicsDevice* device, int visualnum, int depth, int colormap, boolean doubleBuffer);
-	//deprecated, replaced by device->getConfig(....)
+	//deprecated, replaced by device->getDefaultConfig(), TODO by device->getConfig(v,d,cm,type)
 	//static X11GraphicsConfig& getConfig(X11GraphicsDevice* device, int visualnum, int depth, int colormap, int type);
 
 	GraphicsDevice& getDevice();

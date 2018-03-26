@@ -7,6 +7,8 @@
 #include "XToolkit.hpp"
 #include "XlibWrapper.hpp"
 
+// https://www.x.org/docs/X11/xlib.pdf
+
 namespace {
 
 class XMouseInfoPeer : implements awt::MouseInfoPeer {
