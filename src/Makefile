@@ -51,3 +51,10 @@ $(BUILD_DIR)/%.so:
 
 clean: $(SRC_BUILD_DIRS)
 	if [ "$(PREFIX)" = "." ]; then rm -rf $(BUILD_DIR); else rm -rf $^; fi
+
+$(BUILD_DIR)/srcdep.mk: $(SRCS)
+	rm -f $(SOURCE_DIR)/srcdep.mk
+	$(CC) $(CPPFLAGS) -MM $^ > $(BUILD_DIR)/srcdep.mk
+
+
+include $(BUILD_DIR)/srcdep.mk
