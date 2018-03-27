@@ -1,9 +1,10 @@
 #ifndef __LANG_OBJECT_HPP
 #define __LANG_OBJECT_HPP
 
+#include <condition_variable>
+#include <iostream>
 #include <mutex>
 #include <memory> //shared_ptr
-#include <iostream>
 
 #define interface class
 #define extends public
@@ -61,9 +62,11 @@ class Object {
 	friend class Lock;
 private:
 	std::recursive_mutex *mtx=null;
+	std::condition_variable *cond=null;
 	void move(Object *o) {
 		if (this == o) return ;
 		mtx = o->mtx; o->mtx = null;
+		cond = o->cond; o->cond = null;
 	}
 protected:
 	virtual void finalize() {}
@@ -87,10 +90,10 @@ public:
 	virtual boolean equals(const Object& obj) const {return this == &obj;}
 	virtual String toString() final;
 	virtual String toString() const;
-	virtual void notify() final {}
-	virtual void notifyAll() final {}
-	virtual void wait(long timeout) final {}
-	virtual void wait(long timeout, int nanos) final {}
+	virtual void notify() final;
+	virtual void notifyAll() final;
+	virtual void wait(long timeout) final;
+	virtual void wait(long timeout, int nanos) final;
 	virtual void wait() final {wait(0); }
 
 	boolean operator==(const std::nullptr_t&) const {
@@ -128,6 +131,7 @@ public:
 		void unlock() { locked=false; }
 	};
 };
+#define synchronized(m) for(Object::Lock UNIQUE_NAME(lck)(m); UNIQUE_NAME(lck); UNIQUE_NAME(lck).unlock())
 
 inline boolean operator==(const void *ptr, const Object& o) {
 	if (ptr == null) return o == null;
@@ -251,7 +255,6 @@ public:
 
 using namespace lang;
 
-#define synchronized(m) for(Object::Lock UNIQUE_NAME(lck)(m); UNIQUE_NAME(lck); UNIQUE_NAME(lck).unlock())
 
 //template<class T, class std::enable_if<std::is_base_of<Object,T>::value,Object>::type* = nullptr>
 //using classT = typename(T)::theclass;

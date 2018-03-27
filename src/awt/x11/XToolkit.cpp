@@ -8,6 +8,7 @@
 #include "XlibWrapper.hpp"
 
 // https://www.x.org/docs/X11/xlib.pdf
+// http://neuron-ai.tuke.sk/hudecm/Tutorials/C/special/xlib-programming/xlib-programming-2.html
 
 namespace {
 
@@ -107,6 +108,7 @@ Array<awt::GraphicsDevice*>& X11GraphicsEnvironment::getScreenDevices() {
 	LOGD("X11GraphicsEnvironment::%s",__FUNCTION__);
 	if (screens.length == 0) {
 		int num = getNumScreens();
+		LOGD("Number of screens is %d", num);
 		screens = Array<awt::GraphicsDevice*>(num);
 		for (int i = 0; i < num; i++) {
 			screens[i] = makeScreenDevice(i);

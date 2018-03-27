@@ -293,6 +293,31 @@ String Object::toString() const {
 	return getClass().getName() + "@" + Integer::toHexString(hashCode());
 }
 
+void Object::notify() {
+	if (cond) cond->notify_one();
+}
+void Object::notifyAll() {
+	if (cond) cond->notify_all();
+}
+void Object::wait(long timeout) {
+	if (timeout < 0) throw IllegalArgumentException("timeout value is negative");
+	// std::unique_lock workd on mutex, not recursive_mutex
+
+/*
+	if (cond == null) cond = new std::condition_variable;
+	std::unique_lock<std::recursive_mutex> lck(*mtx);
+	if (timeout == 0) cond->wait(lck);
+	else cond->wait_for(lck, timeout);
+*/
+}
+
+void Object::wait(long timeout, int nanos) {
+	if (timeout < 0) throw IllegalArgumentException("timeout value is negative");
+	if (nanos < 0 || nanos > 999999) throw IllegalArgumentException("nanosecond timeout value out of range");
+	if (nanos > 0) timeout++;
+	wait(timeout);
+}
+
 void AbstractArray::registerArrayClass(const std::type_info& type) {
 	ArrayList<Class*>& cm = classmap();
 	synchronized(cm) {
