@@ -58,11 +58,13 @@ public:
 };
 #endif
 
+class CondMonitor;
 class Object {
 	friend class Lock;
+// http://hg.openjdk.java.net/jdk7/jdk7/hotspot/file/9b0ca45cd756/src/share/vm/runtime/objectMonitor.cpp#l1430
 private:
 	std::recursive_mutex *mtx=null;
-	std::condition_variable *cond=null;
+	CondMonitor* cond = null;
 	void move(Object *o) {
 		if (this == o) return ;
 		mtx = o->mtx; o->mtx = null;
@@ -76,11 +78,12 @@ public:
 	static long null_val;
 	static Class *findClass(const std::type_info& type);
 	static void registerClass(Class *c);
+
 	Object(const Object& o) {}
 	Object& operator=(const Object& o) {return *this;}
 	Object(Object&& o) {move(&o);}
 	Object& operator=(Object&& o) {move(&o);return *this;}
-	virtual ~Object() { delete mtx; }
+	virtual ~Object();
 
 	Object() {}
 	virtual const Class& getClass() const final;

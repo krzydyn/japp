@@ -7,8 +7,10 @@
 #include "XToolkit.hpp"
 #include "XlibWrapper.hpp"
 
+// X11 know-how
 // https://www.x.org/docs/X11/xlib.pdf
 // http://neuron-ai.tuke.sk/hudecm/Tutorials/C/special/xlib-programming/xlib-programming-2.html
+// https://www.x.org/releases/X11R7.6/doc/libX11/specs/libX11/libX11.html
 
 namespace {
 
@@ -399,6 +401,7 @@ void XToolkit::run() {
 void XToolkit::run(boolean loop) {
 	LOGD("%s", __FUNCTION__);
 	XEvent ev;
+
 	while(true) {
 		if (Thread::currentThread().isInterrupted()) {
 			break;

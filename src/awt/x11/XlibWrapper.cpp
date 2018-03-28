@@ -7,8 +7,9 @@
 namespace awt { namespace x11 {
 
 long XlibWrapper::XOpenDisplay(const String& name) {
-	LOGD("XlibWrapper::%s",__FUNCTION__);
-	return (long)::XOpenDisplay(name.cstr());
+	long r = (long)::XOpenDisplay(name.cstr());
+	LOGD("XlibWrapper::%s('%s') = %lX",__FUNCTION__, name.cstr(), r);
+	return r;
 }
 //void XlibWrapper::XCloseDisplay(long display);
 int XlibWrapper::XScreenCount(long display) {

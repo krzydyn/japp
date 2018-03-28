@@ -14,6 +14,9 @@ private:
 	int value;
 	//float falpha = 0.0f;
 public:
+	static const Color blue;
+	static constexpr const Color& BLUE = blue;
+
 	Color() : value(0) {}
 	Color(const Color& o) : value(o.value) {}
 	Color& operator=(const Color& o) {

@@ -256,7 +256,7 @@ public:
 		POPUP
 	};
 
-	Window() {
+	Window(const std::nullptr_t&) {
 		init((GraphicsConfiguration&)null_obj);
 	}
 /*

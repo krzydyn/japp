@@ -253,6 +253,7 @@ String Class::getSimpleName() const {TRACE;
 String Class::getName() const {TRACE;return demangle(type.name());}
 String Class::getCanonicalName() const {TRACE;return getName();}
 
+
 Class *Object::findClass(const std::type_info& type) {
 	ArrayList<Class*>& cm = classmap();
 	synchronized(cm) {
@@ -285,6 +286,24 @@ const Class& Object::getClass(const std::type_info& type) {
 	return *c;
 }
 
+class CondMonitor {
+private:
+	std::condition_variable var;
+	std::mutex mtx;
+public:
+	void wait(long t);
+	void notify();
+	void notifyAll();
+};
+
+void CondMonitor::wait(long t) {
+}
+void CondMonitor::notify() {
+}
+void CondMonitor::notifyAll() {
+}
+
+Object::~Object() { delete mtx; delete cond; }
 Object& Object::clone() const {TRACE;
 	throw CloneNotSupportedException();
 }
@@ -294,21 +313,15 @@ String Object::toString() const {
 }
 
 void Object::notify() {
-	if (cond) cond->notify_one();
+	if (cond) cond->notify();
 }
 void Object::notifyAll() {
-	if (cond) cond->notify_all();
+	if (cond) cond->notifyAll();
 }
 void Object::wait(long timeout) {
 	if (timeout < 0) throw IllegalArgumentException("timeout value is negative");
-	// std::unique_lock workd on mutex, not recursive_mutex
-
-/*
-	if (cond == null) cond = new std::condition_variable;
-	std::unique_lock<std::recursive_mutex> lck(*mtx);
-	if (timeout == 0) cond->wait(lck);
-	else cond->wait_for(lck, timeout);
-*/
+	if (cond == null) cond = new CondMonitor();
+	cond->wait(timeout);
 }
 
 void Object::wait(long timeout, int nanos) {
