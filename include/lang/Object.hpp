@@ -134,6 +134,7 @@ public:
 		void unlock() { locked=false; }
 	};
 };
+
 #define synchronized(m) for(Object::Lock UNIQUE_NAME(lck)(m); UNIQUE_NAME(lck); UNIQUE_NAME(lck).unlock())
 
 inline boolean operator==(const void *ptr, const Object& o) {

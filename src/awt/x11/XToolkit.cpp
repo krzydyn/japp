@@ -66,6 +66,7 @@ long display;
 int arrowCursor;
 long eventNumber;
 long awt_defaultFg;
+HashMap<Long,void*> timeoutTasks; // SortedMap
 HashMap<Long,awt::x11::XBaseWindow*> winMap;
 
 int getNumScreens() {
@@ -332,9 +333,9 @@ void XToolkit::awtUnlock() {
 long XToolkit::getNextTaskTime() {
 	awtLock();
 	Finalize(awtUnlock(););
+	if (timeoutTasks.isEmpty()) return -1L;
 	//return (Long)timeoutTasks.firstKey();
-	Thread::sleep(1000);
-	return -1L;
+	return System.currentTimeMillis() + 100;
 }
 
 long XToolkit::getDisplay() {

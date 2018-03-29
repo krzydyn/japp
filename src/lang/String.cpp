@@ -67,6 +67,7 @@ String String::format(const char *fmt, va_list& args) {TRACE;
 	static Object sync;
 	static char buffer[1023];
 	String s;
+	// avoid calling from signal handler, causes deadlock
 	synchronized (sync) {
 		if ((unsigned)vsnprintf(buffer,sizeof(buffer),fmt,args) > sizeof(buffer)) {
 			strcpy(buffer+1023-5,"...");

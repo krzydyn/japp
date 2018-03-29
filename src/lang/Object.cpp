@@ -127,13 +127,15 @@ void captureStack2(Array<StackTraceElement>& stackTrace) {
 	stackTrace = t.getStackTrace();
 }
 #endif
+//FIXME do not call any c lib function from a handler (only async-safe can be used)
+//      also don't throw exception
+//  read SIGNAL-SAFETY(7) for list of async-safe-functions
 void signal_handle(int signum) {
 	//System.err.printf("%sReceived signal %d %s\n", "\x1b[1;37m", signum, "\x1b[m");
 	static char buf[200];
 	int n = sprintf(buf, "%sReceived signal %d %s\n", "\x1b[1;37m", signum, "\x1b[m");
 	//System.err ... causes dead lock
 	::write(STDERR_FILENO , buf, n);
-	//std::printf("%sReceived signal %d %s\n", "\x1b[1;37m", signum, "\x1b[m");
 
 	Array<StackTraceElement> st;
 	captureStackTrace(st, 3);
