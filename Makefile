@@ -26,7 +26,11 @@ rebuild:
 	make clean
 	make all
 
-build: $(BUILD_DIRS)
+.PHONY: crate-build-dir
+crate-build-dir:
+	mkdir -p build
+
+build: crate-build-dir $(BUILD_DIRS)
 clean: $(CLEAN_DIRS)
 	@rm -rf $(BUILD_DIR)
 

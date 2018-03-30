@@ -143,7 +143,7 @@ inline boolean operator==(const void *ptr, const Object& o) {
 
 template<class T> using Shared = std::shared_ptr<T>;
 template<class T, class... Args>
-Shared<T> makeShared(Args&&... args) {TRACE; return std::make_shared<T>(args...); }
+Shared<T> makeShared(Args&&... args) { return std::make_shared<T>(args...); }
 
 
 class AbstractArray : extends Object {

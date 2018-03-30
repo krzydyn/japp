@@ -59,6 +59,7 @@ public:
 	}
 
 	~Threads() {
+		std::cout << "Threads destructor" << std::endl;
 		removeThread(mainid);
 	}
 	long nextThreadNum() {
@@ -184,7 +185,7 @@ Thread::~Thread() {
 		delete thread;
 		thread = null;
 		if (instanceof<RunnableFunction>(target)) {
-			System.err.println("delete RunnableFunction");
+			std::cout << "delete RunnableFunction" << std::endl;
 			delete target;
 		}
 	}catch(const Throwable& e) {

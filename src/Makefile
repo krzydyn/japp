@@ -30,7 +30,7 @@ OBJS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
 TARGETS:=$(BUILD_DIR)/jre.a #$(BUILD_DIR)/jre.so
 SRC_BUILD_DIRS:=$(dir $(OBJS))
 
-build: create-build_dir $(TARGETS)
+build: create-build_dir $(BUILD_DIR)/srcdep.mk $(TARGETS)
 
 .PHONY: create-build_dir
 .PHONY: $(SRC_BUILD_DIRS)
@@ -53,7 +53,7 @@ clean: $(SRC_BUILD_DIRS)
 	if [ "$(PREFIX)" = "." ]; then rm -rf $(BUILD_DIR); else rm -rf $^; fi
 
 $(BUILD_DIR)/srcdep.mk: $(SRCS)
-	rm -f $(SOURCE_DIR)/srcdep.mk
+	rm -f $(BUILD_DIR)/srcdep.mk
 	$(CC) $(CPPFLAGS) -MM $^ > $(BUILD_DIR)/srcdep.mk
 
 

@@ -47,8 +47,12 @@ long XlibWrapper::XWhitePixel(long display, long screen) {
 }
 
 long XlibWrapper::XCreateWindow(long display, long parent, int x,int  y, int width, int height, int border_width, int depth, long wclass, long visual, long valuemask, void* attributes) {
+	wclass=0;
+	int attrs = 112;
+	char buf[2*attrs+1];
+	for (int i=0; i < attrs; ++i) sprintf(buf+2*i, "%02X", ((char*)attributes)[i]);
 	long r = ::XCreateWindow((Display *)display, parent, x, y, width, height, border_width, depth, (int)wclass, (Visual*)visual, valuemask, (XSetWindowAttributes*)attributes);
-	LOGD("XlibWrapper::%s(%lX,%ld,bounds=(%d,%d,%d,%d),depth=%d) = %lX", __FUNCTION__, display, parent, x, y, width, height, depth, r);
+	LOGD("XlibWrapper::%s(%lX,%ld,bounds=(%d,%d,%d,%d),depth=%d,wclass=%ld,vis=%ld,mask=%lX\nattrs=%s) = %lX", __FUNCTION__, display, parent, x, y, width, height, depth, wclass, visual, valuemask, buf, r);
 	return r;
 }
 void XlibWrapper::XDestroyWindow(long display, long window) {
@@ -143,6 +147,7 @@ boolean XlibWrapper::XQueryPointer(long display, long window, long& root_return,
 }
 //void XlibWrapper::XFreeCursor(long display, long cursor);
 void XlibWrapper::XSetWindowBackground(long display, long window, long background_pixel) {
+	background_pixel &= 0xffffffff;
 	LOGD("XlibWrapper::%s(%lX,%lX,bg_pixel=%lx)",__FUNCTION__,display,window,background_pixel);
 	::XSetWindowBackground((Display*)display, window, background_pixel);
 }

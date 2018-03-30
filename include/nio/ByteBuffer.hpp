@@ -38,6 +38,7 @@ protected:
 	ByteBuffer(int mark, int pos, int lim, int cap, int offset = 0) :
 			Buffer(mark, pos, lim, cap), allocated(true), mOffset(offset) {
 		hb = new Array<byte>(cap);
+		for (int i=0; i < cap; ++i) (*hb)[i] = 0;
 	}
 	ByteBuffer(int mark, int pos, int lim, int cap, Array<byte>& hb, int offset = 0) :
 			Buffer(mark, pos, lim, cap), allocated(false), mOffset(offset) {
