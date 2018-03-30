@@ -66,8 +66,15 @@ long display;
 int arrowCursor;
 long eventNumber;
 long awt_defaultFg;
-HashMap<Long,void*> timeoutTasks; // SortedMap
-HashMap<Long,awt::x11::XBaseWindow*> winMap;
+
+HashMap<Long,void*>& timeoutTasks() {
+	static HashMap<Long,void*> map;
+	return map;
+}
+HashMap<Long,awt::x11::XBaseWindow*>& winMap() {
+	static HashMap<Long,awt::x11::XBaseWindow*> map;
+	return map;
+}
 
 int getNumScreens() {
 	return awt::x11::XlibWrapper::XScreenCount(display);
@@ -90,6 +97,8 @@ void awt_toolkit_init() {
 void callTimeoutTasks() {
 }
 void waitForEvents(long nextTaskTime) {
+	Long tm = System.currentTimeMillis();
+	if (tm < nextTaskTime) Thread::sleep(nextTaskTime - tm);
 }
 
 void processException(const Throwable& thr) {
@@ -283,6 +292,7 @@ public:
 void notifyListeners(XEvent& ev) {
 }
 void dispatchEvent(XEvent& ev) {
+	LOGD("dispatchEvent type=%d", ev.get_type());
 	//XAnyEvent xany = ev.get_xany();
 	if (ev.get_type() == XConstants::MappingNotify) {
 	}
@@ -307,18 +317,18 @@ awt::MouseInfoPeer& XToolkit::getMouseInfoPeer() {
 }
 
 void XToolkit::addToWinMap(long window, XBaseWindow* xwin) {
-	synchronized(winMap) {
-		winMap.put(Long::valueOf(window), xwin);
+	synchronized(winMap()) {
+		winMap().put(Long::valueOf(window), xwin);
 	}
 }
 void XToolkit::removeFromWinMap(long window, XBaseWindow* xwin) {
-	synchronized(winMap) {
-		winMap.remove(Long::valueOf(window));
+	synchronized(winMap()) {
+		winMap().remove(Long::valueOf(window));
 	}
 }
 XBaseWindow* XToolkit::windowToXWindow(long window) {
-	synchronized(winMap) {
-		return (XBaseWindow*) winMap.get(Long::valueOf(window));
+	synchronized(winMap()) {
+		return (XBaseWindow*) winMap().get(Long::valueOf(window));
 	}
 	return null;
 }
@@ -333,8 +343,13 @@ void XToolkit::awtUnlock() {
 long XToolkit::getNextTaskTime() {
 	awtLock();
 	Finalize(awtUnlock(););
-	if (timeoutTasks.isEmpty()) return -1L;
+	LOGD("XToolkit::getNextTaskTime ... ");
+	if (timeoutTasks().isEmpty()) {
+		LOGD("XToolkit::getNextTaskTime ret -1");
+		return -1L;
+	}
 	//return (Long)timeoutTasks.firstKey();
+	LOGD("XToolkit::getNextTaskTime ret t0+100");
 	return System.currentTimeMillis() + 100;
 }
 
@@ -400,31 +415,39 @@ void XToolkit::run() {
 	run(PRIMARY_LOOP);
 }
 void XToolkit::run(boolean loop) {
-	LOGD("%s", __FUNCTION__);
+	LOGD("%s(%s)", __FUNCTION__, String::valueOf(loop).cstr());
 	XEvent ev;
 
+	Thread::sleep(1000);
 	while(true) {
+		LOGD("Toolkit::loop time=%ld", System.currentTimeMillis());
 		if (Thread::currentThread().isInterrupted()) {
 			break;
 		}
 		try {
 			awtLock();
 			Finalize(awtUnlock(););
+			LOGD("Toolkit::loop awt Locked");
 			if (loop == SECONDARY_LOOP) {
 				if (!XlibWrapper::XNextSecondaryLoopEvent(getDisplay(), ev.getPData())) {
 					break;
 				}
 			}
 			else {
+				LOGD("Toolkit::loop call timeout tasks");
 				callTimeoutTasks();
 				while ((XlibWrapper::XEventsQueued(getDisplay(), XConstants::QueuedAfterReading) == 0) &&
 						(XlibWrapper::XEventsQueued(getDisplay(), XConstants::QueuedAfterFlush) == 0)) {
+					LOGD("Toolkit::loop call timeout tasks 2");
 					callTimeoutTasks();
+					LOGD("Toolkit::loop call waitForEvents");
 					waitForEvents(getNextTaskTime());
 				}
+				LOGD("Toolkit::loop XNextEvent");
 				XlibWrapper::XNextEvent(getDisplay(), ev.getPData());
 			}
 			if (ev.get_type() != XConstants::NoExpose) ++eventNumber;
+			LOGD("Toolkit::loop call dispatch");
 			dispatchEvent(ev);
 		}
 		catch (const ThreadDeath& td) {

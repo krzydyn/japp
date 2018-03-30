@@ -64,16 +64,11 @@ void String::getChars(int srcBegin, int srcEnd, char *dst, int dstBegin) const {
 String String::valueHex(long l) {TRACE; return Long::toHexString(l); }
 
 String String::format(const char *fmt, va_list& args) {TRACE;
-	static Object sync;
-	static char buffer[1023];
+	char buffer[1023];
 	String s;
-	// avoid calling from signal handler, causes deadlock
-	synchronized (sync) {
-		if ((unsigned)vsnprintf(buffer,sizeof(buffer),fmt,args) > sizeof(buffer)) {
-			strcpy(buffer+1023-5,"...");
-		}
-		s = buffer;
-	}
+	if ((unsigned)vsnprintf(buffer,sizeof(buffer),fmt,args) > sizeof(buffer))
+		strcpy(buffer+1023-5,"...");
+	s = buffer;
 	//FILE *stream;
 	//vfprintf(stream, fmt, args);
 	return s;

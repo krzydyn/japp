@@ -120,7 +120,7 @@ public:
 		if (map) delete []map;
 	}
 
-	int size() const {return (int)elems;}
+	int size() const override {return (int)elems;}
 	boolean containsKey(const K& key) const {TRACE;
 		unsigned hc = util::hash_code(key)%mapsize;
 		const ArrayList<MapEntry<K,V> >& l=map[hc];

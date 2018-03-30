@@ -115,21 +115,21 @@ public:
 	Thread(std::function<void()> f) : target(new RunnableFunction(f)) {init();}
 	~Thread();
 
-	void start();
+	virtual void start();
 	void run() {TRACE;
 		if (target != null) target->run();
 	}
-	void interrupt() {}
-	boolean isInterrupted() const {return isInterrupted(false);}
-	boolean isInterrupted(boolean ClearInterrupted) const {return false;}
-	boolean isAlive() const {return threadStatus != NEW && threadStatus != TERMINATED;}
-	void setPriority(int newPriority);
-	int getPriority() const {return priority;}
+	virtual void interrupt() {}
+	virtual boolean isInterrupted() const final {return isInterrupted(false);}
+	virtual boolean isInterrupted(boolean ClearInterrupted) const {return false;}
+	virtual boolean isAlive() const final {return threadStatus != NEW && threadStatus != TERMINATED;}
+	virtual void setPriority(int newPriority);
+	virtual int getPriority() const final {return priority;}
 	void setName(const String& name);
 	String getName() const {return name;}
 	ThreadGroup& getThreadGroup() {return *group;}
-	void join(long millis=0);
-	void join(long millis, int nanos) {TRACE;
+	virtual void join(long millis=0);
+	virtual void join(long millis, int nanos) {TRACE;
 		if (millis < 0) throw IllegalArgumentException("timeout value is negative");
 		if (nanos < 0 || nanos > 999999) throw IllegalArgumentException("nanosecond timeout value out of range");
 		if (nanos >= 500000 || (nanos != 0 && millis == 0)) ++millis;
@@ -138,7 +138,7 @@ public:
 	/**
 	 * when program ends, it is not waiting for end of daemon threads
 	 */
-	void setDaemon(boolean on) {TRACE;
+	void setDaemon(boolean on) {
 		checkAccess();
 		if (isAlive()) throw IllegalThreadStateException();
 		daemon = on;

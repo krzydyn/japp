@@ -87,9 +87,7 @@ public:
 protected:
 	void newLine() const {
 		if (this == null) {std::cerr << "NULL" << std::endl;return ;}
-		synchronized (*this) {
-			out.write('\n');
-		}
+		out.write('\n');
 	}
 	void write(const char *s) const {
 		if (this == null) {std::cerr << "NULL" << s;return ;}
