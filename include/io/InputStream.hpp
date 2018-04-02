@@ -46,10 +46,10 @@ public:
 	}
 	virtual long skip(long n) {
 		long remaining = n;
-		int size = (int)Math.min(MAX_SKIP_BUFFER_SIZE, remaining);
+		int size = (int)Math::min(MAX_SKIP_BUFFER_SIZE, remaining);
 		Array<byte> skipBuffer(size);
 		while (remaining > 0) {
-			int nr = read(skipBuffer, 0, (int)Math.min(size, remaining));
+			int nr = read(skipBuffer, 0, (int)Math::min(size, remaining));
 			if (nr < 0) break;
 			remaining -= nr;
 		}

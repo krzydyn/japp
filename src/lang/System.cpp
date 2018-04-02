@@ -28,8 +28,8 @@ namespace {
 #define SGR_WHITE        CSI "1;37m"
 
 auto nano_start = high_resolution_clock::now();
-char levelName[] = {'E', 'W', 'D', 'I', 'N', 0};
-const char *levelColor[] = {SGR_RED, SGR_YELLOW, SGR_BLUE, SGR_CYAN, "", SGR_GREEN, SGR_MAGENTA };
+const char *levelName[] = {"E", "W", "D", "I", "N", null};
+const char *levelColor[] = {SGR_RED, SGR_YELLOW, SGR_BLUE, "", SGR_GREEN, SGR_MAGENTA, SGR_CYAN };
 }
 
 namespace lang {
@@ -53,7 +53,7 @@ void Logger::format(const char *fn, unsigned ln, int level, const char *fmt, va_
 	}
 	else {
 		strftime (buf, sizeof(buf), "%H:%M:%S", localtime_r(&t, &stm));
-		System.out.printf("%s.%03llu %s[%c] %s %s(%u): ", buf, r, levelColor[level], levelName[level], thn.cstr(), fn, ln);
+		System.out.printf("%s.%03llu %s[%s] %s %s(%u): ", buf, r, levelColor[level], levelName[level], thn.cstr(), fn, ln);
 	}
 	//System.out.printf("%s.%03llu [%c]: ", buf, r, levelName[level]);
 	System.out.print(String::format(fmt, args));

@@ -217,7 +217,7 @@ boolean ByteBuffer::equals(const Object& ob) const {
 }
 
 int ByteBuffer::compareTo(const ByteBuffer& o) const {
-	int n = position() + Math.min(remaining(), o.remaining());
+	int n = position() + Math::min(remaining(), o.remaining());
 	for (int i = position(), j = o.position(); i < n; i++, j++) {
 		int cmp = static_compare(get(i), o.get(j));
 		if (cmp != 0) return cmp;

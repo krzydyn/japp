@@ -67,7 +67,7 @@ int CharBuffer::read(CharBuffer& target) {
 	int targetRemaining = target.remaining();
 	int thisRemaining = remaining();
 	if (thisRemaining == 0) return -1;
-	int n = Math.min(thisRemaining, targetRemaining);
+	int n = Math::min(thisRemaining, targetRemaining);
 	int l = limit();
 	Finalize(limit(l););
 	if (targetRemaining < thisRemaining) limit(position() + n);
@@ -127,7 +127,7 @@ boolean CharBuffer::equals(const Object& ob) const {
 }
 
 int CharBuffer::compareTo(const CharBuffer& o) const {
-	int n = position() + Math.min(remaining(), o.remaining());
+	int n = position() + Math::min(remaining(), o.remaining());
 	for (int i = position(), j = o.position(); i < n; i++, j++) {
 		int cmp = static_compare(get(i), o.get(j));
 		if (cmp != 0) return cmp;

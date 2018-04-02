@@ -9,10 +9,15 @@
 
 namespace lang {
 
-class The_Math {
+class Math {
 public:
 	static constexpr double E = 2.7182818284590452354;
 	static constexpr double PI = 3.14159265358979323846;
+
+	static int abs(int a) { return a >= 0 ? a : -a; }
+	static long abs(long a) { return a >= 0 ? a : -a; }
+	static float abs(float a) { return a >= 0 ? a : -a; }
+	static double abs(double a) { return a >= 0 ? a : -a; }
 
 	static double sin(double a) { return std::sin(a); }
 	static double cos(double a) { return std::cos(a); }
@@ -77,8 +82,6 @@ public:
 private:
 	static std::default_random_engine randomEngine;
 };
-
-extern const The_Math Math;
 
 } //namespace lang
 

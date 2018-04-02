@@ -1,8 +1,12 @@
 #include <lang/System.hpp>
 
 #include "XlibWrapper.hpp"
+
 #include <X11/Xlib.h>
 #include <X11/Xlibint.h>
+#include <X11/Xutil.h>
+#include <X11/Xatom.h>
+
 
 namespace awt { namespace x11 {
 
@@ -11,7 +15,12 @@ long XlibWrapper::XOpenDisplay(const String& name) {
 	LOGD("XlibWrapper::%s('%s') = %lX",__FUNCTION__, name.cstr(), r);
 	return r;
 }
-//void XlibWrapper::XCloseDisplay(long display);
+void XlibWrapper::XCloseDisplay(long display) {
+	::XCloseDisplay((Display *)display);
+}
+int XlibWrapper::XConnectionNumber(long display) {
+	return ::XConnectionNumber((Display *)display);
+}
 int XlibWrapper::XScreenCount(long display) {
 	return ::XScreenCount((Display *)display);
 }
@@ -52,7 +61,7 @@ long XlibWrapper::XCreateWindow(long display, long parent, int x,int  y, int wid
 	char buf[2*attrs+1];
 	for (int i=0; i < attrs; ++i) sprintf(buf+2*i, "%02X", ((char*)attributes)[i]);
 	long r = ::XCreateWindow((Display *)display, parent, x, y, width, height, border_width, depth, (int)wclass, (Visual*)visual, valuemask, (XSetWindowAttributes*)attributes);
-	LOGD("XlibWrapper::%s(%lX,%ld,bounds=(%d,%d,%d,%d),depth=%d,wclass=%ld,vis=%ld,mask=%lX\nattrs=%s) = %lX", __FUNCTION__, display, parent, x, y, width, height, depth, wclass, visual, valuemask, buf, r);
+	LOGD("XlibWrapper::%s(%lX,%ld,bounds=(%d,%d,%d,%d),depth=%d,wclass=%ld,vis=%ld,mask=%lX,attrs=%s) = %lX", __FUNCTION__, display, parent, x, y, width, height, depth, wclass, visual, valuemask, buf, r);
 	return r;
 }
 void XlibWrapper::XDestroyWindow(long display, long window) {
@@ -96,16 +105,22 @@ void XlibWrapper::XUnmapWindow(long display, long window) {
 //long XlibWrapper::XGetInputFocus(long display);
 
 void XlibWrapper::XSelectInput(long display, long window, long event_mask) {
-	LOGD("XlibWrapper::%s",__FUNCTION__);
+	LOGD("XlibWrapper::%s(%lX,%ld,mask=%lX)",__FUNCTION__,display, window, event_mask);
 	::XSelectInput((Display*)display, window, event_mask);
 }
 void XlibWrapper::XNextEvent(long display, void* ptr) {
-	LOGD("XlibWrapper::%s",__FUNCTION__);
 	::XNextEvent((Display*)display, (XEvent*)ptr);
+	LOGD("XlibWrapper::%s ev.type=%d",__FUNCTION__,((XEvent*)ptr)->type);
+}
+void XlibWrapper::XPeekEvent(long display,void* ptr) {
+	::XPeekEvent((Display*)display, (XEvent*)ptr);
+	LOGD("XlibWrapper::%s ev.type=%d",__FUNCTION__,((XEvent*)ptr)->type);
 }
 //void XlibWrapper::XMaskEvent(long display, long event_mask, long event_return);
 //void XlibWrapper::XWindowEvent(long display, long window, long event_mask, long event_return);
-//boolean XlibWrapper::XFilterEvent(void* ptr, long window);
+boolean XlibWrapper::XFilterEvent(void* ptr, long window) {
+	return ::XFilterEvent((XEvent*)ptr, window);
+}
 boolean XlibWrapper::XSupportsLocale() {
 	LOGD("XlibWrapper::%s",__FUNCTION__);
 	return ::XSupportsLocale();
@@ -115,7 +130,6 @@ String XlibWrapper::XSetLocaleModifiers(const String& modifier_list) {
 	return ::XSetLocaleModifiers(modifier_list.cstr());
 }
 //int XlibWrapper::XTranslateCoordinates( long display, long src_w, long dest_w, long src_x, long src_y, long dest_x_return, long dest_y_return, long child_return);
-//void XlibWrapper::XPeekEvent(long display,void* ptr);
 void XlibWrapper::XFlush(long display) {
 	LOGD("XlibWrapper::%s",__FUNCTION__);
 	::XFlush((Display*)display);
@@ -152,19 +166,69 @@ void XlibWrapper::XSetWindowBackground(long display, long window, long backgroun
 	::XSetWindowBackground((Display*)display, window, background_pixel);
 }
 int XlibWrapper::XEventsQueued(long display, int mode) {
-	return ::XEventsQueued((Display*)display, mode);
+	int r = ::XEventsQueued((Display*)display, mode);
+	LOGD("XlibWrapper::%s(%lX,%X) = %d",__FUNCTION__,display,mode,r);
+	return r;
 }
+
 //int XlibWrapper::XInternAtoms(long display, const Array<String>& names, boolean only_if_exists, long atoms);
+long XlibWrapper::InternAtom(long display, const String& string, int only_if_exists) {
+	return ::XInternAtom((Display*)display, string.cstr(), only_if_exists);
+}
+void XlibWrapper::SetProperty(long display, long window, long atom, const String& str) {
+	::XTextProperty tp;
+	char *cname = const_cast<char*>(str.cstr());
+	// int Xutf8TextListToTextProperty(Display *display, char **list, int count, XICCEncodingStyle style, XTextProperty *text_prop_return); 
+	int status = ::Xutf8TextListToTextProperty((Display *)display, &cname, 1, ::XStdICCTextStyle, &tp);
+	if (status == Success || status > 0) {
+		::XChangeProperty((Display*)display, window, atom, tp.encoding, tp.format, PropModeReplace, tp.value, (int)tp.nitems);
+		if (tp.value) ::XFree(tp.value);
+	}
+}
+String XlibWrapper::GetProperty(long display, long window, long atom) {
+	Atom actual_type;
+	int actual_format;
+	unsigned long nitems;
+	unsigned long bytes_after;
+	unsigned char *string;
+	int status = ::XGetWindowProperty((Display*)display, window, atom, 0, 0xFFFF, False, XA_STRING,
+		&actual_type, &actual_format, &nitems, &bytes_after, &string);
+	if (status != Success || string == NULL) {
+		return "";
+	}
+	String res = (char*)string;
+	XFree(string);
+	return res;
+}
+int XlibWrapper::XGetWindowProperty(long display, long window, long atom, long offset, long length, boolean del, long req_type, long& actualy_type, int& actualy_format, long& nitems, long& bytes_after, long& data_ptr) {
+	Atom actual_type;
+	int actual_format;
+	unsigned long _nitems;
+	unsigned long _bytes_after;
+	unsigned char *data;
+	int status = ::XGetWindowProperty((Display*)display, window, atom, offset, length, del, req_type,
+		&actual_type, &actual_format, &_nitems, &_bytes_after, &data);
+	actualy_type = actual_type;
+	actualy_format = actual_format;
+	nitems = _nitems;
+	bytes_after = _bytes_after;
+	data_ptr = (long)data;
+	return status;
+}
+void XlibWrapper::XChangePropertyImpl(long display, long window, long atom, long type, int format, int mode, long data, int nelements) {
+	::XChangeProperty((Display*)display, window, atom, type, format, mode, (unsigned char*)data, nelements);
+}
+void XlibWrapper::XChangeProperty(long display, long window, long atom, long type, int format, int mode, long data, int nelements) {
+	//TODO caching
+	XChangePropertyImpl(display, window, atom, type, format, mode, data, nelements);
+}
 
-//void XlibWrapper::SetProperty(long display, long window, long atom, const String& str);
-//String XlibWrapper::GetProperty(long display ,long window, long atom);
-//long XlibWrapper::InternAtom(long display, const String& string, int only_if_exists);
-//int XlibWrapper::XGetWindowProperty(long display, long window, long atom, long long_offset, long long_length, long del, long req_type, long actualy_type, long actualy_format, long nitems_ptr, long bytes_after, long data_ptr);
-//void XlibWrapper::XChangePropertyImpl(long display, long window, long atom, long type, int format, int mode, long data, int nelements);
-//void XlibWrapper::XChangeProperty(long display, long window, long atom, long type, int format, int mode, long data, int nelements);
-
-//void XlibWrapper::XChangePropertyS(long display, long window, long atom, long type, int format, int mode, const String& value);
-//void XlibWrapper::XDeleteProperty(long display, long window, long atom);
+void XlibWrapper::XChangePropertyS(long display, long window, long atom, long type, int format, int mode, const String& value) {
+	::XChangeProperty((Display*)display, window, atom, type, format, mode, (unsigned char*)value.cstr(), value.length());
+}
+void XlibWrapper::XDeleteProperty(long display, long window, long atom) {
+	::XDeleteProperty((Display*)display, window, atom);
+}
 
 //void XlibWrapper::XSetTransientFor(long display, long window, long transient_for_window);
 //void XlibWrapper::XSetWMHints(long display, long window, long wmhints);
@@ -208,7 +272,6 @@ boolean XlibWrapper::XAllocColor(long display, long colormap, int& screen_in_out
 	screen_in_out = (int)c.pixel;
 	return ret;
 }
-
 
 //long XlibWrapper::SetToolkitErrorHandler();
 //void XlibWrapper::XSetErrorHandler(long handler);

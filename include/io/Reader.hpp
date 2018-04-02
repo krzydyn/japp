@@ -43,13 +43,13 @@ public:
 	virtual int read(Array<char>& cbuf, int off, int len) = 0;
 	virtual long skip(long n) {
 		if (n < 0L) throw IllegalArgumentException("skip value is negative");
-		int nn = (int) Math.min(n, (long)maxSkipBufferSize);
+		int nn = (int) Math::min(n, (long)maxSkipBufferSize);
 		long r = n;
 		synchronized (lock) {
 			if (skipBuffer.length < nn)
 				skipBuffer = Array<char>(nn);
 			while (r > 0) {
-				int nc = read(skipBuffer, 0, (int)Math.min(r, (long)nn));
+				int nc = read(skipBuffer, 0, (int)Math::min(r, (long)nn));
 				if (nc == -1) break;
 				r -= nc;
 			}

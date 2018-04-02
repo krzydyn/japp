@@ -17,6 +17,19 @@ public:
 	boolean isDisplayLocal() {return true;}
 };
 
+class XAnyEvent : extends Object {
+private:
+	Shared<nio::ByteBuffer> pData;
+public:
+	static int getSize() { return 40; }
+
+	XAnyEvent(Shared<nio::ByteBuffer> buf) {
+		pData = buf;
+	}
+
+	long get_window() { return pData->getLong(32); }
+};
+
 class XEvent : extends Object {
 private:
 	Shared<nio::ByteBuffer> pData;
@@ -32,6 +45,8 @@ public:
 	void *getPData() { return &(pData->array()[0]); }
 	void dispose() { pData.reset(); }
 	int get_type() { return pData->getInt(0); }
+
+	XAnyEvent get_xany() { return XAnyEvent(pData); }
 };
 
 class X11GraphicsConfig;

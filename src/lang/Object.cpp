@@ -39,8 +39,13 @@ void __cxa_throw(void* thrown_exception, void* _tinfo, void (*dest)(void*)) {
 		if (ex->getStackTrace().length == 0)
 			ex->fillInStackTrace();
 	}
+	else if (instanceof<std::exception>(o)) {
+		std::exception *ex = (std::exception*)o;
+		std::cerr << __FILE__ << "(" << __LINE__<< "): thrown std::exception: " << ex->what() << std::endl;
+	}
 	else {
-		std::cerr << __FILE__ << "(" << __LINE__<< "): thrown unknown exception" << std::endl;
+		//std::cerr << __FILE__ << "(" << __LINE__<< "): thrown unknown exception: " << Object::getClass(typeid(*o)).getName().cstr() << std::endl;
+		LOGE("unknown exception: %s", Object::getClass(typeid(*o)).getName().cstr());
 	}
 	old_handler(thrown_exception, tinfo, dest);
 	std::_Exit(EXIT_FAILURE);
@@ -179,7 +184,7 @@ void terminate_hook() {
 		}
 	}
 	else {
-		System.out.println("Terminated, no exception");
+		std::cerr << "Terminated, no exception" << std::endl;
 	}
 	std::_Exit(EXIT_FAILURE);
 	//std::abort();

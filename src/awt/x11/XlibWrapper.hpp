@@ -21,6 +21,7 @@ private:
 public:
 	static long XOpenDisplay(const String& name);
 	static void XCloseDisplay(long display);
+	static int XConnectionNumber(long display);
 	static int XScreenCount(long display);
 	static long XDisplayString(long display);
 	static void XSetCloseDownMode(long display, int close_mode);
@@ -74,11 +75,7 @@ public:
 	static boolean XFilterEvent(void* ptr, long window);
 	static boolean XSupportsLocale();
 	static String XSetLocaleModifiers(const String& modifier_list);
-	static int XTranslateCoordinates(
-                                             long display, long src_w, long dest_w,
-                                             long src_x, long src_y,
-                                             long dest_x_return, long dest_y_return,
-                                             long child_return);
+	static int XTranslateCoordinates(long display, long src_w, long dest_w, long src_x, long src_y, long dest_x_return, long dest_y_return, long child_return);
 	static void XPeekEvent(long display,void* ptr);
 	static void XFlush(long display);
 	static void XSync(long display,int discard);
@@ -90,25 +87,15 @@ public:
 	static void XFreeCursor(long display, long cursor);
 	static void XSetWindowBackground(long display, long window, long background_pixel);
 	static int XEventsQueued(long display, int mode);
-	static int XInternAtoms(long display, const Array<String>& names, boolean only_if_exists, long atoms);
 
+	static int XInternAtoms(long display, const Array<String>& names, boolean only_if_exists, long atoms);
+	static long InternAtom(long display, const String& string, int only_if_exists);
 	static void SetProperty(long display, long window, long atom, const String& str);
 	static String GetProperty(long display ,long window, long atom);
-	static long InternAtom(long display, const String& string, int only_if_exists);
-	static int XGetWindowProperty(long display, long window, long atom,
-                                         long long_offset, long long_length,
-                                         long del, long req_type, long actualy_type,
-                                         long actualy_format, long nitems_ptr,
-                                         long bytes_after, long data_ptr);
-   static void XChangePropertyImpl(long display, long window, long atom,
-                                           long type, int format, int mode, long data,
-                                           int nelements);
-	static void XChangeProperty(long display, long window, long atom,
-                                long type, int format, int mode, long data,
-                                int nelements);
-
-	static void XChangePropertyS(long display, long window, long atom,
-                                       long type, int format, int mode, const String& value);
+	static int XGetWindowProperty(long display, long window, long atom, long offset, long length, boolean del, long req_type, long& actualy_type, int& actualy_format, long& nitems, long& bytes_after, long& data_ptr);
+   static void XChangePropertyImpl(long display, long window, long atom, long type, int format, int mode, long data, int nelements);
+	static void XChangeProperty(long display, long window, long atom, long type, int format, int mode, long data, int nelements);
+	static void XChangePropertyS(long display, long window, long atom, long type, int format, int mode, const String& value);
 	static void XDeleteProperty(long display, long window, long atom);
 
 	static void XSetTransientFor(long display, long window, long transient_for_window);

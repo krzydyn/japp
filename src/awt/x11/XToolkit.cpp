@@ -7,10 +7,15 @@
 #include "XToolkit.hpp"
 #include "XlibWrapper.hpp"
 
+#include <unistd.h>  //pipe
+#include <fcntl.h>
+#include <poll.h>
+
 // X11 know-how
 // https://www.x.org/docs/X11/xlib.pdf
 // http://neuron-ai.tuke.sk/hudecm/Tutorials/C/special/xlib-programming/xlib-programming-2.html
 // https://www.x.org/releases/X11R7.6/doc/libX11/specs/libX11/libX11.html
+// https://github.com/JetBrains/jdk8u_jdk/blob/master/src/solaris/native/sun/xawt/XToolkit.c
 
 namespace {
 
@@ -54,18 +59,54 @@ public:
 	}
 };
 
+
+#define AWT_READPIPE            (awt_pipe_fds[0])
+#define AWT_WRITEPIPE           (awt_pipe_fds[1])
+
 const boolean PRIMARY_LOOP = false;
 const boolean SECONDARY_LOOP = true;
+const int DEF_AWT_FLUSH_TIMEOUT = 100;
+const int DEF_AWT_MAX_POLL_TIMEOUT = 1000;
 
 util::concurrent::ReentrantLock AWT_LOCK;
+long awt_display;
+long awt_defaultFg;
+int AWT_FLUSH_TIMEOUT    = DEF_AWT_FLUSH_TIMEOUT; /* milliseconds */
+int AWT_MAX_POLL_TIMEOUT = DEF_AWT_MAX_POLL_TIMEOUT; /* milliseconds */
+int  awt_pipe_fds[2];                   /* fds for wkaeup pipe */
+boolean awt_pipe_inited = false;
+long awt_last_flush_time = 0L;
+long awt_next_flush_time = 0L;
+struct ::pollfd pollFds[2];
+
 XMouseInfoPeer xPeer;
 Array<awt::GraphicsDevice*> screens;
-
 Thread toolkitThread;
-long display;
 int arrowCursor;
 long eventNumber;
-long awt_defaultFg;
+
+int get_poll_timeout(jlong nextTaskTime) {
+	jlong curTime = System.currentTimeMillis();
+	return nextTaskTime == -1 ? AWT_MAX_POLL_TIMEOUT : (int)(nextTaskTime - curTime);
+}
+void awt_pipe_init() {
+	if (awt_pipe_inited) return ;
+	if (::pipe(awt_pipe_fds) == 0) {
+		int32_t flags;
+		flags = fcntl(AWT_READPIPE, F_GETFL, 0);
+		::fcntl(AWT_READPIPE, F_SETFL, flags | O_NDELAY | O_NONBLOCK);
+		flags = fcntl(AWT_WRITEPIPE, F_GETFL, 0);
+		::fcntl(AWT_WRITEPIPE, F_SETFL, flags | O_NDELAY | O_NONBLOCK);
+		awt_pipe_inited = true;
+	}
+	else {
+		AWT_READPIPE = -1;
+		AWT_WRITEPIPE = -1;
+	}
+}
+void awt_toolkit_init() {
+	awt_pipe_init();
+}
 
 HashMap<Long,void*>& timeoutTasks() {
 	static HashMap<Long,void*> map;
@@ -77,7 +118,7 @@ HashMap<Long,awt::x11::XBaseWindow*>& winMap() {
 }
 
 int getNumScreens() {
-	return awt::x11::XlibWrapper::XScreenCount(display);
+	return awt::x11::XlibWrapper::XScreenCount(awt_display);
 }
 
 awt::GraphicsDevice* makeScreenDevice(int screennum) {
@@ -92,13 +133,54 @@ int getDefaultScreenNum() {
 	return 0;
 }
 
-void awt_toolkit_init() {
-}
 void callTimeoutTasks() {
 }
+
+void performPoll(long nextTaskTime) {
+	static boolean pollFdsInited = false;
+
+	int timeout = get_poll_timeout(nextTaskTime);
+	if (!pollFdsInited) {
+		pollFds[0].fd = awt::x11::XlibWrapper::XConnectionNumber(awt_display);
+		LOGD("Connection number = %d", pollFds[0].fd);
+		pollFds[0].events = POLLIN;
+		pollFds[0].revents = 0;
+		pollFds[1].fd = AWT_READPIPE;
+		pollFds[1].events = POLLIN;
+		pollFds[1].revents = 0;
+		pollFdsInited = true;
+	}
+	else {
+		pollFds[0].revents = 0;
+		pollFds[1].revents = 0;
+	}
+	if (timeout == 0) Thread::yield();
+
+	int result = poll(pollFds, 2, timeout);
+	if (result == 0) {
+		LOGD("poll timeout");
+		return ;
+	}
+	if (pollFds[1].revents) {
+		LOGD("Woke up");
+		char read_buf[10];
+		ssize_t count;
+		do {
+			count = read(AWT_READPIPE, read_buf, sizeof(read_buf));
+		} while (count == sizeof(read_buf));
+	}
+	if (pollFds[0].revents) {
+		LOGD("Events in X pipe");
+	}
+}
 void waitForEvents(long nextTaskTime) {
-	Long tm = System.currentTimeMillis();
-	if (tm < nextTaskTime) Thread::sleep(nextTaskTime - tm);
+	performPoll(nextTaskTime);
+	if ((awt_next_flush_time > 0) && (System.currentTimeMillis() >= awt_next_flush_time)) {
+		awt::x11::XlibWrapper::XFlush(awt_display);
+		awt_last_flush_time = awt_next_flush_time;
+		//awt_next_flush_time = 0L;
+		awt_next_flush_time = System.currentTimeMillis() + AWT_FLUSH_TIMEOUT;
+	}
 }
 
 void processException(const Throwable& thr) {
@@ -151,7 +233,7 @@ X11GraphicsConfig::X11GraphicsConfig(X11GraphicsDevice* device, int visualnum, i
 	this->depth = depth;
 	this->colormap = colormap;
 	this->doubleBuffer = doubleBuffer;
-	init (visualnum, screen->getScreen());
+	init(visualnum, screen->getScreen());
 }
 GraphicsDevice& X11GraphicsConfig::getDevice() {
 	return *screen;
@@ -306,7 +388,7 @@ void targetCreatedPeer(awt::Component* target, awt::ComponentPeer* peer) {
 XToolkit::XToolkit() {
 	LOGD("XToolkit construction");
 	if (GraphicsEnvironment::isHeadless()) throw HeadlessException();
-	display = XlibWrapper::XOpenDisplay("");
+	awt_display = XlibWrapper::XOpenDisplay("");
 	init();
 	toolkitThread = Thread(*this, "AWT-XAWT");
 	toolkitThread.start();
@@ -343,9 +425,7 @@ void XToolkit::awtUnlock() {
 long XToolkit::getNextTaskTime() {
 	awtLock();
 	Finalize(awtUnlock(););
-	LOGD("XToolkit::getNextTaskTime ... ");
 	if (timeoutTasks().isEmpty()) {
-		LOGD("XToolkit::getNextTaskTime ret -1");
 		return -1L;
 	}
 	//return (Long)timeoutTasks.firstKey();
@@ -354,7 +434,7 @@ long XToolkit::getNextTaskTime() {
 }
 
 long XToolkit::getDisplay() {
-	return display;
+	return awt_display;
 }
 long XToolkit::getDefaultRootWindow() {
 	LOGD("XToolkit::%s", __FUNCTION__);
@@ -366,7 +446,12 @@ long XToolkit::getDefaultRootWindow() {
 }
 
 void XToolkit::init() {
-	if (display == 0) throw HeadlessException();
+	if (awt_display == 0) throw HeadlessException();
+
+	LOGD("XToolkit::init");
+	//initialize static vars, this not help much, even worse - cause SEGFAULT in other thread
+	//timeoutTasks();
+	//winMap();
 
 	XlibWrapper::XSupportsLocale();
 	if (XlibWrapper::XSetLocaleModifiers("") == null) {
@@ -382,7 +467,6 @@ void XToolkit::init() {
 
 	//setup root window
 	XlibWrapper::XSelectInput(XToolkit::getDisplay(), XToolkit::getDefaultRootWindow(), (long)XConstants::StructureNotifyMask);
-	LOGD("RootWindow selectinput");
 }
 
 awt::FramePeer* XToolkit::createFrame(awt::Frame* target) {
@@ -411,6 +495,9 @@ boolean XToolkit::getSunAwtDisableGrab() {
 }
 
 void XToolkit::run() {
+	//TODO make it better
+	Thread::sleep(2); // time to initialize static vars in main thread
+
 	awt_toolkit_init();
 	run(PRIMARY_LOOP);
 }
@@ -418,15 +505,14 @@ void XToolkit::run(boolean loop) {
 	LOGD("%s(%s)", __FUNCTION__, String::valueOf(loop).cstr());
 	XEvent ev;
 
-	Thread::sleep(1000);
 	while(true) {
 		LOGD("Toolkit::loop time=%ld", System.currentTimeMillis());
 		if (Thread::currentThread().isInterrupted()) {
 			break;
 		}
+		awtLock();
+		Finalize(awtUnlock(););
 		try {
-			awtLock();
-			Finalize(awtUnlock(););
 			LOGD("Toolkit::loop awt Locked");
 			if (loop == SECONDARY_LOOP) {
 				if (!XlibWrapper::XNextSecondaryLoopEvent(getDisplay(), ev.getPData())) {
@@ -436,17 +522,26 @@ void XToolkit::run(boolean loop) {
 			else {
 				LOGD("Toolkit::loop call timeout tasks");
 				callTimeoutTasks();
-				while ((XlibWrapper::XEventsQueued(getDisplay(), XConstants::QueuedAfterReading) == 0) &&
+				while ( (XlibWrapper::XEventsQueued(getDisplay(), XConstants::QueuedAlready) == 0) &&
+						(XlibWrapper::XEventsQueued(getDisplay(), XConstants::QueuedAfterReading) == 0) &&
 						(XlibWrapper::XEventsQueued(getDisplay(), XConstants::QueuedAfterFlush) == 0)) {
-					LOGD("Toolkit::loop call timeout tasks 2");
 					callTimeoutTasks();
-					LOGD("Toolkit::loop call waitForEvents");
+					//LOGD("Toolkit::loop call waitForEvents");
 					waitForEvents(getNextTaskTime());
 				}
-				LOGD("Toolkit::loop XNextEvent");
+				LOGD("Toolkit::loop got XNextEvent !!!!");
 				XlibWrapper::XNextEvent(getDisplay(), ev.getPData());
 			}
 			if (ev.get_type() != XConstants::NoExpose) ++eventNumber;
+			long w = 0;
+			if (windowToXWindow(ev.get_xany().get_window()) != null) {
+				/*Component* owner = XKeyboardFocusManagerPeer::getInstance().getCurrentFocusOwner();
+				if (owner != null) {
+					XWindow ownerWindow = (XWindow) AWTAccessor::getComponentAccessor().getPeer(owner);
+					if (ownerWindow != null) w = ownerWindow.getContentWindow();
+				}*/
+			}
+			if (XlibWrapper::XFilterEvent(ev.getPData(), w)) continue;
 			LOGD("Toolkit::loop call dispatch");
 			dispatchEvent(ev);
 		}
@@ -459,6 +554,8 @@ void XToolkit::run(boolean loop) {
 			processException(thr);
 		}
 	}
+	LOGD("AWT loop finished");
+	XlibWrapper::XCloseDisplay(awt_display);
 }
 
 }}

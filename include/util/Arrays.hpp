@@ -12,7 +12,7 @@ public:
 	template<class T>
 	static Array<T> copyOf(const Array<T>& original, int newLength) {
 		Array<T> copy(newLength);
-		System.arraycopy(original, 0, copy, 0, Math.min(original.length, newLength));
+		System.arraycopy(original, 0, copy, 0, Math::min(original.length, newLength));
 		return copy;
 	}
 };

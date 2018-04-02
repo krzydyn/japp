@@ -201,8 +201,8 @@ void XBaseWindow::checkParams(XCreateWindowParams& params) {
 	params.putIfNull<Long>(VALUE_MASK, Long::valueOf(XConstants::CWEventMask));
 
 	Rectangle& bounds = params.get<Rectangle>(BOUNDS);
-	bounds.width = Math.max(MIN_SIZE, bounds.width);
-	bounds.height = Math.max(MIN_SIZE, bounds.height);
+	bounds.width = Math::max(MIN_SIZE, bounds.width);
+	bounds.height = Math::max(MIN_SIZE, bounds.height);
 
 	Long& eventMaskObj = params.get<Long>(EVENT_MASK);
 	long eventMask = eventMaskObj != null ? eventMaskObj.longValue() : 0;
@@ -261,6 +261,7 @@ void XBaseWindow::create(XCreateWindowParams& params) {
 				value_mask,  // value mask
 				xattr.getPData()); // attributes
 	if (window == 0) throw IllegalStateException("Couldn't create window because of wrong parameters. Run with NOISY_AWT to see details");
+
 	XToolkit::addToWinMap(window, this);
 }
 
@@ -277,8 +278,8 @@ void XBaseWindow::xSetBounds(int x, int y, int width, int height) {
 	if (getWindow() == 0) {
 		throw IllegalStateException("Attempt to resize uncreated window");
 	}
-	width = Math.max(MIN_SIZE, width);
-	height = Math.max(MIN_SIZE, height);
+	width = Math::max(MIN_SIZE, width);
+	height = Math::max(MIN_SIZE, height);
 	LOGD("%s(%d,%d,%d,%d)",__FUNCTION__,x,y,width,height);
 
 	XToolkit::awtLock();
@@ -343,7 +344,6 @@ XWindow::XWindow(long parentWindow) : XBaseWindow(
 void XWindow::initGraphicsConfiguration() {
 	LOGD("XWindow::%s: target is %s",__FUNCTION__,target->getClass().getName().cstr());
 	graphicsConfig = (X11GraphicsConfig*) &target->getGraphicsConfiguration();
-	LOGD("XWindow::%s: GraphicsConfiguration is %s",__FUNCTION__,graphicsConfig->getClass().getName().cstr());
 	//graphicsConfigData = new AwtGraphicsConfigData(graphicsConfig->getAData());
 	graphicsConfigData = new AwtGraphicsConfigData();
 }

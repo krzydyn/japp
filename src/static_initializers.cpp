@@ -11,27 +11,12 @@
 #include <cstdlib>
 
 namespace {
-io::InputStream& std_in() {
-	static io::FileInputStream stream(std::cin);
-	return stream;
-}
-io::PrintStream& std_out() {
-	static io::FileOutputStream fstream(std::cout);
-	static io::PrintStream stream(fstream);
-	//std::cerr << "std_out init" << std::endl;
-	return stream;
-}
-io::PrintStream& std_err() {
-	static io::FileOutputStream fstream(std::cerr);
-	static io::PrintStream stream(fstream);
-	//std::cerr << "std_err init" << std::endl;
-	return stream;
-}
-
-HashMap<String,String>& get_env() {
-	static HashMap<String,String> env;
-	return env;
-}
+static io::FileInputStream std_in(std::cin);
+static io::FileOutputStream std_out_stream(std::cout);
+static io::PrintStream std_out(std_out_stream);
+static io::FileOutputStream std_err_stream(std::cerr);
+static io::PrintStream std_err(std_err_stream);
+static HashMap<String,String> env;
 
 using namespace nio;
 using namespace nio::charset;
@@ -234,16 +219,15 @@ The_System::The_System() {
 
 const Logger SystemLog;
 const The_System System;
-const The_Math Math;
 
 Properties The_System::props;
-io::InputStream& The_System::in = std_in();
-io::PrintStream& The_System::out = std_out();
-io::PrintStream& The_System::err = std_err();
+io::InputStream& The_System::in = std_in;
+io::PrintStream& The_System::out = std_out;
+io::PrintStream& The_System::err = std_err;
 
 const util::Map<String,String>& The_System::getenv() {
 	//return ProcessEnvironment.getenv();
-	return get_env();
+	return env;
 }
 }
 
