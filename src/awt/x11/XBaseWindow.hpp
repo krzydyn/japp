@@ -20,6 +20,60 @@ public:
 	static XBaseWindow *getGrabWindow();
 };
 
+class XWMHints : extends Object {
+};
+
+class XSizeHints : extends Object {
+private:
+	Shared<nio::ByteBuffer> pData;
+	boolean getBool(int offs) { return pData->get(offs) != 0; }
+	void putBool(int offs, boolean b) { pData->put(offs, b?1:0); }
+	static int getLongSize() {return 8;}
+public:
+	static int getSize() { return 80; }
+	XSizeHints() { pData = nio::ByteBuffer::allocate(getSize()); }
+	XSizeHints(Shared<nio::ByteBuffer> buf) { pData = buf; }
+	long getPData() { return (long)&(pData->array()[0]); }
+	void dispose() { pData.reset(); }
+
+	long get_flags() { return (pData->getLong(0)); }
+	void set_flags(long v) { pData->putLong(0, v); }
+	int get_x() { return (pData->getInt(8)); }
+	void set_x(int v) { pData->putInt(8, v); }
+	int get_y() { return (pData->getInt(12)); }
+	void set_y(int v) { pData->putInt(12, v); }
+	int get_width() { return (pData->getInt(16)); }
+	void set_width(int v) { pData->putInt(16, v); }
+	int get_height() { return (pData->getInt(20)); }
+	void set_height(int v) { pData->putInt(20, v); }
+	int get_min_width() { return (pData->getInt(24)); }
+	void set_min_width(int v) { pData->putInt(24, v); }
+	int get_min_height() { return (pData->getInt(28)); }
+	void set_min_height(int v) { pData->putInt(28, v); }
+	int get_max_width() { return (pData->getInt(32)); }
+	void set_max_width(int v) { pData->putInt(32, v); }
+	int get_max_height() { return (pData->getInt(36)); }
+	void set_max_height(int v) { pData->putInt(36, v); }
+	int get_width_inc() { return (pData->getInt(40)); }
+	void set_width_inc(int v) { pData->putInt(40, v); }
+	int get_height_inc() { return (pData->getInt(44)); }
+	void set_height_inc(int v) { pData->putInt(44, v); }
+	int get_min_aspect_x() { return (pData->getInt(48)); }
+	void set_min_aspect_x(int v) { pData->putInt(48, v); }
+	int get_min_aspect_y() { return (pData->getInt(52)); }
+	void set_min_aspect_y(int v) { pData->putInt(52, v); }
+	int get_max_aspect_x() { return (pData->getInt(56)); }
+	void set_max_aspect_x(int v) { pData->putInt(56, v); }
+	int get_max_aspect_y() { return (pData->getInt(60)); }
+	void set_max_aspect_y(int v) { pData->putInt(60, v); }
+	int get_base_width() { return (pData->getInt(64)); }
+	void set_base_width(int v) { pData->putInt(64, v); }
+	int get_base_height() { return (pData->getInt(68)); }
+	void set_base_height(int v) { pData->putInt(68, v); }
+	int get_win_gravity() { return (pData->getInt(72)); }
+	void set_win_gravity(int v) { pData->putInt(72, v); }
+};
+
 // from XVisualInfo *XGetVisualInfo( Display* display, long vinfo_mask, XVisualInfo* vinfo_template, int* nitems_return);
 class XVisualInfo : extends Object {
 private:
@@ -132,6 +186,8 @@ public:
 	}
 	XCreateWindowParams& put(const String& key, long value) { return put(key, Long(value)); }
 
+	boolean containsKey(const String& key) { return params.containsKey(key); }
+
 	template<class T>
 	T& get(const String& key) const {
 		if (!params.containsKey(key)) return (T&)null_obj;
@@ -149,7 +205,6 @@ private:
 	XCreateWindowParams delayedParams;
 
 	long window = 0;
-	boolean visible = false;
 	boolean mapped = false;
 	boolean embedded = false;
 	XBaseWindow* parentWindow;
@@ -170,6 +225,8 @@ protected:
 	int width;
 	int height;
 
+	boolean visible = false;
+
 	// Creates an invisible InputOnly window without an associated Component.
 	//XBaseWindow() : XBaseWindow(XCreateWindowParams()) {}
 	XBaseWindow() {} //dummy
@@ -184,6 +241,7 @@ protected:
 	virtual void create(XCreateWindowParams& params);
 	virtual void postInit(XCreateWindowParams& params);
 	virtual void ungrabInputImpl() {}
+	void setSizeHints(long flags, int x, int y, int width, int height);
 
 public:
     static const char* PARENT_WINDOW; // parent window, Long
@@ -231,11 +289,11 @@ private:
 	int savedState;
 	boolean reparented;
 	XWindow *parent;
-	awt::Component *target;
 
 	awt::GraphicsConfiguration *graphicsConfig = null;
 	AwtGraphicsConfigData *graphicsConfigData = null;
 protected:
+	awt::Component *target;
 
 	XWindow() { throw RuntimeException("not supp"); }
 	XWindow(XCreateWindowParams& params) { init(params); }
@@ -246,6 +304,14 @@ protected:
 	void initGraphicsConfiguration();
 	void preInit(XCreateWindowParams& params) override;
 	void postInit(XCreateWindowParams& params) override;
+
+	boolean isShowing() { return visible; }
+	boolean isResizable() { return true; }
+	boolean isLocationByPlatform() { return false; }
+
+	void updateSizeHints() { updateSizeHints(x, y, width, height); }
+	void updateSizeHints(int x, int y, int width, int height);
+	void updateSizeHints(int x, int y);
 public:
 	static const char* TARGET;
 	static const char* REPARENTED;

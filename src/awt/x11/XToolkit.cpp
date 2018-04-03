@@ -19,6 +19,28 @@
 
 namespace {
 
+class XWM final {
+public:
+	static const int UNDETERMINED_WM = 1;
+	static const int NO_WM = 2;
+	static const int OTHER_WM = 3;
+	static const int OPENLOOK_WM = 4;
+	static const int MOTIF_WM = 5;
+	static const int CDE_WM = 6;
+	static const int ENLIGHTEN_WM = 1;
+	static const int KDE2_WM = 8;
+	static const int SAWFISH_WM = 9;
+	static const int ICE_WM = 10;
+	static const int METACITY_WM = 11;
+	static const int COMPIZ_WM = 12;
+	static const int LG3D_WM = 13;
+	static const int CWM_WM = 14;
+	static const int MUTTER_WM = 15;
+	//static const int _WM = 16;
+
+	static int getWMID();
+};
+
 class XMouseInfoPeer : implements awt::MouseInfoPeer {
 public:
 	XMouseInfoPeer() {};
@@ -69,6 +91,7 @@ const int DEF_AWT_FLUSH_TIMEOUT = 100;
 const int DEF_AWT_MAX_POLL_TIMEOUT = 1000;
 
 util::concurrent::ReentrantLock AWT_LOCK;
+int awt_wmgr = XWM::UNDETERMINED_WM;
 long awt_display;
 long awt_defaultFg;
 int AWT_FLUSH_TIMEOUT    = DEF_AWT_FLUSH_TIMEOUT; /* milliseconds */
@@ -190,6 +213,17 @@ void processException(const Throwable& thr) {
 awt::Rectangle pGetBounds(int screenNum) {
 	//X11GraphicsDevice& dev = screens[screenNum];
 	return awt::Rectangle(0,0,1000,1000);
+}
+
+int XWM::getWMID() {
+	if (awt_wmgr != XWM::UNDETERMINED_WM) return awt_wmgr;
+
+	awt::x11::XToolkit::awtLock();
+	Finalize(awt::x11::XToolkit::awtUnlock(););
+
+	awt_wmgr = XWM::OTHER_WM;
+
+	return awt_wmgr;
 }
 
 }//anonymous namespace
@@ -321,15 +355,37 @@ protected:
 	XPanelPeer(XCreateWindowParams& params) : XCanvasPeer(params) { }
 };
 class XWindowPeer : extends XPanelPeer, implements awt::WindowPeer {
+private:
+	//static Set<XWindowPeer> windows = new HashSet<XWindowPeer>();
+	Window::Type windowType = Window::Type::NORMAL;
+
 protected:
 	XWindowPeer(XCreateWindowParams& params) : XPanelPeer(params) {
+		LOGN("XWindowPeer::XWindowPeer created");
 	}
-	void preInit(XCreateWindowParams& params) {
-		LOGD("XWindowPeer::%s", __FUNCTION__);
+	boolean isSimpleWindow() {
+		return !(instanceof<Frame>(target) || instanceof<Dialog>(target));
+	}
+	boolean isOverrideRedirect() {
+		return XWM::getWMID() == XWM::OPENLOOK_WM || Window::Type::POPUP == getWindowType();
+	}
+	void preInit(XCreateWindowParams& params) override {
+		LOGN("XWindowPeer::%s", __FUNCTION__);
+		target = (Component*)params.get<Long>(TARGET).longValue();
+		windowType = ((Window*)target)->getType();
+		params.put<Boolean>(REPARENTED, Boolean::valueOf(isOverrideRedirect() || isSimpleWindow()));
 		XPanelPeer::preInit(params);
+		params.putIfNull(BIT_GRAVITY, Integer::valueOf(XConstants::NorthWestGravity));
+
+		long eventMask = 0;
+		if (params.containsKey(EVENT_MASK)) eventMask = params.get<Long>(EVENT_MASK);
+		eventMask |= XConstants::VisibilityChangeMask;
+		params.put<Long>(EVENT_MASK, eventMask);
+
+		params.put(OVERRIDE_REDIRECT, Boolean::valueOf(isOverrideRedirect()));
 	}
 	void postInit(XCreateWindowParams& params) {
-		LOGD("XWindowPeer::%s", __FUNCTION__);
+		LOGN("XWindowPeer::%s", __FUNCTION__);
 		XPanelPeer::postInit(params);
 	}
 public:
@@ -339,8 +395,9 @@ public:
 			//.put<Long>(PARENT_WINDOW, Long::valueOf(0))
 		) {}
 
+	Window::Type getWindowType() { return windowType; }
 	void setVisible(boolean b) {
-		LOGD("XWindowPeer::%s(%s)", __FUNCTION__, String::valueOf(b).cstr());
+		LOGN("XWindowPeer::%s(%s)", __FUNCTION__, String::valueOf(b).cstr());
 		if (!isVisible() && b) {
 			//isBeforeFirstMapNotify = true;
 		}
@@ -481,7 +538,8 @@ awt::LightweightPeer* XToolkit::createComponent(awt::Component* target) {
 }
 awt::WindowPeer* XToolkit::createWindow(awt::Window* target) {
 	LOGD("XToolkit::%s", __FUNCTION__);
-	awt::WindowPeer* peer = new XWindowPeer(target);
+	XWindowPeer* peer = new XWindowPeer(target);
+	LOGD("XToolkit::%s created peer %s", __FUNCTION__, peer->getClass().getName().cstr());
 	targetCreatedPeer(target, peer);
 	return peer;
 }

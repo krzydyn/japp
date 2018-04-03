@@ -69,14 +69,14 @@ public:
 	static long XGetInputFocus(long display);
 
 	static void XSelectInput(long display, long window, long event_mask);
-	static void XNextEvent(long display,void* ptr);
+	static void XNextEvent(long display, void* ptr);
 	static void XMaskEvent(long display, long event_mask, long event_return);
 	static void XWindowEvent(long display, long window, long event_mask, long event_return);
 	static boolean XFilterEvent(void* ptr, long window);
 	static boolean XSupportsLocale();
 	static String XSetLocaleModifiers(const String& modifier_list);
 	static int XTranslateCoordinates(long display, long src_w, long dest_w, long src_x, long src_y, long dest_x_return, long dest_y_return, long child_return);
-	static void XPeekEvent(long display,void* ptr);
+	static void XPeekEvent(long display, void* ptr);
 	static void XFlush(long display);
 	static void XSync(long display,int discard);
 	static void XMoveResizeWindow(long display, long window, int x, int y, int width, int height);
@@ -138,7 +138,7 @@ public:
 	static int XSendEvent(long display, long window, boolean propagate, long event_mask, long event);
 	static void XPutBackEvent(long display, long event);
 	static int XQueryTree(long display, long window, long root_return, long parent_return, long children_return, long nchildren_return);
-	static long XGetVisualInfo(long display, long vinfo_mask, long vinfo_template, long nitems_return);
+	static long XGetVisualInfo(long display, long vinfo_mask, long vinfo_template, long& nitems_return);
 	static void XReparentWindow(long display, long window, long parent, int x, int y);
 
 	static void XConvertSelection(long display, long selection,

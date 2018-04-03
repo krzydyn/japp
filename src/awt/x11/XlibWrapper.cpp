@@ -231,7 +231,8 @@ void XlibWrapper::XDeleteProperty(long display, long window, long atom) {
 }
 
 //void XlibWrapper::XSetTransientFor(long display, long window, long transient_for_window);
-//void XlibWrapper::XSetWMHints(long display, long window, long wmhints);
+void XlibWrapper::XSetWMHints(long display, long window, long wmhints) {
+}
 //void XlibWrapper::XGetWMHints(long display, long window, long wmhints);
 //long XlibWrapper::XAllocWMHints();
 //int XlibWrapper::XGetPointerMapping(long display, long map, int buttonNumber);
@@ -281,14 +282,37 @@ boolean XlibWrapper::XAllocColor(long display, long colormap, int& screen_in_out
 //int XlibWrapper::XGetGeometry(long display, long drawable, long root_return, long x_return, long y_return, long width_return, long height_return, long border_width_return, long depth_return);
 
 //int XlibWrapper::XGetWMNormalHints(long display, long window, long hints, long supplied_return);
-//void XlibWrapper::XSetWMNormalHints(long display, long window, long hints);
-//void XlibWrapper::XSetMinMaxHints(long display, long window, int x, int y, int width, int height, long flags);
-//long XlibWrapper::XAllocSizeHints();
+void XlibWrapper::XSetWMNormalHints(long display, long window, long hints) {
+	::XSetWMNormalHints((Display*)display, window, (XSizeHints*)hints);
+}
+void XlibWrapper::XSetMinMaxHints(long display, long window, int x, int y, int width, int height, long flags) {
+    XSizeHints* hints;
+    hints = ::XAllocSizeHints();
+    hints->flags = flags;
+    hints->width = width;
+    hints->min_width = width;
+    hints->max_width = width;
+    hints->height = height;
+    hints->min_height = height;
+    hints->max_height = height;
+    hints->x = x;
+    hints->y = y;
+    ::XSetWMNormalHints((Display*)display, window, hints);
+    ::XFree(hints);
+}
+long XlibWrapper::XAllocSizeHints() {
+	return (long)XAllocSizeHints();
+}
 
 //int XlibWrapper::XSendEvent(long display, long window, boolean propagate, long event_mask, long event);
 //void XlibWrapper::XPutBackEvent(long display, long event);
 //int XlibWrapper::XQueryTree(long display, long window, long root_return, long parent_return, long children_return, long nchildren_return);
-//long XlibWrapper::XGetVisualInfo(long display, long vinfo_mask, long vinfo_template, long nitems_return);
+long XlibWrapper::XGetVisualInfo(long display, long vinfo_mask, long vinfo_template, long& nitems_return) {
+	int nitems;
+	XVisualInfo *vi = ::XGetVisualInfo((Display*)display, vinfo_mask, (XVisualInfo*)vinfo_template, &nitems);
+	nitems_return = nitems;
+	return (long)vi;
+}
 //void XlibWrapper::XReparentWindow(long display, long window, long parent, int x, int y);
 
 //void XlibWrapper::XConvertSelection(long display, long selection, long target, long property, long requestor, long time);

@@ -186,6 +186,7 @@ void XBaseWindow::postInit(XCreateWindowParams& params) {
 void XBaseWindow::init(XCreateWindowParams& params) {
 	initialising = InitialiseState::INITIALISING;
 	if (!Boolean::TRUE.equals(params.get<Boolean>(DELAYED))) {
+		LOGD("initializzing Window: %s", getClass().getName().cstr());
 		preInit(params);
 		create(params);
 		postInit(params);
@@ -223,6 +224,9 @@ void XBaseWindow::create(XCreateWindowParams& params) {
 	Long& eventMask = params.get<Long>(EVENT_MASK);
 	xattr.set_event_mask(eventMask.longValue());
 	value_mask |= XConstants::CWEventMask;
+
+	// clear bits which will be rebuilt
+	value_mask &= ~(XConstants::CWBorderPixel | XConstants::CWColormap | XConstants::CWBackPixmap);
 
 	Long& border_pixel = params.get<Long>(BORDER_PIXEL);
 	if (border_pixel != null) {
@@ -286,6 +290,37 @@ void XBaseWindow::xSetBounds(int x, int y, int width, int height) {
 	Finalize(XToolkit::awtUnlock(););
 	XlibWrapper::XMoveResizeWindow(XToolkit::getDisplay(), getWindow(),x,y,width,height);
 }
+void XBaseWindow::setSizeHints(long flags, int x, int y, int width, int height) {
+	XSizeHints hints;
+
+	if ((flags & XUtilConstants::PPosition) != 0) {
+		hints.set_x(x);
+		hints.set_y(y);
+	}
+
+	if ((flags & XUtilConstants::PSize) != 0) {
+		hints.set_width(width);
+		hints.set_height(height);
+	}
+	else if ((hints.get_flags() & XUtilConstants::PSize) != 0) {
+		flags |= XUtilConstants::PSize;
+	}
+
+	if ((flags & XUtilConstants::PMinSize) != 0) {
+		hints.set_min_width(width);
+		hints.set_min_height(height);
+	} else if ((hints.get_flags() & XUtilConstants::PMinSize) != 0) {
+		flags |= XUtilConstants::PMinSize;
+	}
+
+	flags |= XUtilConstants::PWinGravity;
+	hints.set_flags(flags);
+	hints.set_win_gravity((int)XConstants::NorthWestGravity);
+
+	XToolkit::awtLock();
+	Finalize(XToolkit::awtUnlock(););
+	XlibWrapper::XSetWMNormalHints(XToolkit::getDisplay(), getWindow(), hints.getPData());
+}
 
 long XBaseWindow::getScreenOfWindow(long window) {
 	XToolkit::awtLock();
@@ -315,8 +350,6 @@ void XBaseWindow::ungrabInput() {
 			XlibWrapper::XUngrabKeyboard(XToolkit::getDisplay(), XConstants::CurrentTime);
 		}
 		XAwtState::setGrabWindow(null);
-		// we need to call XFlush() here to force ungrab
-		// see 6384219 for details
 		XlibWrapper::XFlush(XToolkit::getDisplay());
 	}
 }
@@ -375,7 +408,7 @@ void XWindow::preInit(XCreateWindowParams& params) {
 	//params.putIfNull(DEPTH, gData.get_awt_depth());
 	params.putIfNull<Integer>(VISUAL_CLASS, (int)XConstants::InputOutput);
 	//params.putIfNull(VISUAL, visInfo.get_visual());
-	//params.putIfNull<Long>(VALUE_MASK, XConstants::CWBorderPixel | XConstants::CWEventMask | XConstants::CWColormap);
+	params.putIfNull<Long>(VALUE_MASK, XConstants::CWBorderPixel | XConstants::CWEventMask | XConstants::CWColormap);
 	Long& parentWindow = params.get<Long>(PARENT_WINDOW);
 	if (parentWindow == null || parentWindow.longValue() == 0) {
 		XToolkit::awtLock();
@@ -399,6 +432,17 @@ void XWindow::postInit(XCreateWindowParams& params) {
 	if (target != null && (c = target->getBackground()) != null) {
 		xSetBackground(c);
 	}
+}
+
+void XWindow::updateSizeHints(int x, int y, int width, int height) {
+	long flags = XUtilConstants::PSize | (isLocationByPlatform() ? 0 : (XUtilConstants::PPosition | XUtilConstants::USPosition));
+	if (!isResizable()) flags |= XUtilConstants::PMinSize | XUtilConstants::PMaxSize;
+	setSizeHints(flags, x, y, width, height);
+}
+void XWindow::updateSizeHints(int x, int y) {
+	long flags = isLocationByPlatform() ? 0 : (XUtilConstants::PPosition | XUtilConstants::USPosition);
+	if (!isResizable()) flags |= XUtilConstants::PMinSize | XUtilConstants::PMaxSize;
+	setSizeHints(flags, x, y, width, height);
 }
 
 void XWindow::xSetBackground(const Color& c) {

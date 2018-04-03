@@ -226,10 +226,17 @@ public:
 };
 
 class Window : extends Container {
+public:
+	enum class Type {
+		NORMAL,
+		UTILITY,
+		POPUP
+	};
 private:
 	static const int OPENED = 0x01;
 	static const boolean locationByPlatformProp = true;
 
+	Type type = Type::NORMAL;
 	boolean beforeFirstShow = true;
 	boolean isInShow = false;
 	boolean locationByPlatform = locationByPlatformProp;
@@ -250,12 +257,6 @@ protected:
 	void setGraphicsConfiguration(const GraphicsConfiguration& gc);
 
 public:
-	enum class Type {
-		NORMAL,
-		UTILITY,
-		POPUP
-	};
-
 	Window(const std::nullptr_t&) {
 		init((GraphicsConfiguration&)null_obj);
 	}
@@ -280,13 +281,20 @@ public:
 	}
 
 	virtual void toFront();
+
 	void setVisible(boolean b);
 	void pack();
 	void addNotify();
 	void removeNotify();
+
+	virtual Type getType() const { return type; }
+	virtual void setType(const Type& type) { this->type=type; }
 };
 
 class Frame : extends Window {
+};
+
+class Dialog : extends Window {
 };
 
 } //namespace awt
