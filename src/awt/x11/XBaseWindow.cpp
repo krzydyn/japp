@@ -137,6 +137,9 @@ const char* XBaseWindow::SAVE_UNDER = "save under";
 const char* XBaseWindow::BACKING_STORE = "backing store";
 const char* XBaseWindow::BIT_GRAVITY = "bit gravity";
 
+XBaseWindow::XBaseWindow(XCreateWindowParams& params) : delayedParams(params) {
+	//init(parms) moved to XToolkit::createWindow as peer->init();
+}
 XBaseWindow::XBaseWindow(long parentWindow, const Rectangle& bounds) : XBaseWindow(
 	XCreateWindowParams()
 		.put<Rectangle>(BOUNDS, bounds)
@@ -391,8 +394,7 @@ XWindow::XWindow(long parentWindow) : XBaseWindow(
 void XWindow::initGraphicsConfiguration() {
 	LOGD("XWindow::%s: target is %s",__FUNCTION__,target->getClass().getName().cstr());
 	graphicsConfig = (X11GraphicsConfig*) &target->getGraphicsConfiguration();
-	//graphicsConfigData = new AwtGraphicsConfigData(graphicsConfig->getAData());
-	graphicsConfigData = new AwtGraphicsConfigData();
+	graphicsConfigData = new AwtGraphicsConfigData(((X11GraphicsConfig*)graphicsConfig)->getAData());
 }
 
 void XWindow::preInit(XCreateWindowParams& params) {
@@ -401,7 +403,6 @@ void XWindow::preInit(XCreateWindowParams& params) {
 	reparented = Boolean::TRUE.equals(params.get<Boolean>(REPARENTED));
 
 	target = (Component*)params.get<Long>(TARGET).longValue();
-	//initGraphicsConfiguration();
 
 	params.putIfNull(EVENT_MASK, XConstants::KeyPressMask | XConstants::KeyReleaseMask
 		| XConstants::FocusChangeMask | XConstants::ButtonPressMask | XConstants::ButtonReleaseMask
@@ -419,9 +420,9 @@ void XWindow::preInit(XCreateWindowParams& params) {
 
 	params.putIfNull(BORDER_PIXEL, Long::valueOf(0));
 	//params.putIfNull(COLORMAP, gData.get_awt_cmap());
-	//params.putIfNull(DEPTH, gData.get_awt_depth());
+	params.putIfNull(DEPTH, gData.get_awt_depth());
 	params.putIfNull<Integer>(VISUAL_CLASS, (int)XConstants::InputOutput);
-	//params.putIfNull(VISUAL, visInfo.get_visual());
+	params.putIfNull(VISUAL, visInfo.get_visual());
 	params.putIfNull<Long>(VALUE_MASK, XConstants::CWBorderPixel | XConstants::CWEventMask | XConstants::CWColormap);
 	Long& parentWindow = params.get<Long>(PARENT_WINDOW);
 	if (parentWindow == null || parentWindow.longValue() == 0) {

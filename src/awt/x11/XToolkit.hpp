@@ -63,6 +63,7 @@ public:
 
 class X11GraphicsConfig : extends awt::GraphicsConfiguration {
 private:
+	Shared<nio::ByteBuffer> aData;
 	void init(int visualNum, int screen);
 protected:
 	X11GraphicsDevice* screen;
@@ -82,6 +83,8 @@ public:
 	//virtual AffineTransform getNormalizingTransform();
 	Rectangle getBounds() const;
 	boolean isTranslucencyCapable() const {return false;}
+
+	Shared<nio::ByteBuffer> getAData() { return aData; }
 };
 
 class XBaseWindow;

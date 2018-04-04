@@ -231,7 +231,7 @@ protected:
 	//XBaseWindow() : XBaseWindow(XCreateWindowParams()) {}
 	XBaseWindow() {} //dummy
 
-	XBaseWindow(XCreateWindowParams& params) : delayedParams(params) {}
+	XBaseWindow(XCreateWindowParams& params);
 	XBaseWindow(long parentWindow, const Rectangle& bounds);
 	XBaseWindow(const Rectangle& bounds);
 	XBaseWindow(long parentWindow);
