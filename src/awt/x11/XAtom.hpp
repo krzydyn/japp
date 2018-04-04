@@ -11,6 +11,7 @@ private:
 	String name;
 	long display;
 	void registerAtom(const XAtom& at);
+
 public:
 	static XAtom get(long atom);
 	static XAtom get(const String& name);
@@ -19,6 +20,8 @@ public:
  	XAtom() {}
 	XAtom(long atom);
 	XAtom(const String& name, boolean autoIntern);
+
+	boolean isSet() {return atom!=0;}
 
 	String getName() const;
 

@@ -10,6 +10,7 @@ const awt::x11::XAtom& lookup(long atom) {
 	return atomToAtom.get(atom);
 }
 const awt::x11::XAtom& lookup(const String& name) {
+	if (!nameToAtom.containsKey(name)) return (const awt::x11::XAtom&)Object::null_obj;
 	return nameToAtom.get(name);
 }
 }
@@ -19,13 +20,14 @@ namespace awt { namespace x11 {
 void XAtom::registerAtom(const XAtom& at) {
 	if (at.atom != 0) atomToAtom.put(at.atom, at);
 	if (!at.name.isEmpty()) nameToAtom.put(at.name, at);
+	LOGD("register atom %s %ld", at.name.cstr(), at.atom);
 }
 XAtom XAtom::get(long atom) {
 	const XAtom& xatom = lookup(atom);
 	if (xatom == null) return XAtom(atom);
 	return xatom;
 }
-XAtom get(const String& name) {
+XAtom XAtom::get(const String& name) {
 	const XAtom& xatom = lookup(name);
 	if (xatom == null) return XAtom(name, true);
 	return xatom;

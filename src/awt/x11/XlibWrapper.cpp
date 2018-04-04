@@ -7,7 +7,6 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
-
 namespace awt { namespace x11 {
 
 long XlibWrapper::XOpenDisplay(const String& name) {
@@ -326,7 +325,9 @@ long XlibWrapper::XGetVisualInfo(long display, long vinfo_mask, long vinfo_templ
 
 //long XlibWrapper::XGetSelectionOwner(long display, long selection);
 
-//String XlibWrapper::XGetAtomName(long display, long atom);
+String XlibWrapper::XGetAtomName(long display, long atom) {
+	return ::XGetAtomName((Display*)display, atom);
+}
 
 //long XlibWrapper::XMaxRequestSize(long display);
 

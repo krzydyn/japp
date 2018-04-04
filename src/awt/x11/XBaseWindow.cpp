@@ -4,6 +4,7 @@
 #include "XBaseWindow.hpp"
 #include "XConstants.hpp"
 #include "XlibWrapper.hpp"
+#include "XAtom.hpp"
 
 namespace {
 const int MIN_SIZE = 1;
@@ -12,6 +13,9 @@ const int DEF_LOCATION = 1;
 boolean inManualGrab = false;
 awt::Component* componentMouseEnteredRef = null;
 awt::x11::XBaseWindow* grabWindowRef = null;
+awt::x11::XAtom wm_protocols;
+awt::x11::XAtom wm_delete_window;
+awt::x11::XAtom wm_take_focus;
 
 void _setGrabWindow(awt::x11::XBaseWindow* grabWindow, boolean isAutoGrab) {
 	awt::x11::XToolkit::awtLock();
@@ -152,7 +156,7 @@ XBaseWindow::XBaseWindow(long parentWindow) : XBaseWindow(
 		.put<Long>(PARENT_WINDOW, parentWindow)) {}
 
 void XBaseWindow::preInit(XCreateWindowParams& params) {
-	LOGD("XBaseWindow::%s", __FUNCTION__);
+	LOGN("XBaseWindow::%s", __FUNCTION__);
 	initialising = InitialiseState::NOT_INITIALISED;
 	embedded = Boolean::TRUE.equals(params.get<Boolean>(EMBEDDED));
 	visible = Boolean::TRUE.equals(params.get<Boolean>(VISIBLE));
@@ -437,6 +441,19 @@ void XWindow::preInit(XCreateWindowParams& params) {
 	if (target != null) this->parent = getParentXWindowObject(target->getParent());
 
 	//params.putIfNull(BACKING_STORE, XToolkit::getBackingStoreType());
+
+	LOGN("XWindow::%s", __FUNCTION__);
+	XToolkit::awtLock();
+	Finalize(XToolkit::awtUnlock(););
+	if (!wm_protocols.isSet()) {
+		LOGD("getting atoms");
+		wm_protocols = XAtom::get("WM_PROTOCOLS");
+		wm_delete_window = XAtom::get("WM_DELETE_WINDOW");
+		wm_take_focus = XAtom::get("WM_TAKE_FOCUS");
+	}
+	else {
+		LOGD("atoms already set");
+	}
 
 	savedState = XUtilConstants::WithdrawnState;
 }

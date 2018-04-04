@@ -49,7 +49,6 @@ TARGETS:=$(BUILD_DIR)/awt
 TARGETS: $(JRELIB)
 
 $(BUILD_DIR)/%: $(SOURCE_DIR)/%.cpp $(JRELIB)
-	@#printf "$(CC) $(CPPFLAGS) $^ $(LDFLAGS) -o $@\n"
 	$(CC) $(CPPFLAGS) $^ $(LDFLAGS) -o $@
 
 build-awt: $(BUILD_DIR)/awt
