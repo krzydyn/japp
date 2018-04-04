@@ -137,15 +137,17 @@ const char* XBaseWindow::SAVE_UNDER = "save under";
 const char* XBaseWindow::BACKING_STORE = "backing store";
 const char* XBaseWindow::BIT_GRAVITY = "bit gravity";
 
-const char* XWindow::TARGET = "target";
-const char* XWindow::REPARENTED = "reparented";
+XBaseWindow::XBaseWindow(long parentWindow, const Rectangle& bounds) : XBaseWindow(
+	XCreateWindowParams()
+		.put<Rectangle>(BOUNDS, bounds)
+		.put<Long>(PARENT_WINDOW, parentWindow)) {}
+XBaseWindow::XBaseWindow(const Rectangle& bounds) : XBaseWindow(
+	XCreateWindowParams()
+		.put<Rectangle>(BOUNDS, bounds)) {}
+XBaseWindow::XBaseWindow(long parentWindow) : XBaseWindow(
+	XCreateWindowParams()
+		.put<Long>(PARENT_WINDOW, parentWindow)) {}
 
-XBaseWindow::XBaseWindow(long parentWindow, const Rectangle& bounds) {
-	LOGD("%s(parentWin=%ld, bounds=%s)", __FUNCTION__, parentWindow, bounds.toString().cstr());
-	XCreateWindowParams params;
-	params.put<Rectangle>(BOUNDS, bounds).put<Long>(PARENT_WINDOW, parentWindow);
-	init(params);
-}
 void XBaseWindow::preInit(XCreateWindowParams& params) {
 	LOGD("XBaseWindow::%s", __FUNCTION__);
 	initialising = InitialiseState::NOT_INITIALISED;
@@ -162,11 +164,11 @@ void XBaseWindow::preInit(XCreateWindowParams& params) {
 	else {
 		Long& parentWindowID = params.get<Long>(PARENT_WINDOW);
 		if (parentWindowID != null) {
-			LOGD("  parentWondow is id=%d", parentWindowID.longValue());
+			LOGD("  parentWindow is id=%d", parentWindowID.longValue());
 			parentWindow = XToolkit::windowToXWindow(parentWindowID);
 		}
 		else {
-			LOGD("  parentWondow is null");
+			LOGD("  parentWindow is null");
 		}
 	}
 
@@ -183,10 +185,14 @@ void XBaseWindow::postInit(XCreateWindowParams& params) {
 	//updateWMName();
 	//initClientLeader();
 }
+void XBaseWindow::init() {
+	XCreateWindowParams params(delayedParams);
+	init(params);
+}
 void XBaseWindow::init(XCreateWindowParams& params) {
 	initialising = InitialiseState::INITIALISING;
 	if (!Boolean::TRUE.equals(params.get<Boolean>(DELAYED))) {
-		LOGD("initializzing Window: %s", getClass().getName().cstr());
+		LOGD("initializing Window: %s", getClass().getName().cstr());
 		preInit(params);
 		create(params);
 		postInit(params);
@@ -274,7 +280,10 @@ void XBaseWindow::xSetVisible(boolean visible) {
 	XToolkit::awtLock();
 	Finalize(XToolkit::awtUnlock(););
 	this->visible = visible;
-	if (visible) XlibWrapper::XMapWindow(XToolkit::getDisplay(), getWindow());
+	if (visible) {
+		XlibWrapper::XMapWindow(XToolkit::getDisplay(), getWindow());
+		//XlibWrapper::XMoveWindow(XToolkit::getDisplay(), getWindow(), x, y);
+	}
 	else XlibWrapper::XUnmapWindow(XToolkit::getDisplay(), getWindow());
 	XlibWrapper::XFlush(XToolkit::getDisplay());
 }
@@ -285,12 +294,18 @@ void XBaseWindow::xSetBounds(int x, int y, int width, int height) {
 	width = Math::max(MIN_SIZE, width);
 	height = Math::max(MIN_SIZE, height);
 	LOGD("%s(%d,%d,%d,%d)",__FUNCTION__,x,y,width,height);
-
+/*
+	this->x=x;
+	this->y=y;
+	this->width=width;
+	this->height=height;
+*/
 	XToolkit::awtLock();
 	Finalize(XToolkit::awtUnlock(););
 	XlibWrapper::XMoveResizeWindow(XToolkit::getDisplay(), getWindow(),x,y,width,height);
 }
 void XBaseWindow::setSizeHints(long flags, int x, int y, int width, int height) {
+	LOGD("%s(f=%X, %d,%d,%d,%d)",__FUNCTION__, flags,x,y,width,height);
 	XSizeHints hints;
 
 	if ((flags & XUtilConstants::PPosition) != 0) {
@@ -359,20 +374,19 @@ void XBaseWindow::dispatchEvent(const XEvent& ev) {
 }
 
 
+const char* XWindow::TARGET = "target";
+const char* XWindow::REPARENTED = "reparented";
+
 XWindow::XWindow(Component* target, long parentWindow, const Rectangle& bounds) : XBaseWindow(
 		XCreateWindowParams()
 			.put<Long>(TARGET, (long)target)
 			.put<Long>(PARENT_WINDOW, parentWindow)
-			.put<Rectangle>(BOUNDS, bounds)
-	){
-}
+			.put<Rectangle>(BOUNDS, bounds)){}
 XWindow::XWindow(long parentWindow) : XBaseWindow(
 		XCreateWindowParams()
 			.put<Long>(PARENT_WINDOW, parentWindow)
 			.put<Boolean>(REPARENTED, Boolean::TRUE)
-			.put<Boolean>(EMBEDDED, Boolean::TRUE)
-	){
-}
+			.put<Boolean>(EMBEDDED, Boolean::TRUE)){}
 
 void XWindow::initGraphicsConfiguration() {
 	LOGD("XWindow::%s: target is %s",__FUNCTION__,target->getClass().getName().cstr());
@@ -382,7 +396,7 @@ void XWindow::initGraphicsConfiguration() {
 }
 
 void XWindow::preInit(XCreateWindowParams& params) {
-	LOGD("XWindow::%s", __FUNCTION__);
+	LOGN("XWindow::%s", __FUNCTION__);
 	XBaseWindow::preInit(params);
 	reparented = Boolean::TRUE.equals(params.get<Boolean>(REPARENTED));
 
@@ -426,6 +440,7 @@ void XWindow::preInit(XCreateWindowParams& params) {
 	savedState = XUtilConstants::WithdrawnState;
 }
 void XWindow::postInit(XCreateWindowParams& params) {
+	LOGN("XWindow::%s", __FUNCTION__);
 	XBaseWindow::postInit(params);
 
 	Color c;

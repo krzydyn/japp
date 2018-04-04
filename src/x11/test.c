@@ -23,7 +23,7 @@ int main(void)
     s = DefaultScreen(display);
  
     /* create window */
-    window = XCreateSimpleWindow(display, RootWindow(display, s), 10, 10, 200, 200, 1,
+    window = XCreateSimpleWindow(display, RootWindow(display, s), 100, 100, 200, 200, 1,
                            BlackPixel(display, s), WhitePixel(display, s));
 
 	XStoreName(display, window, "Demo app");

@@ -138,7 +138,7 @@ void XlibWrapper::XSync(long display,int discard) {
 	::XSync((Display*)display,discard);
 }
 void XlibWrapper::XMoveResizeWindow(long display, long window, int x, int y, int width, int height) {
-	LOGD("XlibWrapper::%s",__FUNCTION__);
+	LOGD("XlibWrapper::%s(%d,%d,%d,%d)",__FUNCTION__, x, y, width, height);
 	::XMoveResizeWindow((Display*)display, window, x, y, width, height);
 }
 void XlibWrapper::XResizeWindow(long display, long window, int width, int height) {
@@ -167,7 +167,9 @@ void XlibWrapper::XSetWindowBackground(long display, long window, long backgroun
 }
 int XlibWrapper::XEventsQueued(long display, int mode) {
 	int r = ::XEventsQueued((Display*)display, mode);
-	LOGD("XlibWrapper::%s(%lX,%X) = %d",__FUNCTION__,display,mode,r);
+	if (r != 0) {
+		LOGD("XlibWrapper::%s(%lX,%X) = %d",__FUNCTION__,display,mode,r);
+	}
 	return r;
 }
 
@@ -283,22 +285,25 @@ boolean XlibWrapper::XAllocColor(long display, long colormap, int& screen_in_out
 
 //int XlibWrapper::XGetWMNormalHints(long display, long window, long hints, long supplied_return);
 void XlibWrapper::XSetWMNormalHints(long display, long window, long hints) {
+	int s = 80;
+	char buf[2*s+1];
+	for (int i=0; i < s; ++i) sprintf(buf+2*i, "%02X", ((char*)hints)[i]);
+	LOGD("XlibWrapper::%s(hints=%s)",__FUNCTION__, buf);
 	::XSetWMNormalHints((Display*)display, window, (XSizeHints*)hints);
 }
 void XlibWrapper::XSetMinMaxHints(long display, long window, int x, int y, int width, int height, long flags) {
-    XSizeHints* hints;
-    hints = ::XAllocSizeHints();
-    hints->flags = flags;
-    hints->width = width;
-    hints->min_width = width;
-    hints->max_width = width;
-    hints->height = height;
-    hints->min_height = height;
-    hints->max_height = height;
-    hints->x = x;
-    hints->y = y;
-    ::XSetWMNormalHints((Display*)display, window, hints);
-    ::XFree(hints);
+	LOGD("XlibWrapper::%s(f=%X, x=%d,y=%d,w=%d,h=%d)",__FUNCTION__,flags, x,y,width,height);
+    XSizeHints hints;
+    hints.flags = flags;
+    hints.width = width;
+    hints.min_width = width;
+    hints.max_width = width;
+    hints.height = height;
+    hints.min_height = height;
+    hints.max_height = height;
+    hints.x = x;
+    hints.y = y;
+    ::XSetWMNormalHints((Display*)display, window, &hints);
 }
 long XlibWrapper::XAllocSizeHints() {
 	return (long)XAllocSizeHints();

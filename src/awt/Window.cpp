@@ -222,7 +222,6 @@ void Component::setBounds(int x, int y, int width, int height) {
 		this->height = height;
 		if (resized) isPacked = false;
 
-		LOGD("  peer = %lx", (long)peer);
 		boolean needNotify = true;
 		//mixOnReshaping();
 		if (peer != null) {
@@ -235,6 +234,9 @@ void Component::setBounds(int x, int y, int width, int height) {
 			}
 			//if (parent != null) parent->invalidateIfValid();
 			invalidateParent(); // the same as above
+		}
+		else {
+			LOGD("Component::%s  peer = %lx", __FUNCTION__, (long)peer);
 		}
 		if (needNotify) notifyNewBounds(resized, moved);
 		repaintParentIfNeeded(oldX, oldY, oldWidth, oldHeight);
@@ -388,7 +390,10 @@ void Window::addNotify() {
 		if (parent != null && parent->getPeer() == null) {
 			parent->addNotify();
 		}
-		if (peer == null) peer = getToolkit().createWindow(this);
+		if (peer == null) {
+			LOGD("Window::%s: creating peer", __FUNCTION__);
+			peer = getToolkit().createWindow(this);
+		}
 		synchronized (allWindows) {
 			allWindows.add(this);
 		}

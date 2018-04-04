@@ -217,7 +217,7 @@ private:
 		INITIALISED,
 		FAILED_INITIALISATION
 	};
-	InitialiseState initialising;
+	InitialiseState initialising = InitialiseState::NOT_INITIALISED;
 
 protected:
 	int x;
@@ -231,9 +231,10 @@ protected:
 	//XBaseWindow() : XBaseWindow(XCreateWindowParams()) {}
 	XBaseWindow() {} //dummy
 
+	XBaseWindow(XCreateWindowParams& params) : delayedParams(params) {}
 	XBaseWindow(long parentWindow, const Rectangle& bounds);
-	XBaseWindow(const Rectangle& bounds) {}
-	XBaseWindow(long parentWindow) {}
+	XBaseWindow(const Rectangle& bounds);
+	XBaseWindow(long parentWindow);
 
 	virtual void init(XCreateWindowParams& params) final;
 	virtual void checkParams(XCreateWindowParams& params);
@@ -266,7 +267,7 @@ public:
 	static long getScreenOfWindow(long window);
 	static void ungrabInput();
 
-	XBaseWindow(XCreateWindowParams& params) { init(params); }
+	virtual void init() final;
 
 	virtual long getScreenNumber();
 	virtual long getScreen();
@@ -274,10 +275,11 @@ public:
     virtual long getContentWindow() { return window; }
 
 	virtual boolean isVisible() { return visible; }
-	virtual void xSetBounds(Rectangle bounds) {
+	virtual Rectangle getBounds() { return Rectangle(x, y, width, height); }
+	virtual void xSetVisible(boolean visible);
+	virtual void xSetBounds(const Rectangle& bounds) {
 		xSetBounds(bounds.x, bounds.y, bounds.width, bounds.height);
 	}
-	virtual void xSetVisible(boolean visible);
 	virtual void xSetBounds(int x, int y, int width, int height);
 
 	static void dispatchToWindow(const XEvent& ev);
@@ -296,7 +298,7 @@ protected:
 	awt::Component *target;
 
 	XWindow() { throw RuntimeException("not supp"); }
-	XWindow(XCreateWindowParams& params) { init(params); }
+	XWindow(XCreateWindowParams& params) : XBaseWindow(params) {}
 	XWindow(awt::Component* target, long parentWindow, const Rectangle& bounds);
 	XWindow(Object* target) { throw RuntimeException("not supp"); }
 	XWindow(long parentWindow);

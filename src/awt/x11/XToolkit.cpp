@@ -287,7 +287,23 @@ class XComponentPeer : extends XWindow, implements awt::ComponentPeer {
 private:
 	const GraphicsConfiguration* graphicsConfig = null;
 protected:
+	int boundsOperation;
+
 	XComponentPeer(XCreateWindowParams& params) : XWindow(params) { }
+	virtual boolean isInitialReshape() { return true; }
+	void preInit(XCreateWindowParams& params) override {
+		XWindow::preInit(params);
+		boundsOperation = DEFAULT_OPERATION;
+	}
+	void postInit(XCreateWindowParams params) {
+		XWindow::postInit(params);
+		if (isInitialReshape()) {
+			Rectangle r = target->getBounds();
+			reshape(r.x, r.y, r.width, r.height);
+		}
+		setEnabled(target->isEnabled());
+		if (target->isVisible()) setVisible(true);
+	}
 public:
 	void setVisible(boolean b) {
 		LOGD(__FUNCTION__);
@@ -305,6 +321,9 @@ public:
 		xSetBounds(x,y,width,height);
 		//validateSurface();
 		//layout();
+	}
+	void reshape(int x, int y, int width, int height) {
+		setBounds(x, y, width, height, SET_BOUNDS);
 	}
 	void handleEvent(const AWTEvent& e) {}
 	Point getLocationOnScreen() {return Point();}
@@ -359,6 +378,22 @@ private:
 	//static Set<XWindowPeer> windows = new HashSet<XWindowPeer>();
 	Window::Type windowType = Window::Type::NORMAL;
 
+	void updateShape() { }
+
+	// src/solaris/classes/sun/awt/X11/XWindowPeer.java
+	void promoteDefaultPosition() {
+		boolean locationByPlatform = ((Window*)target)->isLocationByPlatform();
+		if (locationByPlatform) {
+			XToolkit::awtLock();
+			Finalize(XToolkit::awtUnlock(););
+			Rectangle bounds = getBounds();
+			long f = 0;
+			setSizeHints(f & ~(XUtilConstants::USPosition | XUtilConstants::PPosition),
+				bounds.x, bounds.y, bounds.width, bounds.height);
+		}
+		
+	}
+
 protected:
 	XWindowPeer(XCreateWindowParams& params) : XPanelPeer(params) {
 		LOGN("XWindowPeer::XWindowPeer created");
@@ -375,6 +410,7 @@ protected:
 		windowType = ((Window*)target)->getType();
 		params.put<Boolean>(REPARENTED, Boolean::valueOf(isOverrideRedirect() || isSimpleWindow()));
 		XPanelPeer::preInit(params);
+
 		params.putIfNull(BIT_GRAVITY, Integer::valueOf(XConstants::NorthWestGravity));
 
 		long eventMask = 0;
@@ -387,6 +423,11 @@ protected:
 	void postInit(XCreateWindowParams& params) {
 		LOGN("XWindowPeer::%s", __FUNCTION__);
 		XPanelPeer::postInit(params);
+	
+		//initWMProtocols();
+
+		updateIconImages();
+		updateShape();
 	}
 public:
 	XWindowPeer(awt::Window* target) : XWindowPeer(
@@ -402,15 +443,15 @@ public:
 			//isBeforeFirstMapNotify = true;
 		}
 		//updateFocusability();
-		//promoteDefaultPosition();
+		promoteDefaultPosition();
 		XPanelPeer::setVisible(b);
 	}
 	void toFront() {}
 	void toBack() {}
 	//void setModalBlocked(Dialog* blocker, boolean blocked) = 0;
 	void updateMinimumSize() {}
-	//void updateIconImages() = 0;
-	//void setOpacity(float opacity) = 0;
+	void updateIconImages()  {}
+	void setOpacity(float opacity) {}
 	//void setOpaque(boolean isOpaque) = 0;
 	void updateWindow() {}
 	//void repositionSecurityWarning() = 0;
@@ -439,6 +480,9 @@ void dispatchEvent(XEvent& ev) {
 	notifyListeners(ev);
 }
 void targetCreatedPeer(awt::Component* target, awt::ComponentPeer* peer) {
+	if (target != null && peer != null && !awt::GraphicsEnvironment::isHeadless()) {
+		//AWTAutoShutdown::getInstance().registerPeer(target, peer);
+	}
 }
 
 // http://www.grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/8u40-b25/sun/awt/X11/XToolkit.java
@@ -467,7 +511,8 @@ void XToolkit::removeFromWinMap(long window, XBaseWindow* xwin) {
 }
 XBaseWindow* XToolkit::windowToXWindow(long window) {
 	synchronized(winMap()) {
-		return (XBaseWindow*) winMap().get(Long::valueOf(window));
+		if (winMap().containsKey(Long::valueOf(window)))
+			return (XBaseWindow*) winMap().get(Long::valueOf(window));
 	}
 	return null;
 }
@@ -540,6 +585,7 @@ awt::WindowPeer* XToolkit::createWindow(awt::Window* target) {
 	LOGD("XToolkit::%s", __FUNCTION__);
 	XWindowPeer* peer = new XWindowPeer(target);
 	LOGD("XToolkit::%s created peer %s", __FUNCTION__, peer->getClass().getName().cstr());
+	peer->init();
 	targetCreatedPeer(target, peer);
 	return peer;
 }

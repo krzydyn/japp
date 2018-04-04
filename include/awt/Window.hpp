@@ -289,6 +289,8 @@ public:
 
 	virtual Type getType() const { return type; }
 	virtual void setType(const Type& type) { this->type=type; }
+
+	virtual boolean isLocationByPlatform() { return locationByPlatform; }
 };
 
 class Frame : extends Window {
