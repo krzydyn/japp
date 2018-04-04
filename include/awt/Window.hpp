@@ -15,6 +15,7 @@ class IllegalComponentStateException : extends IllegalStateException {
 
 class AppContext;
 class Container;
+class PopupMenu;
 class Component : extends Object {
 private:
 	String  name;
@@ -40,10 +41,11 @@ protected:
 	ComponentPeer *peer = null;
 	AppContext *appContext = null;
 	Container *parent = null;
-	int        x,y,width,height;
-	Color      foreground;
-	Color      background;
-	Font       *font = null;
+	int    x,y,width,height;
+	Color  foreground;
+	Color  background;
+	Font   *font = null;
+	Font   *peerFont = null;
 	//Cursor     cursor;
 	//Locale     locale;
 
@@ -58,6 +60,8 @@ protected:
 	boolean prefSizeSet = false;
 	Dimension maxSize;
 	boolean maxSizeSet = false;
+
+	ArrayList<PopupMenu*> popups;
 
 	Component() : x(0),y(0),width(0),height(0) {
 		//appContext = AppContext.getAppContext();
@@ -212,6 +216,10 @@ public:
 
 	virtual void addNotify();
 	virtual void removeNotify(){}
+	virtual void updateZOrder() {
+		//TODO
+		//peer.setZOrder(getHWPeerAboveMe());
+	}
 };
 
 class Container : extends Component {
@@ -223,6 +231,13 @@ public:
 	}
 	Dimension getPreferredSize();
 	void addNotify();
+
+	void increaseComponentCount(Component *c) {
+		synchronized (getTreeLock()) {
+			if (!c->isDisplayable()) throw IllegalStateException("Peer does not exist while invoking the increaseComponentCount() method");
+			//TODO
+		}
+	}
 };
 
 class Window : extends Container {
@@ -286,6 +301,7 @@ public:
 	void pack();
 	void addNotify();
 	void removeNotify();
+	void updateZOrder() {}
 
 	virtual Type getType() const { return type; }
 	virtual void setType(const Type& type) { this->type=type; }

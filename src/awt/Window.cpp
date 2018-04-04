@@ -250,16 +250,38 @@ void Component::addNotify() {
 		if (peer == null || instanceof<LightweightPeer>(peer)) {
 			LOGD("Component::addNotify: creating peer");
 			this->peer = peer = getToolkit().createComponent(this);
+
+			if (parent != null) {
+			}
 		}
 		else {
 			Container* parent = getContainer();
 			if (parent != null && parent->isLightweight()) {
 				//relocateComponent();
+				//if (!parent->isRecursivelyVisibleUpToHeavyweightContainer())
+				//	peer->setVisible(false);
 			}
 		}
 		invalidate();
 
+		int npopups = popups.size();
+		for (int i = 0 ; i < npopups ; i++) {
+			//TODO
+			//PopupMenu *popup = popups.elementAt(i);
+			//popup->addNotify();
+		}
+
+		if (getFont() != null)
+			peerFont = &getFont();
+
+		if (getContainer() != null && !isAddNotifyComplete) {
+			getContainer()->increaseComponentCount(this);
+		}
+
+		updateZOrder();
+
 		if (!isAddNotifyComplete) mixOnShowing();
+
 		isAddNotifyComplete = true;
 	}
 }

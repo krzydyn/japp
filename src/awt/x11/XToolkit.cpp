@@ -136,8 +136,9 @@ HashMap<Long,void*>& timeoutTasks() {
 	return map;
 }
 HashMap<Long,awt::x11::XBaseWindow*>& winMap() {
-	static HashMap<Long,awt::x11::XBaseWindow*> map;
-	return map;
+	static HashMap<Long,awt::x11::XBaseWindow*> *map = null;
+	if (map == null) map = new HashMap<Long,awt::x11::XBaseWindow*>();
+	return *map;
 }
 
 int getNumScreens() {
