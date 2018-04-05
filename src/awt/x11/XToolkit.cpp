@@ -261,7 +261,8 @@ const awt::GraphicsConfiguration& X11GraphicsDevice::getDefaultConfiguration() {
 }
 
 void X11GraphicsConfig::init(int visualNum, int screen) {
-	aData = nio::ByteBuffer::allocate(AwtGraphicsConfigData::getSize());
+	//aData = nio::ByteBuffer::allocate(AwtGraphicsConfigData::getSize());
+	aData = new AwtGraphicsConfigData;
 	//TODO read AwtGraphicsConfigData from X11
 }
 X11GraphicsConfig::X11GraphicsConfig(X11GraphicsDevice* device, int visualnum, int depth, int colormap, boolean doubleBuffer) {

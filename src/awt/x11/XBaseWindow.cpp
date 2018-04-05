@@ -48,17 +48,11 @@ awt::x11::XWindow* getParentXWindowObject(awt::Component* target) {
 
 namespace awt { namespace x11 {
 
-class XSetWindowAttributes : extends Object {
-private:
-	Shared<nio::ByteBuffer> pData;
-	boolean getBool(int offs) { return pData->get(offs) != 0; }
-	void putBool(int offs, boolean b) { pData->put(offs, b?1:0); }
+class XSetWindowAttributes : extends XDataWrapper {
 public:
 	static int getSize() { return 112; }
-	XSetWindowAttributes() { pData = nio::ByteBuffer::allocate(getSize()); }
-	XSetWindowAttributes(Shared<nio::ByteBuffer> buf) { pData = buf; }
-	void *getPData() { return &(pData->array()[0]); }
-	void dispose() { pData.reset(); }
+	XSetWindowAttributes() : XDataWrapper(getSize()) {}
+	XSetWindowAttributes(Shared<nio::ByteBuffer> buf) : XDataWrapper(buf) {}
 
 	long get_background_pixmap() { return pData->getLong(0); }
 	void set_background_pixmap(long v) {  pData->putLong(0, v); }
@@ -398,7 +392,7 @@ XWindow::XWindow(long parentWindow) : XBaseWindow(
 void XWindow::initGraphicsConfiguration() {
 	LOGD("XWindow::%s: target is %s",__FUNCTION__,target->getClass().getName().cstr());
 	graphicsConfig = (X11GraphicsConfig*) &target->getGraphicsConfiguration();
-	graphicsConfigData = new AwtGraphicsConfigData(((X11GraphicsConfig*)graphicsConfig)->getAData());
+	graphicsConfigData = ((X11GraphicsConfig*)graphicsConfig)->getAData();
 }
 
 void XWindow::preInit(XCreateWindowParams& params) {

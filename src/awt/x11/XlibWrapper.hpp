@@ -38,7 +38,7 @@ public:
 	static long BlackPixel(long display, int screen) { return XBlackPixel(display, screen); }
 	static long WhitePixel(long display, int screen) { return XWhitePixel(display, screen); }
 
-	static long XCreateWindow(long display, long parent, int x,int  y, int width, int height, int border_width, int depth, long wclass, long visual, long valuemask, void* attributes);
+	static long XCreateWindow(long display, long parent, int x,int  y, int width, int height, int border_width, int depth, long wclass, long visual, long valuemask, long attributes);
 	static void XDestroyWindow(long display, long window);
 
 	static int XGrabPointer(long display, long grab_window,
@@ -69,14 +69,14 @@ public:
 	static long XGetInputFocus(long display);
 
 	static void XSelectInput(long display, long window, long event_mask);
-	static void XNextEvent(long display, void* ptr);
+	static void XNextEvent(long display, long event_ptr);
+	static void XPeekEvent(long display, long event_ptr);
 	static void XMaskEvent(long display, long event_mask, long event_return);
 	static void XWindowEvent(long display, long window, long event_mask, long event_return);
-	static boolean XFilterEvent(void* ptr, long window);
+	static boolean XFilterEvent(long event_ptr, long window);
 	static boolean XSupportsLocale();
 	static String XSetLocaleModifiers(const String& modifier_list);
 	static int XTranslateCoordinates(long display, long src_w, long dest_w, long src_x, long src_y, long dest_x_return, long dest_y_return, long child_return);
-	static void XPeekEvent(long display, void* ptr);
 	static void XFlush(long display);
 	static void XSync(long display,int discard);
 	static void XMoveResizeWindow(long display, long window, int x, int y, int width, int height);
@@ -206,7 +206,7 @@ public:
 
 	static void XChangeActivePointerGrab(long display, int mask, long cursor, long time);
 	static int XSynchronize(long display, boolean onoff);
-	static boolean XNextSecondaryLoopEvent(long display, void *ptr);
+	static boolean XNextSecondaryLoopEvent(long display, long event_ptr);
 	static void ExitSecondaryLoop();
 	static Array<String> XTextPropertyToStringList(const Array<byte>& bytes, long encoding_atom);
 	static void SetBitmapShape(long display, long window, int width, int height, const Array<int>& bitmap);

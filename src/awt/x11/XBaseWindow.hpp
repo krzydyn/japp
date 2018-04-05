@@ -23,18 +23,11 @@ public:
 class XWMHints : extends Object {
 };
 
-class XSizeHints : extends Object {
-private:
-	Shared<nio::ByteBuffer> pData;
-	boolean getBool(int offs) { return pData->get(offs) != 0; }
-	void putBool(int offs, boolean b) { pData->put(offs, b?1:0); }
-	static int getLongSize() {return 8;}
+class XSizeHints : extends XDataWrapper {
 public:
 	static int getSize() { return 80; }
-	XSizeHints() { pData = nio::ByteBuffer::allocate(getSize()); }
-	XSizeHints(Shared<nio::ByteBuffer> buf) { pData = buf; }
-	long getPData() { return (long)&(pData->array()[0]); }
-	void dispose() { pData.reset(); }
+	XSizeHints() : XDataWrapper(getSize()) {}
+	XSizeHints(Shared<nio::ByteBuffer> buf) : XDataWrapper(buf) {}
 
 	long get_flags() { return (pData->getLong(0)); }
 	void set_flags(long v) { pData->putLong(0, v); }
@@ -75,18 +68,11 @@ public:
 };
 
 // from XVisualInfo *XGetVisualInfo( Display* display, long vinfo_mask, XVisualInfo* vinfo_template, int* nitems_return);
-class XVisualInfo : extends Object {
-private:
-	Shared<nio::ByteBuffer> pData;
-	boolean getBool(int offs) { return pData->get(offs) != 0; }
-	void putBool(int offs, boolean b) { pData->put(offs, b?1:0); }
-	static int getLongSize() {return 8;}
+class XVisualInfo : extends XDataWrapper {
 public:
 	static int getSize() { return 64; }
-	XVisualInfo() { pData = nio::ByteBuffer::allocate(getSize()); }
-	XVisualInfo(Shared<nio::ByteBuffer> buf) { pData = buf; }
-	void *getPData() { return &(pData->array()[0]); }
-	void dispose() { pData.reset(); }
+	XVisualInfo() : XDataWrapper(getSize()) {}
+	XVisualInfo(Shared<nio::ByteBuffer> buf) : XDataWrapper(buf) {}
 
 	long get_visual(int index) { return pData->getLong(0)+index*getLongSize(); }
 	long get_visual() { return pData->getLong(0); }
@@ -111,18 +97,11 @@ public:
 	void set_bits_per_rgb(int v) { pData->putInt(60, v); }
 };
 
-class AwtGraphicsConfigData : extends Object {
-private:
-	Shared<nio::ByteBuffer> pData;
-	boolean getBool(int offs) { return pData->get(offs) != 0; }
-	void putBool(int offs, boolean b) { pData->put(offs, b?1:0); }
-	static int getLongSize() {return 8;}
+class AwtGraphicsConfigData : extends XDataWrapper {
 public:
 	static int getSize() { return 208; }
-	AwtGraphicsConfigData() { pData = nio::ByteBuffer::allocate(getSize()); }
-	AwtGraphicsConfigData(Shared<nio::ByteBuffer> buf) { pData = buf; }
-	void *getPData() { return &(pData->array()[0]); }
-	void dispose() { pData.reset(); }
+	AwtGraphicsConfigData() : XDataWrapper(getSize()) {}
+	AwtGraphicsConfigData(Shared<nio::ByteBuffer> buf) : XDataWrapper(buf) {}
 
 	int get_awt_depth() { return (pData->getInt(0)); }
 	void set_awt_depth(int v) { pData->putInt(0, v); }

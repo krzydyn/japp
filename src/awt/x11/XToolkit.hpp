@@ -17,35 +17,43 @@ public:
 	boolean isDisplayLocal() {return true;}
 };
 
-class XAnyEvent : extends Object {
-private:
+class XDataWrapper : extends Object {
+protected:
 	Shared<nio::ByteBuffer> pData;
+	XDataWrapper(int size) {
+		pData = nio::ByteBuffer::allocate(size);
+		pData->order(nio::ByteOrder::LITTLE_ENDIAN);
+	}
+	XDataWrapper(Shared<nio::ByteBuffer> buf) {
+		pData = buf;
+		pData->order(nio::ByteOrder::LITTLE_ENDIAN);
+	}
+	boolean getBool(int offs) { return pData->get(offs) != 0; }
+	void putBool(int offs, boolean b) { pData->put(offs, b?1:0); }
+	static int getLongSize() {return 8;}
+public:
+	long getPData() { return (long)&(pData->array()[0]); }
+	void dispose() { pData.reset(); }
+};
+
+class XAnyEvent : extends XDataWrapper {
 public:
 	static int getSize() { return 40; }
 
-	XAnyEvent(Shared<nio::ByteBuffer> buf) {
-		pData = buf;
-	}
+	XAnyEvent(Shared<nio::ByteBuffer> buf) : XDataWrapper(buf) {}
 
 	long get_window() { return pData->getLong(32); }
 };
 
-class XEvent : extends Object {
-private:
-	Shared<nio::ByteBuffer> pData;
+// in Xlib.h this union
+class XEvent : extends XDataWrapper {
 public:
 	static int getSize() { return 192; }
 
-	XEvent() {
-		pData = nio::ByteBuffer::allocate(getSize());
-	}
-	XEvent(Shared<nio::ByteBuffer> buf) {
-		pData = buf;
-	}
-	void *getPData() { return &(pData->array()[0]); }
-	void dispose() { pData.reset(); }
-	int get_type() { return pData->getInt(0); }
+	XEvent() : XDataWrapper(getSize()) { }
+	XEvent(Shared<nio::ByteBuffer> buf) : XDataWrapper(buf) {}
 
+	int get_type() { return pData->getInt(0); }
 	XAnyEvent get_xany() { return XAnyEvent(pData); }
 };
 
@@ -61,9 +69,10 @@ public:
 	//long getDisplay();
 };
 
+class AwtGraphicsConfigData;
 class X11GraphicsConfig : extends awt::GraphicsConfiguration {
 private:
-	Shared<nio::ByteBuffer> aData;
+	AwtGraphicsConfigData *aData;
 	void init(int visualNum, int screen);
 protected:
 	X11GraphicsDevice* screen;
@@ -84,7 +93,7 @@ public:
 	Rectangle getBounds() const;
 	boolean isTranslucencyCapable() const {return false;}
 
-	Shared<nio::ByteBuffer> getAData() { return aData; }
+	AwtGraphicsConfigData *getAData() { return aData; }
 };
 
 class XBaseWindow;

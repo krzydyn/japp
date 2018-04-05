@@ -54,11 +54,11 @@ long XlibWrapper::XWhitePixel(long display, long screen) {
 	return (long)::XWhitePixel((Display *)display, (int)screen);
 }
 
-long XlibWrapper::XCreateWindow(long display, long parent, int x,int  y, int width, int height, int border_width, int depth, long wclass, long visual, long valuemask, void* attributes) {
+long XlibWrapper::XCreateWindow(long display, long parent, int x,int  y, int width, int height, int border_width, int depth, long wclass, long visual, long valuemask, long attributes) {
 	wclass=0;
-	int attrs = 112;
-	char buf[2*attrs+1];
-	for (int i=0; i < attrs; ++i) sprintf(buf+2*i, "%02X", ((char*)attributes)[i]);
+	int s = 112;
+	char buf[2*s+1];
+	for (int i=0; i < s; ++i) sprintf(buf+2*i, "%02X", ((char*)attributes)[i]);
 	long r = ::XCreateWindow((Display *)display, parent, x, y, width, height, border_width, depth, (int)wclass, (Visual*)visual, valuemask, (XSetWindowAttributes*)attributes);
 	LOGD("XlibWrapper::%s(%lX,%ld,bounds=(%d,%d,%d,%d),depth=%d,wclass=%ld,vis=%ld,mask=%lX,attrs=%s) = %lX", __FUNCTION__, display, parent, x, y, width, height, depth, wclass, visual, valuemask, buf, r);
 	return r;
@@ -107,18 +107,21 @@ void XlibWrapper::XSelectInput(long display, long window, long event_mask) {
 	LOGD("XlibWrapper::%s(%lX,%ld,mask=%lX)",__FUNCTION__,display, window, event_mask);
 	::XSelectInput((Display*)display, window, event_mask);
 }
-void XlibWrapper::XNextEvent(long display, void* ptr) {
-	::XNextEvent((Display*)display, (XEvent*)ptr);
-	LOGD("XlibWrapper::%s ev.type=%d",__FUNCTION__,((XEvent*)ptr)->type);
+void XlibWrapper::XNextEvent(long display, long event_ptr) {
+	::XNextEvent((Display*)display, (XEvent*)event_ptr);
+	int s = sizeof(XEvent);
+	char buf[2*s+1];
+	for (int i=0; i < s; ++i) sprintf(buf+2*i, "%02X", ((char*)event_ptr)[i]);
+	LOGD("XlibWrapper::%s ev.type=%d, evd[%d]=%s",__FUNCTION__,((XEvent*)event_ptr)->type, s, buf);
 }
-void XlibWrapper::XPeekEvent(long display,void* ptr) {
-	::XPeekEvent((Display*)display, (XEvent*)ptr);
-	LOGD("XlibWrapper::%s ev.type=%d",__FUNCTION__,((XEvent*)ptr)->type);
+void XlibWrapper::XPeekEvent(long display, long event_ptr) {
+	::XPeekEvent((Display*)display, (XEvent*)event_ptr);
+	LOGD("XlibWrapper::%s ev.type=%d",__FUNCTION__,((XEvent*)event_ptr)->type);
 }
 //void XlibWrapper::XMaskEvent(long display, long event_mask, long event_return);
 //void XlibWrapper::XWindowEvent(long display, long window, long event_mask, long event_return);
-boolean XlibWrapper::XFilterEvent(void* ptr, long window) {
-	return ::XFilterEvent((XEvent*)ptr, window);
+boolean XlibWrapper::XFilterEvent(long event_ptr, long window) {
+	return ::XFilterEvent((XEvent*)event_ptr, window);
 }
 boolean XlibWrapper::XSupportsLocale() {
 	LOGD("XlibWrapper::%s",__FUNCTION__);
@@ -378,7 +381,7 @@ void XlibWrapper::XClearWindow(long display, long window) {
 
 //void XChangeActivePointerGrab(long display, int mask, long cursor, long time);
 //int XSynchronize(long display, boolean onoff);
-boolean XlibWrapper::XNextSecondaryLoopEvent(long display, void *ptr) {
+boolean XlibWrapper::XNextSecondaryLoopEvent(long display, long event_ptr) {
 	LOGD("XlibWrapper::%s",__FUNCTION__);
 	return false;
 }
