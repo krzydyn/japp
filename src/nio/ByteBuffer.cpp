@@ -19,8 +19,70 @@ int static_equals(byte x, byte y) {
 
 namespace nio {
 class HeapByteBuffer : extends ByteBuffer {
-protected:
+private:
 	int ix(int i) const {return i + mOffset;}
+	void _putShort(int i, short value) {
+		if (bigEndian) {
+			(*hb)[i] = (byte)(value >> 8);
+			(*hb)[i+1] = (byte)value;
+		}
+		else {
+			(*hb)[i+1] = (byte)(value >> 8);
+			(*hb)[i] = (byte)value;
+		}
+	}
+	short _getShort(int i) const {
+		if (bigEndian) return (jchar)(((*hb)[i] << 8) | (*hb)[i+1]);
+		else return (jchar)(((*hb)[i+1] << 8) | (*hb)[i]);
+	}
+	void _putInt(int i, int value) {
+		if (bigEndian) {
+			(*hb)[i+0] = (byte)(value >> 24);
+			(*hb)[i+1] = (byte)(value >> 16);
+			(*hb)[i+2] = (byte)(value >> 8);
+			(*hb)[i+3] = (byte)value;
+		}
+		else {
+			(*hb)[i+3] = (byte)(value >> 24);
+			(*hb)[i+2] = (byte)(value >> 16);
+			(*hb)[i+1] = (byte)(value >> 8);
+			(*hb)[i+0] = (byte)value;
+		}
+	}
+	int _getInt(int i) const {
+		if (bigEndian) return ((*hb)[i] << 24) | ((*hb)[i+1] << 16) | ((*hb)[i+2] << 8) | (*hb)[i+3];
+		else return ((*hb)[i+3] << 24) | ((*hb)[i+2] << 16) | ((*hb)[i+1] << 8) | (*hb)[i];
+	}
+	void _putLong(int i, long value) {
+		if (bigEndian) {
+			for (int j=0; j < 8; ++j) {
+				(*hb)[i+7-j] = (byte)value;
+				value >>= 8;
+			}
+		}
+		else {
+			for (int j=0; j < 8; ++j) {
+				(*hb)[i+j] = (byte)value;
+				value >>= 8;
+			}
+		}
+	}
+	long _getLong(int i) const {
+		jlong l = 0;
+		if (bigEndian) {
+			for (int j=0; j < 8; ++j) {
+				l <<= 8;
+				l |= (*hb)[i+j];
+			}
+		}
+		else {
+			for (int j=0; j < 8; ++j) {
+				l <<= 8;
+				l |= (*hb)[i+7-j];
+			}
+		}
+		return l;
+	}
 public:
 	HeapByteBuffer(int cap, int lim) : ByteBuffer(-1, 0, lim, cap, 0) {}
 	HeapByteBuffer(Array<byte>& buf, int off, int len) : ByteBuffer(-1, off, off + len, buf.length, buf, 0) {}
@@ -50,96 +112,77 @@ public:
 
 	jchar getChar() {
 		int i = ix(nextGetIndex(2));
-		return (jchar)(((*hb)[i] << 8) | (*hb)[i+1]);
+		return (jchar)_getShort(i);
 	}
 	ByteBuffer& putChar(jchar value) {
 		int i = ix(nextPutIndex(2));
-		(*hb)[i] = (byte)(value >> 8);
-		(*hb)[i+1] = (byte)value;
+		_putShort(i, (short)value);
 		return *this;
 	}
 	jchar getChar(int index) const {
 		int i = ix(checkIndex(index, 2));
-		return (jchar)(((*hb)[i] << 8) | (*hb)[i+1]);
+		return (jchar)_getShort(i);
 	}
 	ByteBuffer& putChar(int index, jchar value) {
 		int i = ix(checkIndex(index, 2));
-		(*hb)[i] = (byte)(value >> 8);
-		(*hb)[i+1] = (byte)value;
+		_putShort(i, (jchar)value);
 		return *this;
 	}
 	//virtual Shared<CharBuffer> asCharBuffer() = 0;
 	short getShort() {
 		int i = ix(nextGetIndex(2));
-		return (short)(((*hb)[i] << 8) | (*hb)[i+1]);
+		return _getShort(i);
 	}
 	ByteBuffer& putShort(short value) {
 		int i = ix(nextPutIndex(2));
-		(*hb)[i] = (byte)(value >> 8);
-		(*hb)[i+1] = (byte)value;
+		_putShort(i, value);
 		return *this;
 	}
 	short getShort(int index) const {
 		int i = ix(checkIndex(index, 2));
-		return (short)(((*hb)[i] << 8) | (*hb)[i+1]);
+		return _getShort(i);
 	}
 	ByteBuffer& putShort(int index, short value) {
 		int i = ix(checkIndex(index, 2));
-		(*hb)[i] = (byte)(value >> 8);
-		(*hb)[i+1] = (byte)value;
+		_putShort(i, value);
 		return *this;
 	}
 	//virtual Shared<ShortrBuffer> asShortBuffer() = 0;
 	int getInt() {
 		int i = ix(nextGetIndex(4));
-		return ((*hb)[i] << 24) | ((*hb)[i+1] << 16) | ((*hb)[i+2] << 8) | (*hb)[i+3];
+		return _getInt(i);
 	}
 	ByteBuffer& putInt(int value) {
 		int i = ix(nextPutIndex(4));
-		(*hb)[i] = (byte)(value >> 24);
-		(*hb)[i+1] = (byte)(value >> 16);
-		(*hb)[i+2] = (byte)(value >> 8);
-		(*hb)[i+3] = (byte)value;
+		_putInt(i, value);
 		return *this;
 	}
 	int getInt(int index) const {
 		int i = ix(checkIndex(index, 4));
-		return ((*hb)[i] << 24) | ((*hb)[i+1] << 16) | ((*hb)[i+2] << 8) | (*hb)[i+3];
+		return _getInt(i);
 	}
 	ByteBuffer& putInt(int index, int value) {
 		int i = ix(checkIndex(index, 4));
-		(*hb)[i] = (byte)(value >> 24);
-		(*hb)[i+1] = (byte)(value >> 16);
-		(*hb)[i+2] = (byte)(value >> 8);
-		(*hb)[i+3] = (byte)value;
+		_putInt(i, value);
 		return *this;
 	}
 	//virtual Shared<IntBuffer> asIntBuffer() = 0;
 	jlong getLong() {
-		throw UnsupportedOperationException(__FUNCTION__);
+		int i = ix(nextGetIndex(8));
+		return _getLong(i);
 	}
 	ByteBuffer& putLong(jlong value) {
-		throw UnsupportedOperationException(__FUNCTION__);
+		int i = ix(nextPutIndex(8));
+		_putLong(i, value);
+		return *this;
 	}
 	jlong getLong(int index) const {
 		int i = ix(checkIndex(index, 8));
-		jlong l = 0;
-		for (int j=0; j < 8; ++j) {
-			l <<= 8;
-			l |= (*hb)[i+j];
-		}
-		return l;
+		return _getLong(i);
 	}
 	ByteBuffer& putLong(int index, jlong value) {
 		int i = ix(checkIndex(index, 8));
-		(*hb)[i+0] = (byte)(value >> 56);
-		(*hb)[i+1] = (byte)(value >> 48);
-		(*hb)[i+2] = (byte)(value >> 40);
-		(*hb)[i+3] = (byte)(value >> 32);
-		(*hb)[i+4] = (byte)(value >> 24);
-		(*hb)[i+5] = (byte)(value >> 16);
-		(*hb)[i+6] = (byte)(value >> 8);
-		(*hb)[i+7] = (byte)value;
+		_putLong(i, value);
 		return *this;
 	}
 	//virtual Shared<LongBuffer> asLongBuffer() = 0;

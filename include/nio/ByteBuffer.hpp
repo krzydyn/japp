@@ -46,7 +46,6 @@ protected:
 	}
 
 	void move(ByteBuffer& o) {
-		LOGD("ByteBuffer::move");
 		Buffer::move(o);
 		hb = o.hb; o.hb=null;
 		const_cast<boolean&>(allocated) = o.allocated;
