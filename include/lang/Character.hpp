@@ -17,8 +17,8 @@ class Character : extends Object, implements Comparable<Character> {
 public:
 	static const int MIN_RADIX = 2;
 	static const int MAX_RADIX = 36;
-	static const jchar MIN_VALUE = u'\u0000';
-	static const jchar MAX_VALUE = u'\uFFFF';
+	static const jchar MIN_VALUE = 0x0000;
+	static const jchar MAX_VALUE = 0xFFFF;
 	
 	static const byte UNASSIGNED = 0;
 	static const byte UPPERCASE_LETTER = 1;

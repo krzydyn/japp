@@ -18,6 +18,9 @@ public:
 	static const int UNSUPPORTED_CASE = -6; // This case not supported
 };
 
+#undef SHUT_RD
+#undef SHUT_WR
+#undef SHUT_RDWR
 //http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/8u40-b25/sun/nio/ch/Net.java
 class Net {
 public:
@@ -186,7 +189,7 @@ private:
 		int lim = dst.limit();
 		int rem = (pos <= lim ? lim - pos : 0);
 		if (rem == 0) return 0;
-		int flags = MSG_NOSIGNAL; // MSG_DONTWAIT | MSG_DONTROUTE
+		int flags = 0; //MSG_NOSIGNAL; // MSG_DONTWAIT | MSG_DONTROUTE
 		int n = (int)::recv(fd, &dst.array()[pos], rem, flags);
 		if (n == -1) LOGD("recv(fd=%d) error=%d (%s)", fd, errno, strerror(errno));
 		else {
@@ -222,7 +225,7 @@ private:
 		if (rem == 0) return 0;
 		struct sockaddr_in addr_remote;
 		socklen_t slen = sizeof(addr_remote);
-		int flags = MSG_NOSIGNAL; // | MSG_DONTWAIT;// | MSG_DONTROUTE
+		int flags = 0; //MSG_NOSIGNAL; // | MSG_DONTWAIT;// | MSG_DONTROUTE
 		int n = (int)::recvfrom(fd, &dst.array()[pos], rem, flags, (struct sockaddr *)&addr_remote, &slen);
 		if (n == -1) LOGD("recvfrom(fd=%d) error=%d (%s)", fd, errno, strerror(errno));
 		else {
@@ -239,11 +242,11 @@ private:
 		if (rem == 0) return 0;
 		struct sockaddr_in addr_remote;
 		memset(&addr_remote, 0, sizeof(addr_remote));
-		addr_remote.sin_family = (short)family;
+		addr_remote.sin_family = (char)family;
 		addr_remote.sin_port = htons((short)target.getPort());
 		Array<byte> addr = target.getAddress().getAddress();
 		memcpy(&addr_remote.sin_addr.s_addr, &addr[0], addr.length);
-		int flags = MSG_NOSIGNAL; // MSG_DONTWAIT | MSG_DONTROUTE
+		int flags = 0; //MSG_NOSIGNAL; // MSG_DONTWAIT | MSG_DONTROUTE
 		int n = (int)::sendto(fd, &src.array()[pos], rem, flags, (struct sockaddr *)&addr_remote, sizeof(addr_remote));
 		if (n == -1) LOGD("sendto(fd=%d) error=%d (%s)", fd, errno, strerror(errno));
 		else src.position(pos + n);
