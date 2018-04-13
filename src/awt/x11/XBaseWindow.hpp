@@ -179,6 +179,7 @@ public:
 	}
 };
 
+class XRootWindow;
 class XBaseWindow : extends Object {
 private:
 	XCreateWindowParams delayedParams;
@@ -245,6 +246,7 @@ public:
 
 	static long getScreenOfWindow(long window);
 	static void ungrabInput();
+	static XRootWindow *getXAWTRootWindow();
 
 	virtual void init() final;
 

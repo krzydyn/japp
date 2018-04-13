@@ -67,6 +67,10 @@ public:
 
 	virtual boolean updateGraphicsData(const GraphicsConfiguration& gc) = 0;
 };
+interface ButtonPeer : implements ComponentPeer {
+public:
+	virtual void setLabel(const String& label) = 0;
+};
 interface CanvasPeer : implements ComponentPeer {
 };
 interface LightweightPeer : implements ComponentPeer {

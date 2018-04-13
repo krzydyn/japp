@@ -5,6 +5,7 @@
 #include "XConstants.hpp"
 #include "XlibWrapper.hpp"
 #include "XAtom.hpp"
+#include "XRootWindow.hpp"
 
 namespace {
 const int MIN_SIZE = 1;
@@ -134,6 +135,30 @@ const char* XBaseWindow::VISIBLE = "visible";
 const char* XBaseWindow::SAVE_UNDER = "save under";
 const char* XBaseWindow::BACKING_STORE = "backing store";
 const char* XBaseWindow::BIT_GRAVITY = "bit gravity";
+
+void XBaseWindow::ungrabInput() {
+	XToolkit::awtLock();
+	Finalize(XToolkit::awtUnlock(););
+
+	XBaseWindow* grabWindow = XAwtState::getGrabWindow();
+	if (grabWindow != null) {
+		grabWindow->ungrabInputImpl();
+		if (!XToolkit::getSunAwtDisableGrab()) {
+			XlibWrapper::XUngrabPointer(XToolkit::getDisplay(), XConstants::CurrentTime);
+			XlibWrapper::XUngrabKeyboard(XToolkit::getDisplay(), XConstants::CurrentTime);
+		}
+		XAwtState::setGrabWindow(null);
+		XlibWrapper::XFlush(XToolkit::getDisplay());
+	}
+}
+XRootWindow *XBaseWindow::getXAWTRootWindow() {
+	return XRootWindow::getInstance();
+}
+long XBaseWindow::getScreenOfWindow(long window) {
+	XToolkit::awtLock();
+	Finalize(XToolkit::awtUnlock(););
+	return XlibWrapper::getScreenOfWindow(XToolkit::getDisplay(), window);
+}
 
 XBaseWindow::XBaseWindow(XCreateWindowParams& params) : delayedParams(params) {
 	//init(parms) moved to XToolkit::createWindow as peer->init();
@@ -338,11 +363,6 @@ void XBaseWindow::setSizeHints(long flags, int x, int y, int width, int height) 
 	XlibWrapper::XSetWMNormalHints(XToolkit::getDisplay(), getWindow(), hints.getPData());
 }
 
-long XBaseWindow::getScreenOfWindow(long window) {
-	XToolkit::awtLock();
-	Finalize(XToolkit::awtUnlock(););
-	return XlibWrapper::getScreenOfWindow(XToolkit::getDisplay(), window);
-}
 long XBaseWindow::getScreenNumber() {
 	XToolkit::awtLock();
 	Finalize(XToolkit::awtUnlock(););
@@ -353,21 +373,6 @@ long XBaseWindow::getScreen() {
 		screen = getScreenOfWindow(window);
 	}
 	return screen;
-}
-void XBaseWindow::ungrabInput() {
-	XToolkit::awtLock();
-	Finalize(XToolkit::awtUnlock(););
-
-	XBaseWindow* grabWindow = XAwtState::getGrabWindow();
-	if (grabWindow != null) {
-		grabWindow->ungrabInputImpl();
-		if (!XToolkit::getSunAwtDisableGrab()) {
-			XlibWrapper::XUngrabPointer(XToolkit::getDisplay(), XConstants::CurrentTime);
-			XlibWrapper::XUngrabKeyboard(XToolkit::getDisplay(), XConstants::CurrentTime);
-		}
-		XAwtState::setGrabWindow(null);
-		XlibWrapper::XFlush(XToolkit::getDisplay());
-	}
 }
 void XBaseWindow::dispatchToWindow(const XEvent& ev) {
 }

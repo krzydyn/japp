@@ -81,6 +81,49 @@ public:
 	}
 };
 
+const char *eventTypeName[35] = {
+	"Reserved",
+	"Reserved",
+	"KeyPress",
+	"KeyRelease",
+	"ButtonPress",
+	"ButtonRelease",
+	"MotionNotify",
+	"EnterNotify",
+	"LeaveNotify",
+	"FocusIn",
+	"FocusOut",
+	"KeymapNotify",
+	"Expose",
+	"GraphicsExpose",
+	"NoExpose",
+	"VisibilityNotify",
+	"CreateNotify",
+	"DestroyNotify",
+	"UnmapNotify",
+	"MapNotify",
+	"MapRequest",
+	"ReparentNotify",
+	"ConfigureNotify",
+	"ConfigureRequest",
+	"GravityNotify",
+	"ResizeRequest",
+	"CirculateNotify",
+	"CirculateRequest",
+	"PropertyNotify",
+	"SelectionClear",
+	"SelectionRequest",
+	"SelectionNotify",
+	"ColormapNotify",
+	"ClientMessage",
+	"MappingNotify"
+};
+
+String eventType(const awt::x11::XEvent& ev) {
+	int t = ev.get_type();
+	if (t < 0 || t > 34) return String::format("Event type %d", t);
+	return eventTypeName[t];
+}
 
 #define AWT_READPIPE            (awt_pipe_fds[0])
 #define AWT_WRITEPIPE           (awt_pipe_fds[1])
@@ -477,6 +520,7 @@ void notifyListeners(XEvent& ev) {
 }
 void dispatchEvent(XEvent& ev) {
 	LOGD("dispatchEvent type=%d", ev.get_type());
+	LOGD("   event name is %s", eventType(ev).cstr());
 	//XAnyEvent xany = ev.get_xany();
 	if (ev.get_type() == XConstants::MappingNotify) {
 	}
@@ -614,21 +658,18 @@ void XToolkit::run(boolean loop) {
 	XEvent ev;
 
 	while(true) {
-		LOGD("Toolkit::loop time=%ld", System.currentTimeMillis());
 		if (Thread::currentThread().isInterrupted()) {
 			break;
 		}
 		awtLock();
 		Finalize(awtUnlock(););
 		try {
-			LOGD("Toolkit::loop awt Locked");
 			if (loop == SECONDARY_LOOP) {
 				if (!XlibWrapper::XNextSecondaryLoopEvent(getDisplay(), ev.getPData())) {
 					break;
 				}
 			}
 			else {
-				LOGD("Toolkit::loop call timeout tasks");
 				callTimeoutTasks();
 				while ( (XlibWrapper::XEventsQueued(getDisplay(), XConstants::QueuedAlready) == 0) &&
 						(XlibWrapper::XEventsQueued(getDisplay(), XConstants::QueuedAfterReading) == 0) &&
@@ -637,7 +678,6 @@ void XToolkit::run(boolean loop) {
 					//LOGD("Toolkit::loop call waitForEvents");
 					waitForEvents(getNextTaskTime());
 				}
-				LOGD("Toolkit::loop got XNextEvent !!!!");
 				XlibWrapper::XNextEvent(getDisplay(), ev.getPData());
 			}
 			if (ev.get_type() != XConstants::NoExpose) ++eventNumber;
@@ -650,7 +690,6 @@ void XToolkit::run(boolean loop) {
 				}*/
 			}
 			if (XlibWrapper::XFilterEvent(ev.getPData(), w)) continue;
-			LOGD("Toolkit::loop call dispatch");
 			dispatchEvent(ev);
 		}
 		catch (const ThreadDeath& td) {

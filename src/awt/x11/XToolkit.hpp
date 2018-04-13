@@ -28,7 +28,7 @@ protected:
 		pData = buf;
 		pData->order(nio::ByteOrder::LITTLE_ENDIAN);
 	}
-	boolean getBool(int offs) { return pData->get(offs) != 0; }
+	boolean getBool(int offs) const { return pData->get(offs) != 0; }
 	void putBool(int offs, boolean b) { pData->put(offs, b?1:0); }
 	static int getLongSize() {return 8;}
 public:
@@ -42,7 +42,7 @@ public:
 
 	XAnyEvent(Shared<nio::ByteBuffer> buf) : XDataWrapper(buf) {}
 
-	long get_window() { return pData->getLong(32); }
+	long get_window() const { return pData->getLong(32); }
 };
 
 // in Xlib.h this union
@@ -53,7 +53,7 @@ public:
 	XEvent() : XDataWrapper(getSize()) { }
 	XEvent(Shared<nio::ByteBuffer> buf) : XDataWrapper(buf) {}
 
-	int get_type() { return pData->getInt(0); }
+	int get_type() const { return pData->getInt(0); }
 	XAnyEvent get_xany() { return XAnyEvent(pData); }
 };
 
@@ -113,6 +113,8 @@ public:
 	//static void addEventDispatcher(long window, XEventDispatcher dispatcher);
 
 	XToolkit();
+	awt::ButtonPeer* createButton(awt::Button* target);
+	awt::FramePeer* createLightweightFrame(awt::LightweightFrame* target);
 	awt::FramePeer* createFrame(awt::Frame* target);
 	awt::LightweightPeer* createComponent(awt::Component* target);
 	awt::WindowPeer* createWindow(awt::Window* target);

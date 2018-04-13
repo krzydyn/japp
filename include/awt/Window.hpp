@@ -222,6 +222,11 @@ public:
 	}
 };
 
+class Button : extends Component {
+};
+
+
+
 class Container : extends Component {
 private:
 	util::ArrayList<Component*> component;
@@ -310,6 +315,9 @@ public:
 };
 
 class Frame : extends Window {
+};
+
+class LightweightFrame : extends Frame {
 };
 
 class Dialog : extends Window {
