@@ -219,10 +219,10 @@ int XlibWrapper::XGetWindowProperty(long display, long window, long atom, long o
 	data_ptr = (long)data;
 	return status;
 }
-void XlibWrapper::XChangePropertyImpl(long display, long window, long atom, long type, int format, int mode, long data, int nelements) {
+void XlibWrapper::XChangePropertyImpl(long display, long window, long atom, long type, int format, int mode, void* data, int nelements) {
 	::XChangeProperty((Display*)display, window, atom, type, format, mode, (unsigned char*)data, nelements);
 }
-void XlibWrapper::XChangeProperty(long display, long window, long atom, long type, int format, int mode, long data, int nelements) {
+void XlibWrapper::XChangeProperty(long display, long window, long atom, long type, int format, int mode, void* data, int nelements) {
 	//TODO caching
 	XChangePropertyImpl(display, window, atom, type, format, mode, data, nelements);
 }
@@ -287,10 +287,12 @@ boolean XlibWrapper::XAllocColor(long display, long colormap, int& screen_in_out
 
 //int XlibWrapper::XGetWMNormalHints(long display, long window, long hints, long supplied_return);
 void XlibWrapper::XSetWMNormalHints(long display, long window, long hints) {
-	int s = 80;
+	/*int s = 80;
 	char buf[2*s+1];
 	for (int i=0; i < s; ++i) sprintf(buf+2*i, "%02X", ((char*)hints)[i]);
-	LOGD("XlibWrapper::%s(hints=%s)",__FUNCTION__, buf);
+	LOGD("XlibWrapper::%s(hints=%s)",__FUNCTION__, buf);*/
+	XSizeHints *xh = (XSizeHints *)hints;
+	LOGD("XlibWrapper::%s(f=%X, x=%d,y=%d,w=%d,h=%d)",__FUNCTION__, xh->flags, xh->x, xh->y, xh->width, xh->height);
 	::XSetWMNormalHints((Display*)display, window, (XSizeHints*)hints);
 }
 void XlibWrapper::XSetMinMaxHints(long display, long window, int x, int y, int width, int height, long flags) {

@@ -18,7 +18,7 @@ class GraphicsDevice : extends Object {
 protected:
 	GraphicsDevice() {}
 public:
-	virtual const GraphicsConfiguration& getDefaultConfiguration() = 0;
+	virtual GraphicsConfiguration& getDefaultConfiguration() = 0;
 };
 
 class GraphicsEnvironment : extends Object {

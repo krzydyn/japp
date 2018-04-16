@@ -285,6 +285,7 @@ protected:
 	XWindow(long parentWindow);
 
 	void initGraphicsConfiguration();
+	virtual void initWMProtocols() final;
 	void preInit(XCreateWindowParams& params) override;
 	void postInit(XCreateWindowParams& params) override;
 
@@ -295,17 +296,18 @@ protected:
 	void updateSizeHints() { updateSizeHints(x, y, width, height); }
 	void updateSizeHints(int x, int y, int width, int height);
 	void updateSizeHints(int x, int y);
+
 public:
 	static const char* TARGET;
 	static const char* REPARENTED;
 
 	void xSetBackground(const Color& c);
-	const GraphicsConfiguration& getGraphicsConfiguration() {
+	virtual GraphicsConfiguration& getGraphicsConfiguration() {
 		if (graphicsConfig == null) initGraphicsConfiguration();
 		if (graphicsConfig == null) throw RuntimeException("Can't get GraphicsConfiguration");
 		return *graphicsConfig;
 	}
-	const AwtGraphicsConfigData& getGraphicsConfigurationData() {
+	virtual const AwtGraphicsConfigData& getGraphicsConfigurationData() {
 		if (graphicsConfigData == null) initGraphicsConfiguration();
 		if (graphicsConfigData == null) throw RuntimeException("Can't get GraphicsConfigurationData");
 		return *graphicsConfigData;

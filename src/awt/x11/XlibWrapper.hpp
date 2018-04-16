@@ -93,8 +93,8 @@ public:
 	static void SetProperty(long display, long window, long atom, const String& str);
 	static String GetProperty(long display ,long window, long atom);
 	static int XGetWindowProperty(long display, long window, long atom, long offset, long length, boolean del, long req_type, long& actualy_type, int& actualy_format, long& nitems, long& bytes_after, long& data_ptr);
-   static void XChangePropertyImpl(long display, long window, long atom, long type, int format, int mode, long data, int nelements);
-	static void XChangeProperty(long display, long window, long atom, long type, int format, int mode, long data, int nelements);
+   static void XChangePropertyImpl(long display, long window, long atom, long type, int format, int mode, void* data, int nelements);
+	static void XChangeProperty(long display, long window, long atom, long type, int format, int mode, void* data, int nelements);
 	static void XChangePropertyS(long display, long window, long atom, long type, int format, int mode, const String& value);
 	static void XDeleteProperty(long display, long window, long atom);
 

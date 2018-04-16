@@ -1,7 +1,7 @@
-#include <lang/Number.hpp>
 #include <lang/System.hpp>
 #include <util/concurrent/Lock.hpp>
 
+#include "XAtom.hpp"
 #include "XBaseWindow.hpp"
 #include "XConstants.hpp"
 #include "XToolkit.hpp"
@@ -174,9 +174,11 @@ void awt_toolkit_init() {
 	awt_pipe_init();
 }
 
-HashMap<Long,void*>& timeoutTasks() {
-	static HashMap<Long,void*> map;
-	return map;
+
+HashMap<Long,void*> timeoutTasks() {
+	static HashMap<Long,void*> *map = null;
+	if (map == null) map = new HashMap<Long,void*>();
+	return *map;
 }
 HashMap<Long,awt::x11::XBaseWindow*>& winMap() {
 	static HashMap<Long,awt::x11::XBaseWindow*> *map = null;
@@ -252,6 +254,7 @@ void waitForEvents(long nextTaskTime) {
 
 void processException(const Throwable& thr) {
 	thr.printStackTrace();
+	_exit(0);
 }
 
 awt::Rectangle pGetBounds(int screenNum) {
@@ -268,6 +271,19 @@ int XWM::getWMID() {
 	awt_wmgr = XWM::OTHER_WM;
 
 	return awt_wmgr;
+}
+
+#define HOST_NAME_MAX 1024
+String getLocalHostname() {
+	char hostname[HOST_NAME_MAX + 1];
+	if (gethostname(hostname, HOST_NAME_MAX + 1) == 0) {
+		hostname[HOST_NAME_MAX] = '\0';
+		return hostname;
+    }
+	return "";
+}
+int getJvmPID() {
+	return getpid();
 }
 
 }//anonymous namespace
@@ -296,11 +312,14 @@ GraphicsDevice& X11GraphicsEnvironment::getDefaultScreenDevice() {
 	return *screens[0 < index && index < screens.length ? index : 0];
 }
 
-const awt::GraphicsConfiguration& X11GraphicsDevice::getDefaultConfiguration() {
+awt::GraphicsConfiguration& X11GraphicsDevice::getDefaultConfiguration() {
 	if (defaultConfig == null) {
 		defaultConfig = new X11GraphicsConfig(this, 1, 0, 0, false);
 	}
 	return *defaultConfig;
+}
+void X11GraphicsDevice::addDisplayChangedListener(DisplayChangedListener* client) {
+	//TODO displayChanger.add(client);
 }
 
 void X11GraphicsConfig::init(int visualNum, int screen) {
@@ -332,7 +351,7 @@ ColorModel X11GraphicsConfig::getColorModel(int transparency) const {
 
 class XComponentPeer : extends XWindow, implements awt::ComponentPeer {
 private:
-	const GraphicsConfiguration* graphicsConfig = null;
+	GraphicsConfiguration* graphicsConfig = null;
 protected:
 	int boundsOperation;
 
@@ -342,11 +361,15 @@ protected:
 		XWindow::preInit(params);
 		boundsOperation = DEFAULT_OPERATION;
 	}
-	void postInit(XCreateWindowParams params) {
+	void postInit(XCreateWindowParams& params) override {
 		XWindow::postInit(params);
 		if (isInitialReshape()) {
+			LOGN("XComponentPeer::%s initial reshape",__FUNCTION__);
 			Rectangle r = target->getBounds();
 			reshape(r.x, r.y, r.width, r.height);
+		}
+		else {
+			LOGN("XComponentPeer::%s NO initial reshape",__FUNCTION__);
 		}
 		setEnabled(target->isEnabled());
 		if (target->isVisible()) setVisible(true);
@@ -394,7 +417,7 @@ public:
 	//Image createImage(int width, int height) = 0;
 	//boolean prepareImage(Image img, int w, int h, ImageObserver o) = 0;
 	//int checkImage(Image img, int w, int h, ImageObserver o) = 0;
-	const awt::GraphicsConfiguration& getGraphicsConfiguration() {
+	awt::GraphicsConfiguration& getGraphicsConfiguration() {
 		if (graphicsConfig == null) throw NullPointerException("graphicsConfig");
 		return *graphicsConfig;
 	}
@@ -406,7 +429,7 @@ public:
 	//virtual void reparent(ContainerPeer& newContainer) = 0;
 	//virtual boolean isReparentSupported() = 0;
 	void layout() {}
-	boolean updateGraphicsData(const awt::GraphicsConfiguration& gc) {
+	boolean updateGraphicsData(awt::GraphicsConfiguration& gc) {
 		if (graphicsConfig == &gc) return false;
 		graphicsConfig = &gc;
 		return true;
@@ -420,12 +443,15 @@ class XPanelPeer : extends XCanvasPeer, implements awt::PanelPeer {
 protected:
 	XPanelPeer(XCreateWindowParams& params) : XCanvasPeer(params) { }
 };
-class XWindowPeer : extends XPanelPeer, implements awt::WindowPeer {
+class XWindowPeer : extends XPanelPeer, implements awt::WindowPeer, implements DisplayChangedListener {
 private:
 	//static Set<XWindowPeer> windows = new HashSet<XWindowPeer>();
 	Window::Type windowType = Window::Type::NORMAL;
 
-	void updateShape() { }
+	void updateShape() {
+	}
+	void updateOpacity() {
+	}
 
 	// src/solaris/classes/sun/awt/X11/XWindowPeer.java
 	void promoteDefaultPosition() {
@@ -438,7 +464,6 @@ private:
 			setSizeHints(f & ~(XUtilConstants::USPosition | XUtilConstants::PPosition),
 				bounds.x, bounds.y, bounds.width, bounds.height);
 		}
-		
 	}
 
 protected:
@@ -465,16 +490,31 @@ protected:
 		eventMask |= XConstants::VisibilityChangeMask;
 		params.put<Long>(EVENT_MASK, eventMask);
 
+		//TODO XA_NET_WM_STATE = XAtom::get("_NET_WM_STATE");
+
 		params.put(OVERRIDE_REDIRECT, Boolean::valueOf(isOverrideRedirect()));
+
+		//TODO windows.add(this);
+
+		//TODO Font f = target->getFont();
+		
+		//TODO Color c = targeti->getBackground();
+
+		//TODO awt::GraphicsConfiguration& gc = getGraphicsConfiguration();
+		//((X11GraphicsDevice&)gc.getDevice()).addDisplayChangedListener(this);
 	}
-	void postInit(XCreateWindowParams& params) {
+	void postInit(XCreateWindowParams& params) override {
 		LOGN("XWindowPeer::%s", __FUNCTION__);
 		XPanelPeer::postInit(params);
 	
-		//initWMProtocols();
+		initWMProtocols();
+
+		XAtom::get("WM_CLIENT_MACHINE").setProperty(getWindow(), getLocalHostname());
+		XAtom::get("_NET_WM_PID").setCard32Property(getWindow(), getJvmPID());
 
 		updateIconImages();
 		updateShape();
+		updateOpacity();
 	}
 public:
 	XWindowPeer(awt::Window* target) : XWindowPeer(
@@ -484,7 +524,7 @@ public:
 		) {}
 
 	Window::Type getWindowType() { return windowType; }
-	void setVisible(boolean b) {
+	void setVisible(boolean b) override {
 		LOGN("XWindowPeer::%s(%s)", __FUNCTION__, String::valueOf(b).cstr());
 		if (!isVisible() && b) {
 			//isBeforeFirstMapNotify = true;
@@ -502,6 +542,12 @@ public:
 	//void setOpaque(boolean isOpaque) = 0;
 	void updateWindow() {}
 	//void repositionSecurityWarning() = 0;
+	void setBounds(int x, int y, int width, int height, int op) override {
+		XToolkit::awtLock();
+		Finalize(XToolkit::awtUnlock(););
+		XPanelPeer::setBounds(x, y, width, height, op);
+		setSizeHints(XUtilConstants::PPosition | XUtilConstants::PSize, x, y, width, height);
+	}
 };
 
 class XDecoratedPeer : extends XWindowPeer {
@@ -599,9 +645,6 @@ void XToolkit::init() {
 	if (awt_display == 0) throw HeadlessException();
 
 	LOGD("XToolkit::init");
-	//initialize static vars, this not help much, even worse - cause SEGFAULT in other thread
-	//timeoutTasks();
-	//winMap();
 
 	XlibWrapper::XSupportsLocale();
 	if (XlibWrapper::XSetLocaleModifiers("") == null) {

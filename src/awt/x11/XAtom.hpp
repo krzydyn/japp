@@ -13,6 +13,7 @@ private:
 	void registerAtom(const XAtom& at);
 
 public:
+	static const long XA_CARDINAL=6;
 	static XAtom get(long atom);
 	static XAtom get(const String& name);
 
@@ -27,6 +28,10 @@ public:
 
 	void setProperty(long window, const String& str);
 	String getProperty(long window);
+
+	void setCard32Property(long window, long value);
+	long getCard32Property(long window);
+
 	void deleteProperty(long window);
 };
 

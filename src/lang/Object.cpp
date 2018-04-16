@@ -25,6 +25,9 @@
 // readelf --debug-dump=decodedline  a.out
 
 extern "C" {
+void __cxa_pure_virtual() {
+	throw Error("Pure virtual method called");
+}
 typedef void (*cxa_throw_type) (void *, struct type_info *, void (*) (void *));
 void __cxa_throw(void* thrown_exception, void* _tinfo, void (*dest)(void*)) {
 	static cxa_throw_type old_handler=null;

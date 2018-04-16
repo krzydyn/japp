@@ -1,6 +1,7 @@
 #include "XAtom.hpp"
 #include "XToolkit.hpp"
 #include "XlibWrapper.hpp"
+#include "XConstants.hpp"
 
 namespace {
 static util::HashMap<long, awt::x11::XAtom> atomToAtom;
@@ -20,7 +21,7 @@ namespace awt { namespace x11 {
 void XAtom::registerAtom(const XAtom& at) {
 	if (at.atom != 0) atomToAtom.put(at.atom, at);
 	if (!at.name.isEmpty()) nameToAtom.put(at.name, at);
-	LOGD("register atom %s %ld", at.name.cstr(), at.atom);
+	LOGD("registered atom %s %ld", at.name.cstr(), at.atom);
 }
 XAtom XAtom::get(long atom) {
 	const XAtom& xatom = lookup(atom);
@@ -68,6 +69,21 @@ String XAtom::getProperty(long window) {
 	XToolkit::awtUnlock();
 	return prop;
 }
+
+void XAtom::setCard32Property(long window, long value) {
+	if (atom == 0) throw IllegalStateException("Atom should be initialized");
+	XToolkit::awtLock();
+	XlibWrapper::XChangeProperty(display,window,atom,XA_CARDINAL,32,XConstants::PropModeReplace,&value,1);
+	XToolkit::awtUnlock();
+}
+long XAtom::getCard32Property(long window) {
+	if (atom == 0) throw IllegalStateException("Atom should be initialized");
+	XToolkit::awtLock();
+	long prop = 0;
+	XToolkit::awtUnlock();
+	return prop;
+}
+
 void XAtom::deleteProperty(long window) {
 	if (atom == 0) throw IllegalStateException("Atom should be initialized");
 	XToolkit::awtLock();

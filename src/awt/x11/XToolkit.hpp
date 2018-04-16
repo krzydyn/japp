@@ -2,6 +2,7 @@
 #define __AWT_X11_XTOOLKIT_HPP
 
 #include <awt/Window.hpp>
+#include <lang/Number.hpp>
 #include <lang/Thread.hpp>
 #include <nio/ByteBuffer.hpp>
 
@@ -57,6 +58,8 @@ public:
 	XAnyEvent get_xany() { return XAnyEvent(pData); }
 };
 
+interface DisplayChangedListener : Interface {
+};
 class X11GraphicsConfig;
 class X11GraphicsDevice : extends awt::GraphicsDevice {
 private:
@@ -64,9 +67,10 @@ private:
 	X11GraphicsConfig *defaultConfig = null;
 public:
 	X11GraphicsDevice(int screennum) : screen(screennum) {}
-	const awt::GraphicsConfiguration& getDefaultConfiguration();
+	awt::GraphicsConfiguration& getDefaultConfiguration();
 	int getScreen() { return screen; }
 	//long getDisplay();
+	void addDisplayChangedListener(DisplayChangedListener* client);
 };
 
 class AwtGraphicsConfigData;

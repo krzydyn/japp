@@ -55,7 +55,7 @@ public:
 	//Image createImage(int width, int height) = 0;
 	//boolean prepareImage(Image img, int w, int h, ImageObserver o) = 0;
 	//int checkImage(Image img, int w, int h, ImageObserver o) = 0;
-	virtual const GraphicsConfiguration& getGraphicsConfiguration() = 0;
+	virtual GraphicsConfiguration& getGraphicsConfiguration() = 0;
 	//virtual boolean handlesWheelScrolling() = 0;
 	//void createBuffers(int numBuffers, BufferCapabilities caps) = 0;
 	//Image getBackBuffer() = 0;
@@ -65,7 +65,7 @@ public:
 	//virtual boolean isReparentSupported() = 0;
 	virtual void layout() = 0;
 
-	virtual boolean updateGraphicsData(const GraphicsConfiguration& gc) = 0;
+	virtual boolean updateGraphicsData(GraphicsConfiguration& gc) = 0;
 };
 interface ButtonPeer : implements ComponentPeer {
 public:

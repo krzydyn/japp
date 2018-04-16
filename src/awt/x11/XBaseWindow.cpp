@@ -399,6 +399,9 @@ void XWindow::initGraphicsConfiguration() {
 	graphicsConfig = (X11GraphicsConfig*) &target->getGraphicsConfiguration();
 	graphicsConfigData = ((X11GraphicsConfig*)graphicsConfig)->getAData();
 }
+void XWindow::initWMProtocols() {
+	//TODO wm_protocols.setAtomListProperty(this, getWMProtocols());
+}
 
 void XWindow::preInit(XCreateWindowParams& params) {
 	LOGN("XWindow::%s", __FUNCTION__);

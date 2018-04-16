@@ -24,7 +24,7 @@ private:
 	boolean valid = false;
 	boolean focusable = true;
 
-	const GraphicsConfiguration* graphicsConfig = null;
+	GraphicsConfiguration* graphicsConfig = null;
 
 	void repaintParentIfNeeded(int oldX, int oldY, int oldWidth, int oldHeight);
 	void notifyNewBounds(boolean resized, boolean moved);
@@ -75,7 +75,7 @@ protected:
 	}
 
 	virtual void invalidateParent();
-	virtual void setGraphicsConfiguration(const GraphicsConfiguration& gc);
+	virtual void setGraphicsConfiguration(GraphicsConfiguration& gc);
 	virtual void setBoundsOp(int op) {
 		if (op == ComponentPeer::RESET_OPERATION) {
 			boundsOp = ComponentPeer::DEFAULT_OPERATION;
@@ -93,7 +93,7 @@ public:
 	static constexpr float LEFT_ALIGNMENT = 0.0f;
 	static constexpr float RIGHT_ALIGNMENT = 1.0f;
 	
-	virtual boolean updateGraphicsData(const GraphicsConfiguration& gc) {
+	virtual boolean updateGraphicsData(GraphicsConfiguration& gc) {
 		if (graphicsConfig == &gc) return false;
 		graphicsConfig = &gc;
 		if (peer != null) return peer->updateGraphicsData(gc);
@@ -114,7 +114,7 @@ public:
 	}
 	virtual Container *getParent() const { return parent; }
 	virtual ComponentPeer* getPeer() { return peer; }
-	virtual const GraphicsConfiguration& getGraphicsConfiguration() {
+	virtual GraphicsConfiguration& getGraphicsConfiguration() {
 		if (graphicsConfig == null) throw NullPointerException("graphicsConfig");
 		return *graphicsConfig;
 	}
@@ -231,7 +231,7 @@ class Container : extends Component {
 private:
 	util::ArrayList<Component*> component;
 public:
-	boolean updateGraphicsData(const GraphicsConfiguration& gc);
+	boolean updateGraphicsData(GraphicsConfiguration& gc);
 	virtual void validateUnconditionally() final {
 	}
 	Dimension getPreferredSize();
@@ -262,9 +262,9 @@ private:
 	boolean locationByPlatform = locationByPlatformProp;
 	int state = 0;
 
-	Window(const GraphicsConfiguration& gc) { init(gc); }
-	const GraphicsConfiguration& initGC(const GraphicsConfiguration& gc);
-	void init(const GraphicsConfiguration& gc);
+	Window(GraphicsConfiguration& gc) { init(gc); }
+	GraphicsConfiguration& initGC(GraphicsConfiguration& gc);
+	void init(GraphicsConfiguration& gc);
 	void ownedInit(Window& owner);
 	void setClientSize(int w, int h) {
 		synchronized (getTreeLock()) {
@@ -274,7 +274,7 @@ private:
 	}
 
 protected:
-	void setGraphicsConfiguration(const GraphicsConfiguration& gc);
+	void setGraphicsConfiguration(GraphicsConfiguration& gc);
 
 public:
 	Window(const std::nullptr_t&) {
@@ -288,7 +288,7 @@ public:
 	Window(Window& owner) : Window(owner == null ? (GraphicsConfiguration&)Object::null_obj : owner.getGraphicsConfiguration())  {
 		ownedInit(owner);
 	}
-	Window(Window& owner, const GraphicsConfiguration& gc) : Window(gc) {
+	Window(Window& owner, GraphicsConfiguration& gc) : Window(gc) {
 		ownedInit(owner);
 	}
 	void setBounds(int x, int y, int width, int height) {

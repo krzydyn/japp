@@ -122,7 +122,7 @@ void Component::setVisible(boolean b) {
 	}
 }
 
-void Component::setGraphicsConfiguration(const GraphicsConfiguration& gc) {
+void Component::setGraphicsConfiguration(GraphicsConfiguration& gc) {
 	synchronized(getTreeLock()) {
 		if (updateGraphicsData(gc)) {
 			removeNotify();
@@ -286,7 +286,7 @@ void Component::addNotify() {
 	}
 }
 
-boolean Container::updateGraphicsData(const GraphicsConfiguration& gc) {
+boolean Container::updateGraphicsData(GraphicsConfiguration& gc) {
 	LOGD(__FUNCTION__);
 	boolean ret = Component::updateGraphicsData(gc);
 	//for (Component comp : component) {
@@ -322,13 +322,13 @@ void Container::addNotify() {
 	}
 }
 
-void Window::setGraphicsConfiguration(const GraphicsConfiguration& gc) {
+void Window::setGraphicsConfiguration(GraphicsConfiguration& gc) {
 	LOGD(__FUNCTION__);
 	Container::setGraphicsConfiguration(gc);
 }
-const GraphicsConfiguration& Window::initGC(const GraphicsConfiguration& gc) {
+GraphicsConfiguration& Window::initGC(GraphicsConfiguration& gc) {
 	LOGD(__FUNCTION__);
-	const GraphicsConfiguration* rgc = &gc;
+	GraphicsConfiguration* rgc = &gc;
 	GraphicsEnvironment::checkHeadless();
 	if (gc == null) {
 		rgc = &GraphicsEnvironment::getLocalGraphicsEnvironment().
@@ -338,11 +338,11 @@ const GraphicsConfiguration& Window::initGC(const GraphicsConfiguration& gc) {
 	return *rgc;
 }
 
-void Window::init(const GraphicsConfiguration& gc) {
+void Window::init(GraphicsConfiguration& gc) {
 	LOGD(__FUNCTION__);
 	GraphicsEnvironment::checkHeadless();
 	visible = false;
-	const GraphicsConfiguration& rgc = initGC(gc);
+	GraphicsConfiguration& rgc = initGC(gc);
 	//setLayout(BorderLayout());
 	Rectangle screenBounds = rgc.getBounds();
 	Insets screenInsets = getToolkit().getScreenInsets(rgc);
