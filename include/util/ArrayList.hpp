@@ -36,6 +36,9 @@ private:
 	}
 
 public:
+	ArrayList(ArrayList<T>&& o) : mVec(o.mVec),mOffs(o.mOffs),mSize(o.mSize),mCapa(o.mCapa) {
+		o.mVec = null; o.mOffs=0; o.mSize=0; o.mCapa=0;
+	}
 	ArrayList(int initCapa=0) {TRACE;
 		mVec=null;mOffs=mSize=0;mCapa=0;
 		if (initCapa) ensureCapa((unsigned)initCapa);

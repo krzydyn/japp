@@ -3,6 +3,7 @@
  
 #include <util/HashMap.hpp>
 
+#include "XAtom.hpp"
 #include "XToolkit.hpp"
 
 namespace awt {
@@ -286,6 +287,7 @@ protected:
 
 	void initGraphicsConfiguration();
 	virtual void initWMProtocols() final;
+	virtual XAtomList getWMProtocols() { return XAtomList(); }
 	void preInit(XCreateWindowParams& params) override;
 	void postInit(XCreateWindowParams& params) override;
 

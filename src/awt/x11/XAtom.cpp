@@ -1,7 +1,8 @@
 #include "XAtom.hpp"
+#include "XBaseWindow.hpp"
+#include "XConstants.hpp"
 #include "XToolkit.hpp"
 #include "XlibWrapper.hpp"
-#include "XConstants.hpp"
 
 namespace {
 static util::HashMap<long, awt::x11::XAtom> atomToAtom;
@@ -22,6 +23,9 @@ void XAtom::registerAtom(const XAtom& at) {
 	if (at.atom != 0) atomToAtom.put(at.atom, at);
 	if (!at.name.isEmpty()) nameToAtom.put(at.name, at);
 	LOGD("registered atom %s %ld", at.name.cstr(), at.atom);
+}
+long XAtom::getAtom(long ptr) {
+	return *(long*)ptr;
 }
 XAtom XAtom::get(long atom) {
 	const XAtom& xatom = lookup(atom);
@@ -91,5 +95,26 @@ void XAtom::deleteProperty(long window) {
 	XToolkit::awtUnlock();
 }
 
+void XAtom::setAtomListProperty(long window, const Array<XAtom>& atoms) {
+}
+void XAtom::setAtomListProperty(long window, const XAtomList& atoms) {
+}
+void XAtom::setAtomListProperty(XBaseWindow* window, const Array<XAtom>& atoms) {
+	setAtomListProperty(window->getWindow(), atoms);
+}
+void XAtom::setAtomListProperty(XBaseWindow* window, const XAtomList& atoms) {
+	setAtomListProperty(window->getWindow(), atoms);
+}
+
+
+void XAtomList::init(long data, int count) {
+	for (int i = 0; i < count; i++) {
+		add(XAtom(XAtom::getAtom(data+count*XAtom::getAtomSize())));
+	}
+}
+void XAtomList::init(const Array<XAtom>& atoms) {
+	for (int i=0; i < atoms.length; ++i)
+		add(atoms[i]);
+}
 
 }}

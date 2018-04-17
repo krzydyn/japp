@@ -565,8 +565,7 @@ public:
 void notifyListeners(XEvent& ev) {
 }
 void dispatchEvent(XEvent& ev) {
-	LOGD("dispatchEvent type=%d", ev.get_type());
-	LOGD("   event name is %s", eventType(ev).cstr());
+	LOGD("dispatchEvent type=%d '%s'", ev.get_type(), eventType(ev).cstr());
 	//XAnyEvent xany = ev.get_xany();
 	if (ev.get_type() == XConstants::MappingNotify) {
 	}
