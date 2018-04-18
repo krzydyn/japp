@@ -42,6 +42,8 @@ public:
 	boolean isSet() {return atom!=0;}
 
 	String getName() const;
+	long getAtom() const { return atom; }
+	void putAtom(long ptr) { atom = XAtom::getAtom(ptr); }
 
 	void setProperty(long window, const String& str);
 	String getProperty(long window);
@@ -51,6 +53,8 @@ public:
 
 	void deleteProperty(long window);
 
+	Array<XAtom> getAtomListProperty(long window);
+	Array<XAtom> getAtomListProperty(XBaseWindow* window);
 	void setAtomListProperty(XBaseWindow* window, const Array<XAtom>& atoms);
 	void setAtomListProperty(XBaseWindow* window, const XAtomList& atoms);
 };

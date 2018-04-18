@@ -571,6 +571,16 @@ void dispatchEvent(XEvent& ev) {
 	}
 	XBaseWindow::dispatchToWindow(ev);
 	notifyListeners(ev);
+
+	//if ev not cleared
+	switch (ev.get_type()) {
+	case XConstants::ClientMessage:
+		//if (ev.xclient.message_type == wm_protocols &&
+		//	ev.xclient.data.l[0] == wm_delete_window)  {
+			Thread::currentThread().interrupt();
+		//}
+		break;
+	}
 }
 void targetCreatedPeer(awt::Component* target, awt::ComponentPeer* peer) {
 	if (target != null && peer != null && !awt::GraphicsEnvironment::isHeadless()) {
@@ -743,8 +753,10 @@ void XToolkit::run(boolean loop) {
 			processException(thr);
 		}
 	}
-	LOGD("AWT loop finished");
-	XlibWrapper::XCloseDisplay(awt_display);
+	if (loop == PRIMARY_LOOP) {
+		LOGD("AWT loop finished");
+		XlibWrapper::XCloseDisplay(awt_display);
+	}
 }
 
 }}

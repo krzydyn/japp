@@ -401,6 +401,11 @@ void XWindow::initGraphicsConfiguration() {
 }
 void XWindow::initWMProtocols() {
 	wm_protocols.setAtomListProperty(this, getWMProtocols());
+
+	//do not close connection to XServer when close button(X) is pressed
+	//send only ClientMessage event
+	long a = wm_delete_window.getAtom();
+	XlibWrapper::XSetWMProtocols(XToolkit::getDisplay(), getContentWindow(), &a, 1);
 }
 
 void XWindow::preInit(XCreateWindowParams& params) {

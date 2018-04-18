@@ -99,6 +99,7 @@ public:
 	static void XDeleteProperty(long display, long window, long atom);
 
 	static void XSetTransientFor(long display, long window, long transient_for_window);
+	static void XSetWMProtocols(long display, long window, long* wmprots, int x);
 	static void XSetWMHints(long display, long window, long wmhints);
 	static void XGetWMHints(long display, long window, long wmhints);
 	static long XAllocWMHints();

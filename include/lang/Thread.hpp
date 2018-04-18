@@ -58,6 +58,7 @@ public:
 
 private:
 	std::thread *thread = null;
+	boolean intr = false;
 	void selfupdate();
 
 #ifdef BACKTRACE
@@ -119,9 +120,9 @@ public:
 	void run() {TRACE;
 		if (target != null) target->run();
 	}
-	virtual void interrupt() {}
-	virtual boolean isInterrupted() const final {return isInterrupted(false);}
-	virtual boolean isInterrupted(boolean ClearInterrupted) const {return false;}
+	virtual void interrupt() {intr=true;}
+	virtual boolean isInterrupted() const final {return const_cast<Thread*>(this)->isInterrupted(false);}
+	virtual boolean isInterrupted(boolean ClearInterrupted);
 	virtual boolean isAlive() const final {return threadStatus != NEW && threadStatus != TERMINATED;}
 	virtual void setPriority(int newPriority);
 	virtual int getPriority() const final {return priority;}

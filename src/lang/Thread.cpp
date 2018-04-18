@@ -123,6 +123,12 @@ void Thread::init() {
 	tid = threads().nextThreadID();
 }
 
+boolean Thread::isInterrupted(boolean ClearInterrupted) {
+	boolean r = intr;
+	if (ClearInterrupted) intr=false;
+	return r;
+}
+
 #ifdef BACKTRACE
 void Thread::tracePush(CallTrace *c) {
 	if (calltrace_size < BACKTRACE_SIZE)

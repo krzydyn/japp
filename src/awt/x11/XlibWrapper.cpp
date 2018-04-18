@@ -235,6 +235,10 @@ void XlibWrapper::XDeleteProperty(long display, long window, long atom) {
 }
 
 //void XlibWrapper::XSetTransientFor(long display, long window, long transient_for_window);
+void XlibWrapper::XSetWMProtocols(long display, long window, long* wmprots, int count) {
+	LOGD("XlibWrapper::%s",__FUNCTION__);
+	::XSetWMProtocols((Display*)display, window, (Atom*)wmprots, count);
+}
 void XlibWrapper::XSetWMHints(long display, long window, long wmhints) {
 }
 //void XlibWrapper::XGetWMHints(long display, long window, long wmhints);
@@ -243,7 +247,7 @@ void XlibWrapper::XSetWMHints(long display, long window, long wmhints) {
 //String XlibWrapper::XGetDefault(long display, const String& program, const String& option);
 long XlibWrapper::getScreenOfWindow(long display, long window) {
 	LOGD("XlibWrapper::%s",__FUNCTION__);
-	return (long)::_XScreenOfWindow((Display*)display, (int)window);
+	return (long)::_XScreenOfWindow((Display*)display, window);
 }
 long XlibWrapper::XScreenNumberOfScreen(long screen) {
 	LOGD("XlibWrapper::%s",__FUNCTION__);
