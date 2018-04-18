@@ -603,6 +603,7 @@ awt::MouseInfoPeer& XToolkit::getMouseInfoPeer() {
 }
 
 void XToolkit::addToWinMap(long window, XBaseWindow* xwin) {
+	LOGN("addToWinMap win=%lX", window);
 	synchronized(winMap()) {
 		winMap().put(Long::valueOf(window), xwin);
 	}
@@ -669,6 +670,8 @@ void XToolkit::init() {
 
 	//setup root window
 	XlibWrapper::XSelectInput(XToolkit::getDisplay(), XToolkit::getDefaultRootWindow(), (long)XConstants::StructureNotifyMask);
+
+	//TODO call somewhere else XBaseWindow::getXAWTRootWindow();
 }
 
 awt::FramePeer* XToolkit::createFrame(awt::Frame* target) {

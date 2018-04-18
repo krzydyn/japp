@@ -15,7 +15,7 @@ XRootWindow *XRootWindow::getInstance() {
 }
 
 long XRootWindow::getXRootWindow() {
-	return getXAWTRootWindow()->getWindow();
+	return XBaseWindow::getXAWTRootWindow()->getWindow();
 }
 
 void XRootWindow::postInit(XCreateWindowParams& params) {
