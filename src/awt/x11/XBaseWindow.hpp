@@ -3,7 +3,6 @@
  
 #include <util/HashMap.hpp>
 
-#include "XAtom.hpp"
 #include "XToolkit.hpp"
 
 namespace awt {
@@ -147,6 +146,7 @@ private:
 public:
 	XCreateWindowParams(const XCreateWindowParams& o) : params(o.params) {}
 	XCreateWindowParams() {}
+	~XCreateWindowParams();
 
 	template<class T, class std::enable_if<std::is_base_of<Object,T>::value,Object>::type* = nullptr>
 	XCreateWindowParams& putIfNull(const String& key, const T& value) {
@@ -160,6 +160,7 @@ public:
 	template<class T, class std::enable_if<std::is_base_of<Object,T>::value,Object>::type* = nullptr>
 	XCreateWindowParams& put(const String& key, const T& value) {
 		if (value != null) {
+			remove(key);
 			params.put(key, new T(value));
 		}
 		return *this;
@@ -168,14 +169,16 @@ public:
 
 	boolean containsKey(const String& key) { return params.containsKey(key); }
 
-	template<class T>
+	template<class T, class std::enable_if<std::is_base_of<Object,T>::value,Object>::type* = nullptr>
 	T& get(const String& key) const {
 		if (!params.containsKey(key)) return (T&)null_obj;
 		Object *o = params.get(key);
 		return (T&)(*o);
 	}
+
 	XCreateWindowParams& remove(const String& key) {
-		params.remove(key);
+		if (params.containsKey(key))
+			delete params.remove(key);
 		return *this;
 	}
 };
@@ -266,54 +269,6 @@ public:
 
 	static void dispatchToWindow(const XEvent& ev);
 	virtual void dispatchEvent(const XEvent& ev);
-};
-
-class XWindow : extends XBaseWindow {
-private:
-	int savedState;
-	boolean reparented;
-	XWindow *parent;
-
-	awt::GraphicsConfiguration *graphicsConfig = null;
-	AwtGraphicsConfigData *graphicsConfigData = null;
-protected:
-	awt::Component *target;
-
-	XWindow() { throw RuntimeException("not supp"); }
-	XWindow(XCreateWindowParams& params) : XBaseWindow(params) {}
-	XWindow(awt::Component* target, long parentWindow, const Rectangle& bounds);
-	XWindow(Object* target) { throw RuntimeException("not supp"); }
-	XWindow(long parentWindow);
-
-	void initGraphicsConfiguration();
-	virtual void initWMProtocols() final;
-	virtual XAtomList getWMProtocols() { return XAtomList(); }
-	void preInit(XCreateWindowParams& params) override;
-	void postInit(XCreateWindowParams& params) override;
-
-	boolean isShowing() { return visible; }
-	boolean isResizable() { return true; }
-	boolean isLocationByPlatform() { return false; }
-
-	void updateSizeHints() { updateSizeHints(x, y, width, height); }
-	void updateSizeHints(int x, int y, int width, int height);
-	void updateSizeHints(int x, int y);
-
-public:
-	static const char* TARGET;
-	static const char* REPARENTED;
-
-	void xSetBackground(const Color& c);
-	virtual GraphicsConfiguration& getGraphicsConfiguration() {
-		if (graphicsConfig == null) initGraphicsConfiguration();
-		if (graphicsConfig == null) throw RuntimeException("Can't get GraphicsConfiguration");
-		return *graphicsConfig;
-	}
-	virtual const AwtGraphicsConfigData& getGraphicsConfigurationData() {
-		if (graphicsConfigData == null) initGraphicsConfiguration();
-		if (graphicsConfigData == null) throw RuntimeException("Can't get GraphicsConfigurationData");
-		return *graphicsConfigData;
-	}
 };
 
 }}

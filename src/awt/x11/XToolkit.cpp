@@ -2,9 +2,9 @@
 #include <util/concurrent/Lock.hpp>
 
 #include "XAtom.hpp"
-#include "XBaseWindow.hpp"
 #include "XConstants.hpp"
 #include "XToolkit.hpp"
+#include "XWindow.hpp"
 #include "XlibWrapper.hpp"
 
 #include <unistd.h>  //pipe
