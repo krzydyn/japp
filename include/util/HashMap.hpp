@@ -31,7 +31,7 @@ public:
 };
 
 template<class K,class V>
-class Map {
+interface Map : Interface {
 public:
 	virtual ~Map() {}
 	virtual int size() const = 0;
