@@ -275,6 +275,9 @@ private:
 
 protected:
 	void setGraphicsConfiguration(GraphicsConfiguration& gc);
+	Window() {
+		init((GraphicsConfiguration&)null_obj);
+	}
 
 public:
 	Window(const std::nullptr_t&) {
@@ -314,7 +317,26 @@ public:
 	virtual boolean isLocationByPlatform() { return locationByPlatform; }
 };
 
-class Frame : extends Window {
+class Frame : extends Window { //,implements MenuContainer {
+private:
+	String      title = "Untitled";
+	boolean undecorated = false;
+
+	void init(const String& title, GraphicsConfiguration& gc);
+
+public:
+	Frame() : Frame("") {}
+	Frame(GraphicsConfiguration& gc) : Frame("", gc) {}
+	Frame(const String& title) { init(title, (GraphicsConfiguration&)null_obj); }
+	Frame(const String& title, GraphicsConfiguration& gc) { init(title, gc); }
+
+	void addNotify();
+
+	String getTitle() const { return title; }
+	void setTitle(String title);
+
+	void setUndecorated(boolean undecorated);
+	boolean isUndecorated() { return undecorated; }
 };
 
 class LightweightFrame : extends Frame {

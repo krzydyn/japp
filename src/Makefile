@@ -24,6 +24,7 @@ SRCS+=$(wildcard $(SOURCE_DIR)/io/*.cpp)
 SRCS+=$(wildcard $(SOURCE_DIR)/net/*.cpp)
 SRCS+=$(wildcard $(SOURCE_DIR)/nio/*.cpp)
 SRCS+=$(wildcard $(SOURCE_DIR)/util/*.cpp)
+SRCS+=$(wildcard $(SOURCE_DIR)/swing/*.cpp)
 
 OBJS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
 
