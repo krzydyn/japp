@@ -1,6 +1,7 @@
 #ifndef __AWT_WINDOW_HPP
 #define __AWT_WINDOW_HPP
 
+#include <awt/AWTEvent.hpp>
 #include <awt/Color.hpp>
 #include <awt/Graphics.hpp>
 #include <awt/MouseInfo.hpp>
@@ -13,9 +14,15 @@ class IllegalComponentStateException : extends IllegalStateException {
 	using IllegalStateException::IllegalStateException;
 };
 
+class Cursor : extends Object {
+};
+
 class AppContext;
 class Container;
 class PopupMenu;
+class ComponentListener;
+class KeyListener;
+class MouseWheelEvent;
 class Component : extends Object {
 private:
 	String  name;
@@ -23,8 +30,15 @@ private:
 	boolean isAddNotifyComplete = false;
 	boolean valid = false;
 	boolean focusable = true;
+	boolean ignoreRepaint = false;
 
 	GraphicsConfiguration* graphicsConfig = null;
+
+	boolean newEventsOnly = false;
+	ComponentListener* componentListener;
+	KeyListener* keyListener;
+
+	long eventMask = AWTEvent::INPUT_METHODS_ENABLED_MASK;
 
 	void repaintParentIfNeeded(int oldX, int oldY, int oldWidth, int oldHeight);
 	void notifyNewBounds(boolean resized, boolean moved);
@@ -47,7 +61,7 @@ protected:
 	Font   *font = null;
 	Font   *peerFont = null;
 	//Cursor     cursor;
-	//Locale     locale;
+	Locale     locale;
 
 	boolean visible = false;
 	boolean enabled = false;
@@ -74,6 +88,8 @@ protected:
 		return Point(absolute.x - p0.x, absolute.y - p0.y);
 	}
 
+	virtual void dispatchEventImpl(AWTEvent& e);
+	virtual void processEvent(AWTEvent& e);
 	virtual void invalidateParent();
 	virtual void setGraphicsConfiguration(GraphicsConfiguration& gc);
 	virtual void setBoundsOp(int op) {
@@ -85,6 +101,12 @@ protected:
 		}
 	}
 	virtual int getBoundsOp() const {return boundsOp;}
+	virtual boolean requestFocus(boolean temporary) {return false;}
+	virtual boolean requestFocusInWindow(boolean temporary) {return false;}
+
+	boolean eventTypeEnabled(int type);
+	boolean areInputMethodsEnabled();
+	boolean dispatchMouseWheelToAncestor(MouseWheelEvent& e);
 
 public:
 	static constexpr float TOP_ALIGNMENT = 0.0f;
@@ -92,7 +114,7 @@ public:
 	static constexpr float BOTTOM_ALIGNMENT = 1.0f;
 	static constexpr float LEFT_ALIGNMENT = 0.0f;
 	static constexpr float RIGHT_ALIGNMENT = 1.0f;
-	
+
 	virtual boolean updateGraphicsData(GraphicsConfiguration& gc) {
 		if (graphicsConfig == &gc) return false;
 		graphicsConfig = &gc;
@@ -195,6 +217,16 @@ public:
 			setBounds(x, y, width, height);
 		}
 	}
+	virtual void setIgnoreRepaint(boolean ignoreRepaint) { this->ignoreRepaint = ignoreRepaint; }
+	virtual boolean getIgnoreRepaint() { return ignoreRepaint; }
+	virtual boolean contains(int x, int y) {
+		return (x >= 0) && (x < width) && (y >= 0) && (y < height);
+	}
+	virtual boolean contains(const Point& p) { return contains(p.x, p.y); }
+	virtual Component* getComponentAt(int x, int y) { return contains(x, y) ? this : null; }
+	virtual Component* getComponentAt(const Point& p) { return getComponentAt(p.x, p.y); }
+	virtual boolean eventEnabled(AWTEvent& e) { return eventTypeEnabled(e.getID()); }
+	virtual void dispatchEvent(AWTEvent& e) final { dispatchEventImpl(e); }
 	virtual Dimension getSize() { return Dimension(width, height); }
 	virtual void setSize(int width, int height) {
 		synchronized(getTreeLock()) {
@@ -210,9 +242,22 @@ public:
 	virtual int getWidth() { return width; }
 	virtual int getHeight() { return height; }
 
+	virtual void update(awt::Graphics& g) { paint(g); }
+
+	virtual void paint(awt::Graphics& g) {}
+	virtual void paintAll(Graphics& g) {}
+	virtual void lightweightPaint(Graphics& g) {paint(g);}
+
 	virtual void repaint() { repaint(0, 0, 0, width, height); }
 	virtual void repaint(int x, int y, int width, int height) { repaint(0, x, y, width, height); }
 	virtual void repaint(long tm, int x, int y, int width, int height);
+
+	virtual void print(awt::Graphics& g) { paint(g); }
+	virtual void printAll(Graphics& g) {}
+	virtual void lightweightPrint(Graphics& g) {}
+
+	virtual boolean requestFocusInWindow() {return false;}
+	virtual void requestFocus() {}
 
 	virtual void addNotify();
 	virtual void removeNotify(){}
@@ -224,7 +269,6 @@ public:
 
 class Button : extends Component {
 };
-
 
 
 class Container : extends Component {
@@ -243,6 +287,8 @@ public:
 			//TODO
 		}
 	}
+
+	virtual void paintComponents(Graphics& g) {}
 };
 
 class Window : extends Container {

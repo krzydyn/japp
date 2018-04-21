@@ -73,6 +73,8 @@ public:
 			return Insets(0, 0, 0, 0);
 		}
 	}
+
+	void notifyAWTEventListeners(AWTEvent& theEvent);
 };
 
 } //namespace

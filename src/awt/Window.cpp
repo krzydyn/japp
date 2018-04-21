@@ -1,8 +1,16 @@
+#include <awt/AWTEvent.hpp>
+#include <awt/InputEvent.hpp>
+#include <awt/KeyboardFocusManager.hpp>
 #include <awt/Window.hpp>
 #include <lang/System.hpp>
 
 namespace {
 ArrayList<awt::Window*> allWindows;
+
+class SunDropTargetEvent : extends awt::MouseEvent {
+public:
+	void dispatch(){}
+};
 }
 
 namespace awt {
@@ -22,6 +30,107 @@ void Component::reshapeNativePeer(int x, int y, int width, int height, int op) {
 	peer->setBounds(nativeX, nativeY, width, height, op);
 }
 
+boolean Component::eventTypeEnabled(int type) {
+	switch(type) {
+		case ComponentEvent::COMPONENT_MOVED:
+		case ComponentEvent::COMPONENT_RESIZED:
+		case ComponentEvent::COMPONENT_SHOWN:
+		case ComponentEvent::COMPONENT_HIDDEN:
+			if ((eventMask & AWTEvent::COMPONENT_EVENT_MASK) != 0 || componentListener != null) {
+				return true;
+			}
+			break;
+	}
+	//if (type > AWTEvent::RESERVED_ID_MAX) return true;
+	return false;
+}
+boolean Component::areInputMethodsEnabled() {
+	return ((eventMask & AWTEvent::INPUT_METHODS_ENABLED_MASK) != 0) &&
+		((eventMask & AWTEvent::KEY_EVENT_MASK) != 0 || keyListener != null);
+}
+boolean Component::dispatchMouseWheelToAncestor(MouseWheelEvent& e) {
+	synchronized (getTreeLock()) {
+		Container* anc = getParent();
+		if (anc != null && anc->eventEnabled(e)) {
+			//anc.dispatchEventToSelf(newMWE);
+			return true;
+		}
+	}
+	return false;
+}
+void Component::processEvent(AWTEvent& e) {
+}
+void Component::dispatchEventImpl(AWTEvent& e) {
+	LOGD("Component::%s(%s)", __FUNCTION__, e.toString().cstr());
+	int id = e.getID();
+
+	//0. Set timestamp and modifiers of current event.
+	//EventQueue.setCurrentEventAndMostRecentTime(e);
+
+	//1. Pre-dispatchers. Do any necessary retargeting/reordering
+	if (instanceof<SunDropTargetEvent>(&e)) {
+		((SunDropTargetEvent&)e).dispatch();
+		return;
+	}
+
+	if (!e.focusManagerIsDispatching) {
+		if (e.isPosted) {
+			e = KeyboardFocusManager::retargetFocusEvent(e);
+			e.isPosted = true;
+		}
+	}
+
+	if (KeyboardFocusManager::getCurrentKeyboardFocusManager()->dispatchEvent(e)) return;
+
+	if (id == MouseEvent::MOUSE_WHEEL && (!eventTypeEnabled(id)) &&
+			(peer != null && !peer->handlesWheelScrolling()) &&
+			(dispatchMouseWheelToAncestor((MouseWheelEvent&)e)))
+		return;
+
+	//2. Allow the Toolkit to pass this to AWTEventListeners.
+	Toolkit& toolkit = Toolkit::getDefaultToolkit();
+	toolkit.notifyAWTEventListeners(e);
+
+	//3. If no one has consumed a key event, pass to KeyboardFocusManager
+	if (!e.isConsumed()) {
+		if (instanceof<KeyEvent>(&e)) {
+			KeyboardFocusManager::getCurrentKeyboardFocusManager()->processKeyEvent(this, (KeyEvent&)e);
+			if (e.isConsumed()) return;
+		}
+	}
+
+	//4. Allow input methods to process the event
+	if (areInputMethodsEnabled()) {
+		//TODO
+	}
+
+	//5. Pre-process any special events before delivery
+	switch(id) {
+		case KeyEvent::KEY_PRESSED:
+		case KeyEvent::KEY_RELEASED:
+			break;
+
+		case WindowEvent::WINDOW_CLOSING:
+			break;
+
+		default: break;
+	}
+
+	//6. Deliver event for normal processing
+	if (newEventsOnly) {
+		if (eventEnabled(e)) processEvent(e);
+	}
+
+	//8. Special handling for dialogs
+	if (id == WindowEvent::WINDOW_CLOSING && !e.isConsumed()) {
+	}
+
+	//9. Allow the peer to process the event.
+	if (!(instanceof<KeyEvent>(&e))) {
+	}
+
+
+}
 void Component::applyCurrentShape() {
 }
 void Component::applyCurrentShapeBelowMe() {
@@ -429,6 +538,15 @@ void Window::removeNotify() {
 		}
 		Container::removeNotify();
 	}
+}
+
+void Frame::addNotify() {
+}
+void Frame::init(const String& title, GraphicsConfiguration& gc) {
+}
+void Frame::setTitle(String title) {
+}
+void Frame::setUndecorated(boolean undecorated) {
 }
 
 } //namespace

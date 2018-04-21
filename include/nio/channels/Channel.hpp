@@ -223,7 +223,7 @@ private:
 		}
 		return false;
 	}
-	
+
 protected:
 	AbstractSelectableChannel(Shared<SelectorProvider> provider) : mProvider(provider) {}
 	virtual void implConfigureBlocking(boolean block) = 0;

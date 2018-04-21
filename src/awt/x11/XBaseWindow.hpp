@@ -251,6 +251,7 @@ public:
 	static long getScreenOfWindow(long window);
 	static void ungrabInput();
 	static XRootWindow *getXAWTRootWindow();
+	static void dispatchToWindow(const XEvent& ev);
 
 	virtual void init() final;
 
@@ -267,7 +268,6 @@ public:
 	}
 	virtual void xSetBounds(int x, int y, int width, int height);
 
-	static void dispatchToWindow(const XEvent& ev);
 	virtual void dispatchEvent(const XEvent& ev);
 };
 

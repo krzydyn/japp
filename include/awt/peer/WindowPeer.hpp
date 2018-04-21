@@ -56,7 +56,7 @@ public:
 	//boolean prepareImage(Image img, int w, int h, ImageObserver o) = 0;
 	//int checkImage(Image img, int w, int h, ImageObserver o) = 0;
 	virtual GraphicsConfiguration& getGraphicsConfiguration() = 0;
-	//virtual boolean handlesWheelScrolling() = 0;
+	virtual boolean handlesWheelScrolling() = 0;
 	//void createBuffers(int numBuffers, BufferCapabilities caps) = 0;
 	//Image getBackBuffer() = 0;
 	//void flip(int x1, int y1, int x2, int y2, BufferCapabilities.FlipContents flipAction) = 0;

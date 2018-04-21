@@ -109,10 +109,10 @@ void XlibWrapper::XSelectInput(long display, long window, long event_mask) {
 }
 void XlibWrapper::XNextEvent(long display, long event_ptr) {
 	::XNextEvent((Display*)display, (XEvent*)event_ptr);
-	int s = sizeof(XEvent);
-	char buf[2*s+1];
-	for (int i=0; i < s; ++i) sprintf(buf+2*i, "%02X", ((char*)event_ptr)[i]);
-	LOGD("XlibWrapper::%s ev.type=%d, evd[%d]=%s",__FUNCTION__,((XEvent*)event_ptr)->type, s, buf);
+	//int s = sizeof(XEvent);
+	//char buf[2*s+1];
+	//for (int i=0; i < s; ++i) sprintf(buf+2*i, "%02X", ((char*)event_ptr)[i]);
+	//LOGD("XlibWrapper::%s ev.type=%d, evd[%d]=%s",__FUNCTION__,((XEvent*)event_ptr)->type, s, buf);
 }
 void XlibWrapper::XPeekEvent(long display, long event_ptr) {
 	::XPeekEvent((Display*)display, (XEvent*)event_ptr);

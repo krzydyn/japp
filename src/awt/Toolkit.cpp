@@ -113,4 +113,7 @@ LightweightPeer* Toolkit::createComponent(Component* target) {
 	return lightweightMarker;
 }
 
+void Toolkit::notifyAWTEventListeners(AWTEvent& theEvent) {
+}
+
 }

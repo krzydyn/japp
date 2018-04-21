@@ -98,7 +98,7 @@ public:
 	String operator+(const Object& s) const {TRACE;
 		return value+s.toString().intern();
 	}
-	template<class T>
+	template<class T, class std::enable_if<!std::is_base_of<Object,T>::value,Object>::type* = nullptr>
 	String operator+(const T& v) const {TRACE;
 		return value+std::to_string(v);
 	}

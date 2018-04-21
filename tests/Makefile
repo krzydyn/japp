@@ -21,6 +21,11 @@ CPPFLAGS:=$(DEBUG) -I$(INC_DIR) -fPIC -std=c++11
 CPPFLAGS+=-Wall -Wconversion -Werror
 #CPPFLAGS+=-O2
 
+ifeq ($(HOST_OS),Darwin)
+LDFLAGS+=-L/usr/X11/lib
+endif
+
+
 ifeq ($(HOST_OS),Linux)
 LDFLAGS:=-rdynamic
 endif

@@ -548,6 +548,9 @@ public:
 		XPanelPeer::setBounds(x, y, width, height, op);
 		setSizeHints(XUtilConstants::PPosition | XUtilConstants::PSize, x, y, width, height);
 	}
+	boolean handlesWheelScrolling() override {
+		return false;
+	}
 };
 
 class XDecoratedPeer : extends XWindowPeer {
