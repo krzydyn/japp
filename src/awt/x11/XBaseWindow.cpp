@@ -280,8 +280,8 @@ void XBaseWindow::create(XCreateWindowParams& params) {
 				depth.intValue(), // depth
 				visual_class.intValue(), // class
 				visual.longValue(), // visual
-				value_mask,  // value mask
-				xattr.getPData()); // attributes
+				value_mask,         // value mask
+				xattr.getPData());  // attributes
 	if (window == 0) throw IllegalStateException("Couldn't create window because of wrong parameters. Run with NOISY_AWT to see details");
 
 	XToolkit::addToWinMap(window, this);

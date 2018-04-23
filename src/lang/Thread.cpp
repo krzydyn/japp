@@ -230,13 +230,14 @@ void Thread::start() {
 	}
 	if (group) group->add(this);
 	pendingNameChange = true;
+	LOGN("Starting new thread %s", getName().cstr());
 	this->thread = new std::thread([&] {
 		std::thread::id thrid = std::this_thread::get_id();
 		threads().addThread(thrid, this);
 		try {
 			do { Thread::yield(); } while (threadStatus == NEW);
-
 			if (threadStatus == RUNNABLE) {
+				LOGN("thread started");
 				setPriority(priority);
 				run();
 			}

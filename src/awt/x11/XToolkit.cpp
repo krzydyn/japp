@@ -705,9 +705,6 @@ boolean XToolkit::getSunAwtDisableGrab() {
 }
 
 void XToolkit::run() {
-	//TODO make it better
-	Thread::sleep(2); // time to initialize static vars in main thread
-
 	awt_toolkit_init();
 	run(PRIMARY_LOOP);
 }

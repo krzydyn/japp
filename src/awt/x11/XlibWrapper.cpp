@@ -55,12 +55,13 @@ long XlibWrapper::XWhitePixel(long display, long screen) {
 }
 
 long XlibWrapper::XCreateWindow(long display, long parent, int x,int  y, int width, int height, int border_width, int depth, long wclass, long visual, long valuemask, long attributes) {
-	wclass=0;
-	int s = 112;
-	char buf[2*s+1];
-	for (int i=0; i < s; ++i) sprintf(buf+2*i, "%02X", ((char*)attributes)[i]);
+	XSetWindowAttributes* a = (XSetWindowAttributes*)attributes;
+	//int s = 112;
+	//char buf[2*s+1];
+	//for (int i=0; i < s; ++i) sprintf(buf+2*i, "%02X", ((char*)attributes)[i]);
 	long r = ::XCreateWindow((Display *)display, parent, x, y, width, height, border_width, depth, (int)wclass, (Visual*)visual, valuemask, (XSetWindowAttributes*)attributes);
-	LOGD("XlibWrapper::%s(%lX,%ld,bounds=(%d,%d,%d,%d),depth=%d,wclass=%ld,vis=%ld,mask=%lX,attrs=%s) = %lX", __FUNCTION__, display, parent, x, y, width, height, depth, wclass, visual, valuemask, buf, r);
+	//LOGD("XlibWrapper::%s(%lX,%ld,bounds=(%d,%d,%d,%d),depth=%d,wclass=%ld,vis=%ld,mask=%lX,attrs=%s) = %lX", __FUNCTION__, display, parent, x, y, width, height, depth, wclass, visual, valuemask, buf, r);
+	LOGD("XlibWrapper::%s(%lX,%ld,bounds=(%d,%d,%d,%d),depth=%d,wclass=%ld,vis=%ld,mask=%lX,attrs=(wg=%d,em=%lX)) = %lX", __FUNCTION__, display, parent, x, y, width, height, depth, wclass, visual, valuemask, a->win_gravity, a->event_mask, r);
 	return r;
 }
 void XlibWrapper::XDestroyWindow(long display, long window) {

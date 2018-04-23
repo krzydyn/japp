@@ -9,6 +9,12 @@ INC_DIR?=../include
 DEBUG?=-g2
 #SOFLAGS:=-Wl,-soname,jre.so.1
 
+ifeq ($(OS),Windows_NT)
+    HOST_OS:="WinNT"
+else
+    HOST_OS:=$(shell uname -s)
+endif
+
 CC:=g++
 CPPFLAGS:=$(DEBUG) -I$(INC_DIR) -fPIC -std=c++11
 CPPFLAGS+=-Wall -Wconversion -Werror
@@ -23,7 +29,20 @@ SRCS+=$(wildcard $(SOURCE_DIR)/net/*.cpp)
 SRCS+=$(wildcard $(SOURCE_DIR)/nio/*.cpp)
 SRCS+=$(wildcard $(SOURCE_DIR)/util/*.cpp)
 SRCS+=$(wildcard $(SOURCE_DIR)/awt/*.cpp)
+ifeq ($(HOST_OS),WinNT)
+SRCS+=$(wildcard $(SOURCE_DIR)/awt/win/*.cpp)
+endif
+ifeq ($(HOST_OS),Linux)
 SRCS+=$(wildcard $(SOURCE_DIR)/awt/x11/*.cpp)
+HAS_GRAPHICS=1
+endif
+ifeq ($(HOST_OS),Darwin)
+SRCS+=$(wildcard $(SOURCE_DIR)/awt/x11/*.cpp)
+HAS_GRAPHICS=1
+endif
+ifndef HAS_GRAPHICS
+$(warning no graphics supported for your os)
+endif
 SRCS+=$(wildcard $(SOURCE_DIR)/swing/*.cpp)
 
 OBJS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))

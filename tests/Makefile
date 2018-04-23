@@ -12,8 +12,13 @@ DEBUG?=-g2
 STATIC=
 
 BUILD_DIR:=$(BUILD_DIR)/bin
+ifeq ($(OS),Windows_NT)
+    HOST_OS:="WinNT"
+    $(error unsuported host system)
+else
+    HOST_OS:=$(shell uname -s)
+endif
 
-HOST_OS:=$(shell uname -s)
 GCC_VERSION:=$(shell gcc --version | awk '/^gcc/ {print $$4}')
 
 CC:=g++
