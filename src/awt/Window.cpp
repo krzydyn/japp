@@ -201,6 +201,7 @@ void Component::setVisible(boolean b) {
 			visible = true;
 			//mixOnShowing();
 			if (peer != null) {
+				LOGD("peer is %p", peer);
 				peer->setVisible(true);
 				if (instanceof<LightweightPeer>(peer)) repaint();
 				// updateCursorImmediately();
@@ -353,7 +354,7 @@ void Component::setBounds(int x, int y, int width, int height) {
 }
 
 void Component::addNotify() {
-	LOGD(__FUNCTION__);
+	LOGD("Component::%s", __FUNCTION__);
 	synchronized (getTreeLock()) {
 		ComponentPeer *peer = this->peer;
 		if (peer == null || instanceof<LightweightPeer>(peer)) {
@@ -541,12 +542,26 @@ void Window::removeNotify() {
 }
 
 void Frame::addNotify() {
+	synchronized (getTreeLock()) {
+		if (peer == null) peer = getToolkit().createFrame(this);
+		//FramePeer* p = (FramePeer*)peer;
+		Window::addNotify();
+	}
 }
 void Frame::init(const String& title, GraphicsConfiguration& gc) {
+	this->title = title;
 }
-void Frame::setTitle(String title) {
+void Frame::setTitle(const String& title) {
+	synchronized(this) {
+		this->title = title;
+		FramePeer* peer = (FramePeer*)((void*)this->peer);
+		peer->setTitle(title);
+	}
 }
 void Frame::setUndecorated(boolean undecorated) {
+	synchronized (getTreeLock()) {
+		if (isDisplayable()) throw IllegalComponentStateException("The frame is displayable.");
+	}
 }
 
 } //namespace

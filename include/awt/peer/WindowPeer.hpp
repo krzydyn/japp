@@ -94,11 +94,11 @@ public:
 };
 interface FramePeer : implements WindowPeer {
 public:
-	virtual void setTitle(String title) = 0;
+	virtual void setTitle(const String& title) = 0;
 };
 interface DialogPeer : implements WindowPeer {
 public:
-	virtual void setTitle(String title) = 0;
+	virtual void setTitle(const String& title) = 0;
 };
 
 } // namespace

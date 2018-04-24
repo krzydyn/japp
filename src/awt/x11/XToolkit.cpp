@@ -374,8 +374,8 @@ protected:
 		if (target->isVisible()) setVisible(true);
 	}
 public:
-	void setVisible(boolean b) {
-		LOGD(__FUNCTION__);
+	void setVisible(boolean b) override {
+		LOGN("XComponentPeer::%s",__FUNCTION__);
 		xSetVisible(b);
 	}
 	void setEnabled(boolean e) {}
@@ -561,7 +561,7 @@ class XFramePeer : implements XWindowPeer, implements awt::FramePeer {
 public:
 	XFramePeer(awt::Frame *target) : XWindowPeer(target) {}
 	//XFramePeer(XCreateWindowParams params) : XWindowPeer(params) {}
-	void setTitle(String title) {}
+	void setTitle(const String& title) {}
 };
 
 void notifyListeners(XEvent& ev) {
@@ -676,12 +676,6 @@ void XToolkit::init() {
 	//TODO call somewhere else XBaseWindow::getXAWTRootWindow();
 }
 
-awt::FramePeer* XToolkit::createFrame(awt::Frame* target) {
-	LOGD("XToolkit::%s", __FUNCTION__);
-	awt::FramePeer* peer = new XFramePeer(target);
-	targetCreatedPeer(target, peer);
-	return peer;
-}
 awt::LightweightPeer* XToolkit::createComponent(awt::Component* target) {
 	LOGD("XToolkit::%s", __FUNCTION__);
 	return null;
@@ -691,6 +685,13 @@ awt::WindowPeer* XToolkit::createWindow(awt::Window* target) {
 	XWindowPeer* peer = new XWindowPeer(target);
 	LOGD("XToolkit::%s created peer %s", __FUNCTION__, peer->getClass().getName().cstr());
 	peer->init();
+	targetCreatedPeer(target, peer);
+	return peer;
+}
+awt::FramePeer* XToolkit::createFrame(awt::Frame* target) {
+	LOGD("XToolkit::%s", __FUNCTION__);
+	XFramePeer* peer = new XFramePeer(target);
+	LOGD("XToolkit::%s created peer %s", __FUNCTION__, peer->getClass().getName().cstr());
 	targetCreatedPeer(target, peer);
 	return peer;
 }

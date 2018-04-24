@@ -353,7 +353,7 @@ public:
 
 	void setVisible(boolean b);
 	void pack();
-	void addNotify();
+	void addNotify() override;
 	void removeNotify();
 	void updateZOrder() {}
 
@@ -376,10 +376,10 @@ public:
 	Frame(const String& title) { init(title, (GraphicsConfiguration&)null_obj); }
 	Frame(const String& title, GraphicsConfiguration& gc) { init(title, gc); }
 
-	void addNotify();
+	void addNotify() override;
 
 	String getTitle() const { return title; }
-	void setTitle(String title);
+	void setTitle(const String& title);
 
 	void setUndecorated(boolean undecorated);
 	boolean isUndecorated() { return undecorated; }

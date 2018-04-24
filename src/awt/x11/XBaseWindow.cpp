@@ -288,7 +288,7 @@ void XBaseWindow::create(XCreateWindowParams& params) {
 }
 
 void XBaseWindow::xSetVisible(boolean visible) {
-	LOGD(__FUNCTION__);
+	LOGD("XBaseWindow::%s",__FUNCTION__);
 	XToolkit::awtLock();
 	Finalize(XToolkit::awtUnlock(););
 	this->visible = visible;
