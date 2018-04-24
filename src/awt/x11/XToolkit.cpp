@@ -211,7 +211,6 @@ void performPoll(long nextTaskTime) {
 	int timeout = get_poll_timeout(nextTaskTime);
 	if (!pollFdsInited) {
 		pollFds[0].fd = awt::x11::XlibWrapper::XConnectionNumber(awt_display);
-		LOGD("Connection number = %d", pollFds[0].fd);
 		pollFds[0].events = POLLIN;
 		pollFds[0].revents = 0;
 		pollFds[1].fd = AWT_READPIPE;
@@ -225,7 +224,7 @@ void performPoll(long nextTaskTime) {
 	}
 	if (timeout == 0) Thread::yield();
 
-	int result = poll(pollFds, 2, timeout);
+	int result = ::poll(pollFds, 2, timeout);
 	if (result == 0) {
 		LOGD("poll timeout");
 		return ;

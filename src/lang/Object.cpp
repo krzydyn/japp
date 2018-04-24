@@ -56,10 +56,10 @@ void __cxa_throw(void* thrown_exception, void* _tinfo, void (*dest)(void*)) {
 }
 
 namespace {
-//classmap lazy initialization
 ArrayList<Class*>& classmap() {
-	static ArrayList<Class*> a;
-	return a;
+	static ArrayList<Class*> *a = null;
+	if (!a) a = new ArrayList<Class*>(5);
+	return *a;
 }
 
 boolean initialize();
