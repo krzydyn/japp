@@ -454,6 +454,7 @@ private:
 
 	// src/solaris/classes/sun/awt/X11/XWindowPeer.java
 	void promoteDefaultPosition() {
+		if (target == null) throw NullPointerException("target");
 		boolean locationByPlatform = ((Window*)target)->isLocationByPlatform();
 		if (locationByPlatform) {
 			XToolkit::awtLock();
@@ -584,7 +585,8 @@ void dispatchEvent(XEvent& ev) {
 		break;
 	}
 }
-void targetCreatedPeer(awt::Component* target, awt::ComponentPeer* peer) {
+void targetCreatedPeer(awt::Component* target, XComponentPeer* peer) {
+	peer->init();
 	if (target != null && peer != null && !awt::GraphicsEnvironment::isHeadless()) {
 		//AWTAutoShutdown::getInstance().registerPeer(target, peer);
 	}
@@ -684,7 +686,6 @@ awt::WindowPeer* XToolkit::createWindow(awt::Window* target) {
 	LOGD("XToolkit::%s", __FUNCTION__);
 	XWindowPeer* peer = new XWindowPeer(target);
 	LOGD("XToolkit::%s created peer %s", __FUNCTION__, peer->getClass().getName().cstr());
-	peer->init();
 	targetCreatedPeer(target, peer);
 	return peer;
 }

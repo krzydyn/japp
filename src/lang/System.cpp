@@ -46,18 +46,18 @@ void Logger::format(const char *fn, unsigned ln, int level, const char *fmt, va_
 	struct tm stm;
 	gmtime_r(&t, &stm);
 	String thn = Thread::currentThread().getName();
-	synchronized(*this) {
+	synchronized(System.err) {
 	if (release) {
 		strftime (buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", localtime_r(&t, &stm));
-		System.out.printf("%s.%03llu %s[%c] %s: ", buf, r, levelColor[level], levelName[level], thn.cstr());
+		System.err.printf("%s.%03llu %s[%c] %s: ", buf, r, levelColor[level], levelName[level], thn.cstr());
 	}
 	else {
 		strftime (buf, sizeof(buf), "%H:%M:%S", localtime_r(&t, &stm));
-		System.out.printf("%s.%03llu %s[%s] %s %s(%u): ", buf, r, levelColor[level], levelName[level], thn.cstr(), fn, ln);
+		System.err.printf("%s.%03llu %s[%s] %s %s(%u): ", buf, r, levelColor[level], levelName[level], thn.cstr(), fn, ln);
 	}
-	//System.out.printf("%s.%03llu [%c]: ", buf, r, levelName[level]);
-	System.out.print(String::format(fmt, args));
-	System.out.println(SGR_RESET);
+	//System.err.printf("%s.%03llu [%c]: ", buf, r, levelName[level]);
+	System.err.print(String::format(fmt, args));
+	System.err.println(SGR_RESET);
 	}
 }
 
