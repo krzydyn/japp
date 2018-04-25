@@ -254,6 +254,7 @@ void Thread::start() {
 		threads().removeThread(thrid);
 	});
 	threadStatus = RUNNABLE;
+	Thread::yield();
 	if (daemon) thread->detach();
 }
 void Thread::join(long millis) {TRACE;

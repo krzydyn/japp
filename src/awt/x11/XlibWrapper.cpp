@@ -169,11 +169,7 @@ void XlibWrapper::XSetWindowBackground(long display, long window, long backgroun
 	::XSetWindowBackground((Display*)display, window, background_pixel);
 }
 int XlibWrapper::XEventsQueued(long display, int mode) {
-	int r = ::XEventsQueued((Display*)display, mode);
-	if (r != 0) {
-		LOGD("XlibWrapper::%s(%lX,%X) = %d",__FUNCTION__,display,mode,r);
-	}
-	return r;
+	return ::XEventsQueued((Display*)display, mode);
 }
 
 //int XlibWrapper::XInternAtoms(long display, const Array<String>& names, boolean only_if_exists, long atoms);

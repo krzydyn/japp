@@ -225,21 +225,17 @@ void performPoll(long nextTaskTime) {
 	if (timeout == 0) Thread::yield();
 
 	int result = ::poll(pollFds, 2, timeout);
-	if (result == 0) {
-		LOGD("poll timeout");
-		return ;
-	}
+	if (result == 0) return ;
+
 	if (pollFds[1].revents) {
-		LOGD("Woke up");
+		LOGD("Woke up by internal pipe");
 		char read_buf[10];
 		ssize_t count;
 		do {
 			count = read(AWT_READPIPE, read_buf, sizeof(read_buf));
 		} while (count == sizeof(read_buf));
 	}
-	if (pollFds[0].revents) {
-		LOGD("Events in X pipe");
-	}
+	//if (pollFds[0].revents) { LOGD("Events in X pipe"); }
 }
 void waitForEvents(long nextTaskTime) {
 	performPoll(nextTaskTime);
@@ -568,7 +564,9 @@ public:
 void notifyListeners(XEvent& ev) {
 }
 void dispatchEvent(XEvent& ev) {
-	LOGD("dispatchEvent type=%d '%s'", ev.get_type(), eventType(ev).cstr());
+	if (ev.get_type() != XConstants::MotionNotify) {
+		LOGD("dispatchEvent type=%d '%s'", ev.get_type(), eventType(ev).cstr());
+	}
 	//XAnyEvent xany = ev.get_xany();
 	if (ev.get_type() == XConstants::MappingNotify) {
 	}
