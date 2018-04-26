@@ -5,6 +5,8 @@
 
 namespace {
 
+static long enabledOnToolkitMask = 0;
+
 class HeadlessGraphicsEnvironment : extends awt::GraphicsEnvironment {
 public:
 	Array<awt::GraphicsDevice*>& getScreenDevices() {throw awt::HeadlessException();}
@@ -107,6 +109,10 @@ Toolkit& Toolkit::getDefaultToolkit() {
 	}
 	return *toolkit;
 }
+boolean Toolkit::enabledOnToolkit(long eventMask) {
+	return (enabledOnToolkitMask & eventMask) != 0;
+}
+
 
 LightweightPeer* Toolkit::createComponent(Component* target) {
 	if (lightweightMarker == null) lightweightMarker = new NullComponentPeer();

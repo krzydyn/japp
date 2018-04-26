@@ -59,7 +59,17 @@ public:
 	static const long ADJUSTMENT_EVENT_MASK = 0x100;
 	static const long ITEM_EVENT_MASK = 0x200;
 	static const long TEXT_EVENT_MASK = 0x400;
+	static const long INPUT_METHOD_EVENT_MASK = 0x800;
 	static const long INPUT_METHODS_ENABLED_MASK = 0x1000;
+	static const long PAINT_EVENT_MASK = 0x2000;
+	static const long INVOCATION_EVENT_MASK = 0x4000;
+	static const long HIERARCHY_EVENT_MASK = 0x8000;
+	static const long HIERARCHY_BOUNDS_EVENT_MASK = 0x10000;
+	static const long MOUSE_WHEEL_EVENT_MASK = 0x20000;
+	static const long WINDOW_STATE_EVENT_MASK = 0x40000;
+	static const long WINDOW_FOCUS_EVENT_MASK = 0x80000;
+
+	static const int RESERVED_ID_MAX = 1999;
 
 	boolean focusManagerIsDispatching = false;
 	boolean isPosted;
@@ -124,6 +134,30 @@ public:
 	Component* getComponent();
 };
 
+class Container;
+class HierarchyEvent : extends AWTEvent {
+private:
+	Component* changed;
+	Container* changedParent;
+	long      changeFlags = 0;
+
+public:
+	static const int HIERARCHY_FIRST = 1400;
+	static const int HIERARCHY_CHANGED = HIERARCHY_FIRST;
+	static const int ANCESTOR_MOVED = 1 + HIERARCHY_FIRST;
+	static const int ANCESTOR_RESIZED = 2 + HIERARCHY_FIRST;
+	static const int HIERARCHY_LAST = ANCESTOR_RESIZED;
+
+	static const int PARENT_CHANGED = 0x1;
+	static const int DISPLAYABILITY_CHANGED = 0x2;
+	static const int SHOWING_CHANGED = 0x4;
+
+	HierarchyEvent(Component* source, int id, Component* changed, Container* changedParent) : AWTEvent((Object*)source,id),
+		changed(changed), changedParent(changedParent) {}
+	HierarchyEvent(Component* source, int id, Component* changed, Container* changedParent, long changeFlags) :
+		AWTEvent((Object*)source,id),
+		changed(changed), changedParent(changedParent), changeFlags(changeFlags) {}
+};
 
 interface EventListener : Interface {
 };

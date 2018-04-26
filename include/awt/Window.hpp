@@ -20,9 +20,11 @@ class Cursor : extends Object {
 class AppContext;
 class Container;
 class PopupMenu;
+class Region;
 class ComponentListener;
 class KeyListener;
 class MouseWheelEvent;
+class HierarchyListener;
 class Component : extends Object {
 private:
 	String  name;
@@ -33,6 +35,8 @@ private:
 	boolean ignoreRepaint = false;
 
 	GraphicsConfiguration* graphicsConfig = null;
+	Region* compoundShape = null;
+	HierarchyListener* hierarchyListener = null;
 
 	boolean newEventsOnly = false;
 	ComponentListener* componentListener;
@@ -43,10 +47,16 @@ private:
 	void repaintParentIfNeeded(int oldX, int oldY, int oldWidth, int oldHeight);
 	void notifyNewBounds(boolean resized, boolean moved);
 	void reshapeNativePeer(int x, int y, int width, int height, int op);
-	void mixOnShowing();
+
 	void applyCurrentShape();
 	void applyCurrentShapeBelowMe();
 	void subtractAndApplyShapeBelowMe();
+
+	void mixOnShowing();
+	void mixOnHiding(boolean isLightweight);
+	void mixOnReshaping();
+	void mixOnZOrderChanging(int oldZorder, int newZorder);
+	void mixOnValidating() {}
 	boolean isMixingNeeded() { return false; }
 
 protected:
@@ -80,6 +90,7 @@ protected:
 	Component() : x(0),y(0),width(0),height(0) {
 		//appContext = AppContext.getAppContext();
 	}
+	~Component();
 
 	virtual String constructComponentName() const {return "";}
 
@@ -104,9 +115,12 @@ protected:
 	virtual boolean requestFocus(boolean temporary) {return false;}
 	virtual boolean requestFocusInWindow(boolean temporary) {return false;}
 
-	boolean eventTypeEnabled(int type);
-	boolean areInputMethodsEnabled();
-	boolean dispatchMouseWheelToAncestor(MouseWheelEvent& e);
+	virtual boolean eventTypeEnabled(int type);
+	virtual boolean areInputMethodsEnabled();
+	virtual boolean dispatchMouseWheelToAncestor(MouseWheelEvent& e);
+
+	virtual boolean transferFocus(boolean clearOnFailure);
+	virtual boolean isRecursivelyVisible();
 
 public:
 	static constexpr float TOP_ALIGNMENT = 0.0f;
@@ -114,6 +128,8 @@ public:
 	static constexpr float BOTTOM_ALIGNMENT = 1.0f;
 	static constexpr float LEFT_ALIGNMENT = 0.0f;
 	static constexpr float RIGHT_ALIGNMENT = 1.0f;
+
+	static Object& getLOCK() { return LOCK; }
 
 	virtual boolean updateGraphicsData(GraphicsConfiguration& gc) {
 		if (graphicsConfig == &gc) return false;
@@ -260,11 +276,16 @@ public:
 	virtual void requestFocus() {}
 
 	virtual void addNotify();
-	virtual void removeNotify(){}
+	virtual void removeNotify();
 	virtual void updateZOrder() {
 		//TODO
 		//peer.setZOrder(getHWPeerAboveMe());
 	}
+
+	virtual boolean hasFocus();
+	virtual boolean isFocusOwner() { return hasFocus(); }
+	virtual void nextFocus() {transferFocus(false);}
+	virtual void transferFocus() { nextFocus(); }
 };
 
 class Button : extends Component {
@@ -289,6 +310,7 @@ public:
 	}
 
 	virtual void paintComponents(Graphics& g) {}
+	virtual void decreaseComponentCount(Component* c) final;
 };
 
 class Window : extends Container {
@@ -320,15 +342,13 @@ private:
 	}
 
 protected:
+	Window() {init((GraphicsConfiguration&)null_obj);}
 	void setGraphicsConfiguration(GraphicsConfiguration& gc);
-	Window() {
-		init((GraphicsConfiguration&)null_obj);
-	}
+	boolean isRecursivelyVisible() override { return visible; }
 
 public:
-	Window(const std::nullptr_t&) {
-		init((GraphicsConfiguration&)null_obj);
-	}
+	Window(const std::nullptr_t&) { init((GraphicsConfiguration&)null_obj); }
+	~Window() { dispose(); }
 /*
 	Window(Frame& owner) : Window(owner == null ? (GraphicsConfiguration&)null_obj : owner.getGraphicsConfiguration())  {
 		ownedInit(owner);
@@ -354,7 +374,8 @@ public:
 	void setVisible(boolean b);
 	void pack();
 	void addNotify() override;
-	void removeNotify();
+	void removeNotify() override;
+	void dispose();
 	void updateZOrder() {}
 
 	virtual Type getType() const { return type; }
@@ -368,7 +389,7 @@ private:
 	String      title = "Untitled";
 	boolean undecorated = false;
 
-	void init(const String& title, GraphicsConfiguration& gc);
+	void init(const String& title, GraphicsConfiguration& gc) {this->title=title;}
 
 public:
 	Frame() : Frame("") {}
@@ -377,6 +398,7 @@ public:
 	Frame(const String& title, GraphicsConfiguration& gc) { init(title, gc); }
 
 	void addNotify() override;
+	void removeNotify() override;
 
 	String getTitle() const { return title; }
 	void setTitle(const String& title);

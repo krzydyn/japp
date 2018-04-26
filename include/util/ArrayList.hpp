@@ -61,6 +61,7 @@ public:
 		if (j >= mSize) throw IndexOutOfBoundsException(i);
 		return mVec[(mOffs+j)%mCapa];
 	}
+	const T& elementAt(int i) { return get(i); }
 	void set(int i, const T& v) {TRACE;
 		unsigned j=(unsigned)i;
 		if (j >= mSize) throw IndexOutOfBoundsException(i);

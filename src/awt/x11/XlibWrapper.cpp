@@ -10,6 +10,7 @@
 namespace awt { namespace x11 {
 
 long XlibWrapper::XOpenDisplay(const String& name) {
+	::XInitThreads();
 	long r = (long)::XOpenDisplay(name.cstr());
 	LOGD("XlibWrapper::%s('%s') = %lX",__FUNCTION__, name.cstr(), r);
 	return r;

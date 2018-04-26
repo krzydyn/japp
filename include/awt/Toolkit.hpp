@@ -55,6 +55,8 @@ private:
 	static Toolkit* toolkit;
 public:
 	static Toolkit& getDefaultToolkit();
+	static boolean enabledOnToolkit(long eventMask);
+
 	virtual FramePeer* createFrame(Frame* target) = 0;
 	virtual LightweightPeer* createComponent(Component* target) = 0;
 	virtual WindowPeer* createWindow(Window* target) = 0;

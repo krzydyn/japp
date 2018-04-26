@@ -1,6 +1,7 @@
 #include <awt/AWTEvent.hpp>
 #include <awt/InputEvent.hpp>
 #include <awt/KeyboardFocusManager.hpp>
+#include <awt/Menu.hpp>
 #include <awt/Window.hpp>
 #include <lang/System.hpp>
 
@@ -17,6 +18,45 @@ namespace awt {
 
 Object Component::LOCK;
 
+Component::~Component() {
+}
+void Component::removeNotify() {
+	synchronized (getTreeLock()) {
+		if (isFocusOwner() && KeyboardFocusManager::isAutoFocusTransferEnabledFor(this)) {
+			transferFocus(true);
+		}
+		if (getContainer() != null && isAddNotifyComplete) {
+			getContainer()->decreaseComponentCount(this);
+		}
+
+		int npopups = (popups != null? popups.size() : 0);
+		for (int i = 0 ; i < npopups ; i++) {
+			PopupMenu* popup = popups.elementAt(i);
+			popup->removeNotify();
+			delete popup;
+		}
+
+		ComponentPeer* p = peer;
+		if (p != null) {
+			boolean isLightweight = this->isLightweight();
+			if (visible) p->setVisible(false);
+			peer = null;
+			peerFont = null;
+			p->dispose();
+			mixOnHiding(isLightweight);
+			isAddNotifyComplete = false;
+			compoundShape = null;
+		}
+
+		if (hierarchyListener != null ||
+				(eventMask & AWTEvent::HIERARCHY_EVENT_MASK) != 0 ||
+				Toolkit::enabledOnToolkit(AWTEvent::HIERARCHY_EVENT_MASK)) {
+			int f = HierarchyEvent::DISPLAYABILITY_CHANGED | (isRecursivelyVisible() ? HierarchyEvent::SHOWING_CHANGED : 0);
+			HierarchyEvent e(this, HierarchyEvent::HIERARCHY_CHANGED, this, parent, f);
+			dispatchEvent(e);
+		}
+	}
+}
 void Component::reshapeNativePeer(int x, int y, int width, int height, int op) {
 	LOGD("Component::%s(%d,%d,%d,%d)", __FUNCTION__, x, y, width, height);
 	// native peer might be offset by more than direct
@@ -28,6 +68,9 @@ void Component::reshapeNativePeer(int x, int y, int width, int height, int op) {
 		nativeY += c->y;
 	}
 	peer->setBounds(nativeX, nativeY, width, height, op);
+}
+boolean Component::isRecursivelyVisible() {
+	return visible && (parent == null || parent->isRecursivelyVisible());
 }
 
 boolean Component::eventTypeEnabled(int type) {
@@ -128,8 +171,6 @@ void Component::dispatchEventImpl(AWTEvent& e) {
 	//9. Allow the peer to process the event.
 	if (!(instanceof<KeyEvent>(&e))) {
 	}
-
-
 }
 void Component::applyCurrentShape() {
 }
@@ -150,6 +191,21 @@ void Component::mixOnShowing() {
 		if (isLightweight()) subtractAndApplyShapeBelowMe();
 		else applyCurrentShape();
 	}
+}
+void Component::mixOnHiding(boolean isLightweight) {
+	synchronized (getTreeLock()) {
+		if (!isMixingNeeded()) return ;
+		if (isLightweight) applyCurrentShapeBelowMe();
+	}
+}
+void Component::mixOnReshaping() {
+	synchronized (getTreeLock()) {
+		if (!isMixingNeeded()) return ;
+		if (isLightweight()) applyCurrentShapeBelowMe();
+		else applyCurrentShape();
+	}
+}
+void Component::mixOnZOrderChanging(int oldZorder, int newZorder) {
 }
 
 Color Component::getBackground() const {
@@ -199,7 +255,7 @@ void Component::setVisible(boolean b) {
 	if (b == true) { //show
 		synchronized (getTreeLock()) {
 			visible = true;
-			//mixOnShowing();
+			mixOnShowing();
 			if (peer != null) {
 				LOGD("peer is %p", peer);
 				peer->setVisible(true);
@@ -221,7 +277,7 @@ void Component::setVisible(boolean b) {
 		isPacked = false;
 		synchronized (getTreeLock()) {
 			visible = false;
-			//mixOnHiding(isLightweight());
+			mixOnHiding(isLightweight());
 			if (peer != null) {
 				peer->setVisible(false);
 				if (instanceof<LightweightPeer>(peer)) repaint();
@@ -333,7 +389,7 @@ void Component::setBounds(int x, int y, int width, int height) {
 		if (resized) isPacked = false;
 
 		boolean needNotify = true;
-		//mixOnReshaping();
+		mixOnReshaping();
 		if (peer != null) {
 			if (!(instanceof<LightweightPeer>(peer))) {
 				 reshapeNativePeer(x, y, width, height, getBoundsOp());
@@ -351,6 +407,14 @@ void Component::setBounds(int x, int y, int width, int height) {
 		if (needNotify) notifyNewBounds(resized, moved);
 		repaintParentIfNeeded(oldX, oldY, oldWidth, oldHeight);
 	}
+}
+
+boolean Component::hasFocus() {
+	return KeyboardFocusManager::getCurrentKeyboardFocusManager()->getFocusOwner() == this;
+}
+boolean Component::transferFocus(boolean clearOnFailure) {
+	//TODO
+	return false;
 }
 
 void Component::addNotify() {
@@ -419,6 +483,11 @@ Dimension Container::getPreferredSize() {
 	}
 	return dim;
 }
+void Container::decreaseComponentCount(Component* c) {
+	synchronized (getTreeLock()) {
+	//TODO
+	}
+}
 void Container::addNotify() {
 	synchronized (getTreeLock()) {
 		Component::addNotify();
@@ -432,6 +501,8 @@ void Container::addNotify() {
 	}
 }
 
+void Window::dispose() {
+}
 void Window::setGraphicsConfiguration(GraphicsConfiguration& gc) {
 	LOGD(__FUNCTION__);
 	Container::setGraphicsConfiguration(gc);
@@ -533,6 +604,7 @@ void Window::addNotify() {
 	}
 }
 void Window::removeNotify() {
+	LOGD("Window::%s()", __FUNCTION__);
 	synchronized (getTreeLock()) {
 		synchronized (allWindows) {
 			allWindows.remove(this);
@@ -542,14 +614,22 @@ void Window::removeNotify() {
 }
 
 void Frame::addNotify() {
+	LOGD("Frame::%s()", __FUNCTION__);
 	synchronized (getTreeLock()) {
 		if (peer == null) peer = getToolkit().createFrame(this);
-		//FramePeer* p = (FramePeer*)peer;
+		//FramePeer* peer = (FramePeer*)this->peer;
 		Window::addNotify();
 	}
 }
-void Frame::init(const String& title, GraphicsConfiguration& gc) {
-	this->title = title;
+void Frame::removeNotify() {
+	LOGD("Frame::%s()", __FUNCTION__);
+	synchronized (getTreeLock()) {
+		//FramePeer* peer = (FramePeer*)this->peer;
+		if (peer != null) {
+			//getState();
+		}
+		Window::removeNotify();
+	}
 }
 void Frame::setTitle(const String& title) {
 	synchronized(this) {
