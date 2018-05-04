@@ -7,7 +7,7 @@
 namespace util {
 
 template<class K,class V>
-class MapEntry {
+class MapEntry : extends Object {
 private:
 	K key;
 	V value;
@@ -45,8 +45,8 @@ public:
 	virtual void clear() = 0;
 };
 
-//SFINAE to choose function for Object type
-inline unsigned hash_code(const Object& v) {return (unsigned)v.hashCode();}
+template<class T, class std::enable_if<std::is_base_of<Object,T>::value,Object>::type* = nullptr>
+inline unsigned hash_code(const T& v) {return (unsigned)v.hashCode();}
 template<class T, class std::enable_if<!std::is_base_of<Object,T>::value,Object>::type* = nullptr>
 inline unsigned hash_code(const T& v) {
 	if (sizeof(v) == 1) return *(uint8_t*)(&v);

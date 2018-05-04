@@ -1,5 +1,6 @@
 #include <awt/AWTEvent.hpp>
 #include <awt/InputEvent.hpp>
+#include <awt/EventQueue.hpp>
 #include <awt/KeyboardFocusManager.hpp>
 #include <awt/Menu.hpp>
 #include <awt/Window.hpp>
@@ -501,7 +502,11 @@ void Container::addNotify() {
 	}
 }
 
-void Window::dispose() {
+void Window::doDispose() {
+	boolean fireWindowClosedEvent = isDisplayable();
+	setVisible(false);
+	removeNotify();
+	if (fireWindowClosedEvent) postWindowEvent(WindowEvent::WINDOW_CLOSED);
 }
 void Window::setGraphicsConfiguration(GraphicsConfiguration& gc) {
 	LOGD(__FUNCTION__);
@@ -553,6 +558,13 @@ void Window::pack() {
 	validateUnconditionally();
 }
 
+void Window::postWindowEvent(int id) {
+	if (windowListener != null || (eventMask & AWTEvent::WINDOW_EVENT_MASK) != 0 || Toolkit::enabledOnToolkit(AWTEvent::WINDOW_EVENT_MASK)) {
+		WindowEvent e(this, id);
+		Toolkit::getEventQueue().postEvent(e);
+	}
+}
+
 void Window::toFront() {
 	if (visible) {
 		WindowPeer* peer = (WindowPeer*)((void*)this->peer);
@@ -600,12 +612,14 @@ void Window::addNotify() {
 		synchronized (allWindows) {
 			allWindows.add(this);
 		}
+		LOGD("Window::%s() added this=%p to allWindows n=%d", __FUNCTION__, this, allWindows.size());
 		Container::addNotify();
 	}
 }
 void Window::removeNotify() {
 	LOGD("Window::%s()", __FUNCTION__);
 	synchronized (getTreeLock()) {
+		LOGD("Window::%s() removing this=%p from allWindows n=%d", __FUNCTION__, this, allWindows.size());
 		synchronized (allWindows) {
 			allWindows.remove(this);
 		}

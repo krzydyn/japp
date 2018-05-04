@@ -184,7 +184,7 @@ public:
 		return makeShared<String>(substring(beginIndex, endIndex));
 	}
 	String concat(String str) {TRACE; return *this + str; }
-	String replace(char oldChar, char newChar) {TRACE;
+	String replace(char oldChar, char newChar) const {TRACE;
 		if (oldChar != newChar) {
 			int len = (int)value.length();
 			int i = -1;

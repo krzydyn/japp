@@ -9,10 +9,10 @@
 
 namespace util {
 
-inline boolean util_equals(int a, int b) { return a == b; }
-inline boolean util_equals(const Object& a, const Object& b) { return a.equals(b); }
-template<class T>
-inline boolean util_equals(const T& a, const T& b) { return (void*)&a == (void*)&b; }
+template<class T, class std::enable_if<std::is_base_of<Object,T>::value,Object>::type* = nullptr>
+inline boolean util_equals(const T& a, const T& b) { return a.equals(b); }
+template<class T, class std::enable_if<!std::is_base_of<Object,T>::value,Object>::type* = nullptr>
+inline boolean util_equals(const T& a, const T& b) { return a == b; }
 
 template<class T>
 class ArrayList : extends AbstractList<T> {

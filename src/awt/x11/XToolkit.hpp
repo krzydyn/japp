@@ -115,6 +115,8 @@ public:
 	static void removeFromWinMap(long window, XBaseWindow* xwin);
 	static XBaseWindow* windowToXWindow(long window);
 	//static void addEventDispatcher(long window, XEventDispatcher dispatcher);
+	static String getCorrectXIDString(const String& val);
+	static String getEnv(const String& key);
 
 	XToolkit();
 	awt::ButtonPeer* createButton(awt::Button* target);
@@ -123,6 +125,7 @@ public:
 	awt::LightweightPeer* createComponent(awt::Component* target);
 	awt::WindowPeer* createWindow(awt::Window* target);
 	awt::DialogPeer* createDialog(awt::Dialog* target);
+	awt::EventQueue& getSystemEventQueueImpl();
 
 	awt::MouseInfoPeer& getMouseInfoPeer();
 

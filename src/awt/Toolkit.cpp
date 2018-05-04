@@ -84,6 +84,7 @@ class NullComponentPeer : extends Object, implements LightweightPeer {
 	boolean updateGraphicsData(GraphicsConfiguration& gc) { return false; }
 };
 class HeadlessToolkit : extends Toolkit {
+public:
 	FramePeer* createFrame(Frame* target) {
 		throw HeadlessException();
 	}
@@ -96,6 +97,9 @@ class HeadlessToolkit : extends Toolkit {
 	DialogPeer* createDialog(Dialog* target) {
 		throw HeadlessException();
 	}
+	EventQueue& getSystemEventQueueImpl() {
+		throw HeadlessException();
+	}
 };
 
 LightweightPeer* Toolkit::lightweightMarker = null;
@@ -105,12 +109,15 @@ Toolkit& Toolkit::getDefaultToolkit() {
 	if (toolkit == null) {
 		if (GraphicsEnvironment::isHeadless()) toolkit = new HeadlessToolkit();
 		else toolkit = new x11::XToolkit();
-		LOGD("Toolkit created");
+		LOGD("Toolkit created: %s", toolkit->getClass().getName().cstr());
 	}
 	return *toolkit;
 }
 boolean Toolkit::enabledOnToolkit(long eventMask) {
 	return (enabledOnToolkitMask & eventMask) != 0;
+}
+EventQueue& Toolkit::getEventQueue() {
+	return getDefaultToolkit().getSystemEventQueueImpl();
 }
 
 

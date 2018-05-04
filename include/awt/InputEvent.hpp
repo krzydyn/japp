@@ -13,6 +13,7 @@ private:
 protected:
 	InputEvent(Component* source, int id, long when, int modifiers) : ComponentEvent(source, id), when(when), modifiers(modifiers){}
 };
+class Window;
 class WindowEvent : extends ComponentEvent {
 public:
 	static const int WINDOW_FIRST        = 200;
@@ -27,6 +28,9 @@ public:
 	static const int WINDOW_LOST_FOCUS   = 8 + WINDOW_FIRST;
 	static const int WINDOW_STATE_CHANGED = 9 + WINDOW_FIRST;
 	static const int WINDOW_LAST         = WINDOW_STATE_CHANGED;
+
+	WindowEvent(Window* source, int id, Window* opposite, int oldState, int newState) : ComponentEvent((Component*)source, id) {}
+	WindowEvent(Window* source, int id) : WindowEvent(source, id, null, 0, 0) {}
 };
 class KeyEvent : extends InputEvent {
 private:

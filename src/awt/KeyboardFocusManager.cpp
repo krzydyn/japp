@@ -1,7 +1,20 @@
+#include <awt/InputEvent.hpp>
 #include <awt/KeyboardFocusManager.hpp>
 
 namespace {
+class DefaultKeyboardFocusManager : extends awt::KeyboardFocusManager {
+	boolean dispatchEvent(awt::AWTEvent& e) const override {
+		switch (e.getID()) {
+		}
+		return true;
+	}
+	void processKeyEvent(awt::Component* focusedComponent, awt::AWTEvent& e) const override {
+		if (e.getID() == awt::KeyEvent::KEY_TYPED) return;
+	}
+};
+
 Object KeyboardFocusManager_class;
+awt::KeyboardFocusManager* manager = null;
 
 awt::Component* focusOwner = null;
 //awt::Component* permanentFocusOwner = null;
@@ -12,7 +25,8 @@ awt::Component* focusOwner = null;
 namespace awt {
 
 KeyboardFocusManager* KeyboardFocusManager::getCurrentKeyboardFocusManager() {
-	return null;
+	if (manager == null) manager = new DefaultKeyboardFocusManager();
+	return manager;
 }
 
 AWTEvent& KeyboardFocusManager::retargetFocusEvent(AWTEvent& event) {

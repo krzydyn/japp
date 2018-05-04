@@ -48,7 +48,7 @@ public:
 	virtual boolean isTranslucencyCapable() const {return false;}
 };
 
-
+class EventQueue;
 class Toolkit : extends Object {
 private:
 	static LightweightPeer* lightweightMarker;
@@ -56,11 +56,13 @@ private:
 public:
 	static Toolkit& getDefaultToolkit();
 	static boolean enabledOnToolkit(long eventMask);
+	static EventQueue& getEventQueue();
 
 	virtual FramePeer* createFrame(Frame* target) = 0;
 	virtual LightweightPeer* createComponent(Component* target) = 0;
 	virtual WindowPeer* createWindow(Window* target) = 0;
 	virtual DialogPeer* createDialog(Dialog* target) = 0;
+	virtual EventQueue& getSystemEventQueueImpl() = 0;
 
 	virtual MouseInfoPeer& getMouseInfoPeer() {
 		throw UnsupportedOperationException("Not implemented");

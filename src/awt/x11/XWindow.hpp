@@ -7,6 +7,22 @@
 namespace awt {
 namespace x11 {
 
+class XWindowAttributesData {
+public:
+    boolean nativeDecor;
+    boolean initialFocus;
+    boolean isResizable;
+    int initialState;
+    boolean initialResizability;
+    int visibilityState; // updated by native X11 event handling code.
+    String title;
+    //util::ArrayList<IconInfo*> icons;
+    boolean iconsInherited;
+    int decorations;            // for future expansion to be able to
+                                // specify native decorations
+    int functions; // MWM_FUNC_*
+};
+
 class XWindow : extends XBaseWindow {
 private:
 	int savedState;
@@ -17,6 +33,7 @@ private:
 	AwtGraphicsConfigData *graphicsConfigData = null;
 protected:
 	awt::Component *target;
+	XWindowAttributesData winAttr;
 
 	XWindow() { throw RuntimeException("not supp"); }
 	XWindow(XCreateWindowParams& params) : XBaseWindow(params) {}

@@ -1,6 +1,7 @@
 #include <lang/Number.hpp>
 #include <awt/Window.hpp>
 
+#include "XAtom.hpp"
 #include "XBaseWindow.hpp"
 #include "XConstants.hpp"
 #include "XlibWrapper.hpp"
@@ -122,6 +123,18 @@ const char* XBaseWindow::SAVE_UNDER = "save under";
 const char* XBaseWindow::BACKING_STORE = "backing store";
 const char* XBaseWindow::BIT_GRAVITY = "bit gravity";
 
+String XBaseWindow::getWMName() {
+	return XToolkit::getCorrectXIDString(getClass().getName());
+}
+void XBaseWindow::updateWMName() {
+	String name = getWMName();
+	XToolkit::awtLock();
+	Finalize(XToolkit::awtUnlock(););
+	XAtom nameAtom = XAtom::get(XAtom::XA_WM_NAME);
+	nameAtom.setProperty(getWindow(), name);
+	XAtom netNameAtom = XAtom::get("_NET_WM_NAME");
+	netNameAtom.setPropertyUTF8(getWindow(), name);
+}
 void XBaseWindow::ungrabInput() {
 	XToolkit::awtLock();
 	Finalize(XToolkit::awtUnlock(););

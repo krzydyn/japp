@@ -6,7 +6,6 @@
 namespace awt {
 
 class Component;
-class Window;
 class KeyboardFocusManager {
 public:
 	static const int FORWARD_TRAVERSAL_KEYS = 0;
@@ -21,7 +20,7 @@ public:
 	static AWTEvent& retargetFocusEvent(AWTEvent& event);
 
 	virtual boolean dispatchEvent(AWTEvent& e) const = 0;
-	virtual boolean processKeyEvent(Component* focusedComponent, AWTEvent& e) const = 0;
+	virtual void processKeyEvent(Component* focusedComponent, AWTEvent& e) const = 0;
 
 	virtual Component* getFocusOwner();
 };

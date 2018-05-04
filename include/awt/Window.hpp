@@ -42,8 +42,6 @@ private:
 	ComponentListener* componentListener;
 	KeyListener* keyListener;
 
-	long eventMask = AWTEvent::INPUT_METHODS_ENABLED_MASK;
-
 	void repaintParentIfNeeded(int oldX, int oldY, int oldWidth, int oldHeight);
 	void notifyNewBounds(boolean resized, boolean moved);
 	void reshapeNativePeer(int x, int y, int width, int height, int op);
@@ -72,6 +70,7 @@ protected:
 	Font   *peerFont = null;
 	//Cursor     cursor;
 	Locale     locale;
+	long eventMask = AWTEvent::INPUT_METHODS_ENABLED_MASK;
 
 	boolean visible = false;
 	boolean enabled = false;
@@ -313,6 +312,7 @@ public:
 	virtual void decreaseComponentCount(Component* c) final;
 };
 
+class WindowListener;
 class Window : extends Container {
 public:
 	enum class Type {
@@ -324,6 +324,7 @@ private:
 	static const int OPENED = 0x01;
 	static const boolean locationByPlatformProp = true;
 
+	WindowListener* windowListener = null;
 	Type type = Type::NORMAL;
 	boolean beforeFirstShow = true;
 	boolean isInShow = false;
@@ -340,15 +341,17 @@ private:
 			setBounds(x, y, w, h);
 		}
 	}
+	void doDispose();
 
 protected:
 	Window() {init((GraphicsConfiguration&)null_obj);}
 	void setGraphicsConfiguration(GraphicsConfiguration& gc);
 	boolean isRecursivelyVisible() override { return visible; }
+	void postWindowEvent(int id);
 
 public:
 	Window(const std::nullptr_t&) { init((GraphicsConfiguration&)null_obj); }
-	~Window() { dispose(); }
+	~Window() { doDispose(); }
 /*
 	Window(Frame& owner) : Window(owner == null ? (GraphicsConfiguration&)null_obj : owner.getGraphicsConfiguration())  {
 		ownedInit(owner);
@@ -375,7 +378,7 @@ public:
 	void pack();
 	void addNotify() override;
 	void removeNotify() override;
-	void dispose();
+	virtual void dispose() { doDispose(); }
 	void updateZOrder() {}
 
 	virtual Type getType() const { return type; }
@@ -392,6 +395,12 @@ private:
 	void init(const String& title, GraphicsConfiguration& gc) {this->title=title;}
 
 public:
+	static const int NORMAL = 0;
+	static const int ICONIFIED = 1;
+	static const int MAXIMIZED_HORIZ = 2;
+	static const int MAXIMIZED_VERT = 4;
+	static const int MAXIMIZED_BOTH = MAXIMIZED_VERT | MAXIMIZED_HORIZ;
+
 	Frame() : Frame("") {}
 	Frame(GraphicsConfiguration& gc) : Frame("", gc) {}
 	Frame(const String& title) { init(title, (GraphicsConfiguration&)null_obj); }

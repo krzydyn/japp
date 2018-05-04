@@ -20,7 +20,31 @@ public:
 	static XBaseWindow *getGrabWindow();
 };
 
-class XWMHints : extends Object {
+class XWMHints : extends XDataWrapper {
+public:
+	static int getSize() { return 56; }
+	XWMHints() : XDataWrapper(getSize()) {}
+	XWMHints(Shared<nio::ByteBuffer> buf) : XDataWrapper(buf) {}
+
+	long get_flags() { return (pData->getLong(0)); }
+	void set_flags(long v) { pData->putLong(0, v); }
+	int get_initial_state() { return (pData->getInt(12)); }
+	void set_initial_state(int v) { pData->putInt(12, v); }
+	long get_icon_pixmap(int index) { return pData->getLong(16)+index*getLongSize(); }
+	long get_icon_pixmap() { return pData->getLong(16); }
+	void set_icon_pixmap(long v) { pData->putLong(16, v); }
+	long get_icon_window() { return (pData->getLong(24)); }
+	void set_icon_window(long v) { pData->putLong(24, v); }
+	int get_icon_x() { return (pData->getInt(32)); }
+	void set_icon_x(int v) { pData->putInt(32, v); }
+	int get_icon_y() { return (pData->getInt(36)); }
+	void set_icon_y(int v) { pData->putInt(36, v); }
+	long get_icon_mask() { return (pData->getLong(40)); }
+	void set_icon_mask(long v) { pData->putLong(40, v); }
+	boolean get_input() { return (getBool(8)); }
+	void set_input(boolean v) { putBool(8, v); }
+	long get_window_group() { return (pData->getLong(48)); }
+	void set_window_group(long v) { pData->putLong(48, v); }
 };
 
 class XSizeHints : extends XDataWrapper {
@@ -226,7 +250,9 @@ protected:
 	virtual void create(XCreateWindowParams& params);
 	virtual void postInit(XCreateWindowParams& params);
 	virtual void ungrabInputImpl() {}
-	void setSizeHints(long flags, int x, int y, int width, int height);
+	virtual String getWMName();
+	virtual void updateWMName();
+	virtual void setSizeHints(long flags, int x, int y, int width, int height);
 
 public:
     static const char* PARENT_WINDOW; // parent window, Long

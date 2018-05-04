@@ -1,3 +1,4 @@
+#include <awt/EventQueue.hpp>
 #include <lang/System.hpp>
 #include <util/concurrent/Lock.hpp>
 
@@ -148,6 +149,7 @@ struct ::pollfd pollFds[2];
 XMouseInfoPeer xPeer;
 Array<awt::GraphicsDevice*> screens;
 Thread toolkitThread;
+awt::EventQueue eventQueue;
 int arrowCursor;
 long eventNumber;
 
@@ -371,7 +373,7 @@ protected:
 	}
 public:
 	void setVisible(boolean b) override {
-		LOGN("XComponentPeer::%s",__FUNCTION__);
+		LOGN("XComponentPeer::%s(%s)",__FUNCTION__,String::valueOf(b).cstr());
 		xSetVisible(b);
 	}
 	void setEnabled(boolean e) {}
@@ -550,15 +552,58 @@ public:
 };
 
 class XDecoratedPeer : extends XWindowPeer {
+protected:
+	void updateWMName() override {
+		XWindowPeer::updateWMName();
+	}
 public:
 	XDecoratedPeer(awt::Window* target) : XWindowPeer(target) {}
+	virtual void setTitle(const String& title) {
+		XToolkit::awtLock();
+		Finalize(XToolkit::awtUnlock(););
+		winAttr.title = title;
+		updateWMName();
+	}
 };
 
-class XFramePeer : implements XWindowPeer, implements awt::FramePeer {
+class XFramePeer : implements XDecoratedPeer, implements awt::FramePeer {
+protected:
+	int state;
+
+	void preInit(XCreateWindowParams& params) override {
+		LOGN("XFramePeer::%s", __FUNCTION__);
+		XDecoratedPeer::preInit(params);
+	}
+	void postInit(XCreateWindowParams& params) override {
+		LOGN("XFramePeer::%s", __FUNCTION__);
+		XDecoratedPeer::postInit(params);
+		setupState(true);
+	}
+	void setupState(boolean onInit) {
+		if (onInit) state = winAttr.initialState;
+		if ((state & Frame::ICONIFIED) != 0) {
+			setInitialState(XUtilConstants::IconicState);
+		}
+		else {
+			setInitialState(XUtilConstants::NormalState);
+		}
+		setExtendedState(state);
+	}
+	void setInitialState(int wm_state) {
+		XToolkit::awtLock();
+		Finalize(XToolkit::awtUnlock(););
+		XWMHints hints;
+		hints.set_flags((int)XUtilConstants::StateHint | hints.get_flags());
+		hints.set_initial_state(wm_state);
+		XlibWrapper::XSetWMHints(XToolkit::getDisplay(), getWindow(), hints.getPData());
+	}
+	void setExtendedState(int newState) {
+		//TODO XWM.getWM().setExtendedState(this, newState);
+	}
 public:
-	XFramePeer(awt::Frame *target) : XWindowPeer(target) {}
-	//XFramePeer(XCreateWindowParams params) : XWindowPeer(params) {}
-	void setTitle(const String& title) {}
+	XFramePeer(awt::Frame *target) : XDecoratedPeer(target) {}
+	//XFramePeer(XCreateWindowParams& params) : XDecoratedPeer(params) {}
+	void setTitle(const String& title) { XDecoratedPeer::setTitle(title); }
 };
 
 void notifyListeners(XEvent& ev) {
@@ -653,6 +698,14 @@ long XToolkit::getDefaultRootWindow() {
 	return res;
 }
 
+String XToolkit::getCorrectXIDString(const String& val) {
+	if (val != null) return val.replace('.', '-');
+	return val;
+}
+String XToolkit::getEnv(const String& key) {
+	return key;
+}
+
 void XToolkit::init() {
 	if (awt_display == 0) throw HeadlessException();
 
@@ -697,6 +750,9 @@ awt::FramePeer* XToolkit::createFrame(awt::Frame* target) {
 awt::DialogPeer* XToolkit::createDialog(awt::Dialog* target) {
 	LOGD("XToolkit::%s", __FUNCTION__);
 	return null;
+}
+awt::EventQueue& XToolkit::getSystemEventQueueImpl() {
+	return eventQueue;
 }
 
 boolean XToolkit::getSunAwtDisableGrab() {

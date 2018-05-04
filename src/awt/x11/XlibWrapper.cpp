@@ -10,7 +10,7 @@
 namespace awt { namespace x11 {
 
 long XlibWrapper::XOpenDisplay(const String& name) {
-	::XInitThreads();
+	::XInitThreads(); // use xlib in multithread env.
 	long r = (long)::XOpenDisplay(name.cstr());
 	LOGD("XlibWrapper::%s('%s') = %lX",__FUNCTION__, name.cstr(), r);
 	return r;
@@ -92,7 +92,7 @@ void XlibWrapper::XMapWindow(long display, long window) {
 	::XMapWindow((Display *)display, window);
 }
 void XlibWrapper::XUnmapWindow(long display, long window) {
-	LOGD("XlibWrapper::%s",__FUNCTION__);
+	LOGD("XlibWrapper::%s(%lX,%lX)",__FUNCTION__, display, window);
 	::XUnmapWindow((Display *)display, window);
 }
 //void XlibWrapper::XMapRaised(long display, long window);
