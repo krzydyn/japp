@@ -468,16 +468,18 @@ protected:
 	XWindowPeer(XCreateWindowParams& params) : XPanelPeer(params) {
 		LOGN("XWindowPeer::XWindowPeer created");
 	}
-	boolean isSimpleWindow() {
+	virtual boolean isSimpleWindow() {
 		return !(instanceof<Frame>(target) || instanceof<Dialog>(target));
 	}
-	boolean isOverrideRedirect() {
+
+	// ture = window is borderless (undecorated window)
+	virtual boolean isOverrideRedirect() final {
 		return XWM::getWMID() == XWM::OPENLOOK_WM || Window::Type::POPUP == getWindowType();
 	}
 	void preInit(XCreateWindowParams& params) override {
-		LOGN("XWindowPeer::%s", __FUNCTION__);
 		target = (Component*)params.get<Long>(TARGET).longValue();
 		windowType = ((Window*)target)->getType();
+		LOGN("XWindowPeer::%s type = %d, overRedir=%s", __FUNCTION__, windowType, String::valueOf(isOverrideRedirect()).cstr());
 		params.put<Boolean>(REPARENTED, Boolean::valueOf(isOverrideRedirect() || isSimpleWindow()));
 		XPanelPeer::preInit(params);
 

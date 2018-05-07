@@ -286,6 +286,24 @@ void XBaseWindow::create(XCreateWindowParams& params) {
 	Integer& visual_class = params.get<Integer>(VISUAL_CLASS);
 	Long& visual = params.get<Long>(VISUAL);
 
+	Boolean& overrideRedirect = params.get<Boolean>(OVERRIDE_REDIRECT);
+	if (overrideRedirect != null) {
+		xattr.set_override_redirect(overrideRedirect.booleanValue());
+		value_mask |= XConstants::CWOverrideRedirect;
+	}
+
+	Boolean& saveUnder = params.get<Boolean>(SAVE_UNDER);
+	if (saveUnder != null) {
+		xattr.set_save_under(saveUnder.booleanValue());
+		value_mask |= XConstants::CWSaveUnder;
+	}
+
+	Integer& backingStore = params.get<Integer>(BACKING_STORE);
+	if (backingStore != null) {
+		xattr.set_backing_store(backingStore.intValue());
+		value_mask |= XConstants::CWBackingStore;
+	}
+
 	window = XlibWrapper::XCreateWindow(XToolkit::getDisplay(), parentWindow.longValue(),
 				bounds.x, bounds.y, // location
 				bounds.width, bounds.height, // size
