@@ -71,7 +71,7 @@ boolean initialize() {
 	(void)SET_TERMINATE;
 	std::set_terminate(terminate_hook);
 	signal(SIGFPE, signal_handle);
-	//signal(SIGABRT, signal_handle);
+	signal(SIGABRT, signal_handle);
 	//signal(SIGSEGV, signal_handle);
 	signal(SIGINT, signal_handle);
 	return true;

@@ -19,7 +19,7 @@ CC:=g++
 CPPFLAGS:=$(DEBUG) -I$(INC_DIR) -fPIC -std=c++11
 CPPFLAGS+=-Wall -Wconversion -Werror
 #CPPFLAGS+=-O2
-#CPPFLAGS+=-fstack-protector
+CPPFLAGS+=-fstack-protector-all
 
 SRC:=
 SRCS+=$(wildcard $(SOURCE_DIR)/*.cpp)
@@ -47,7 +47,7 @@ SRCS+=$(wildcard $(SOURCE_DIR)/swing/*.cpp)
 
 OBJS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
 
-TARGETS:=$(BUILD_DIR)/jre.a #$(BUILD_DIR)/jre.so
+TARGETS:=$(BUILD_DIR)/libjre.so $(BUILD_DIR)/jre.a
 SRC_BUILD_DIRS:=$(dir $(OBJS))
 
 build: create-build_dir $(BUILD_DIR)/srcdep.mk $(TARGETS)
@@ -66,7 +66,7 @@ $(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp
 $(BUILD_DIR)/%.a:
 	$(AR) rcs $@ $^
 
-$(BUILD_DIR)/%.so:
+$(BUILD_DIR)/lib%.so:
 	$(CC) -shared $(SOFLAGS) -o $@ $^
 
 clean: $(SRC_BUILD_DIRS)

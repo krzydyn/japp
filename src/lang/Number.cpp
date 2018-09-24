@@ -77,7 +77,7 @@ int Integer::parseInt(const String& s, int radix) {
 	for (; i < s.length(); ++i) {
 		c = s.charAt(i);
 		int digit = Character::digit(c, radix);
-		if (digit < 0) throw NumberFormatException("Invalid input, wrong digit "+String::valueOf(c));
+		if (digit < 0) throw NumberFormatException("Invalid input, wrong digit "+String::valueOf(c)+" in radix "+String::valueOf(radix));
 		result *= radix;
 		result -= digit;
 	}

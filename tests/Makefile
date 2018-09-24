@@ -24,6 +24,7 @@ GCC_VERSION:=$(shell gcc --version | awk '/^gcc/ {print $$4}')
 CC:=g++
 CPPFLAGS:=$(DEBUG) -I$(INC_DIR) -fPIC -std=c++11
 CPPFLAGS+=-Wall -Wconversion -Werror
+#CPPFLAGS+=-fstack-protector
 #CPPFLAGS+=-O2
 
 ifeq ($(HOST_OS),Darwin)
@@ -39,6 +40,7 @@ ifeq ($(STATIC),1)
 LDFLAGS+=-Wl,-Bstatic
 endif
 
+#LDFLAGS+=-ljre
 LDFLAGS+=-lpthread
 LDFLAGS+=-lX11
 
@@ -55,8 +57,8 @@ endif
 
 SRCS:=$(wildcard $(SOURCE_DIR)/*.cpp)
 OBJS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
-#TARGETS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%,$(SRCS))
-TARGETS:=$(BUILD_DIR)/awt
+TARGETS:=$(patsubst $(SOURCE_DIR)/%.cpp,$(BUILD_DIR)/%,$(SRCS))
+#TARGETS:=$(BUILD_DIR)/canary $(BUILD_DIR)/x
 
 TARGETS: $(JRELIB)
 

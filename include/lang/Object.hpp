@@ -215,7 +215,7 @@ public:
 		return a[i];
 	}
 
-	// c++11 range-based for loops support
+	// c++11 range-based for loops support: for ( range_declaration : range_expression ) loop_statement
 	class ArrayRange {
 	friend class Array;
 	private:
