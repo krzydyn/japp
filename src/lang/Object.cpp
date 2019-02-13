@@ -304,19 +304,23 @@ const Class& Object::getClass(const std::type_info& type) {
 
 class CondMonitor {
 private:
-	std::condition_variable var;
-	std::mutex mtx;
+	const Object *obj;
+	std::condition_variable cond;
 public:
+	CondMonitor(const Object *o) : obj(o) {}
 	void wait(long t);
 	void notify();
 	void notifyAll();
 };
 
 void CondMonitor::wait(long t) {
+	//cond.wait_for(lock, std::chrono::milliseconds(millis));
 }
 void CondMonitor::notify() {
+	cond.notify_one();
 }
 void CondMonitor::notifyAll() {
+	cond.notify_all();
 }
 
 Object::~Object() { delete mtx; delete cond; }
@@ -336,7 +340,7 @@ void Object::notifyAll() {
 }
 void Object::wait(long timeout) {
 	if (timeout < 0) throw IllegalArgumentException("timeout value is negative");
-	if (cond == null) cond = new CondMonitor();
+	if (cond == null) cond = new CondMonitor(this);
 	cond->wait(timeout);
 }
 

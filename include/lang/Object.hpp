@@ -63,7 +63,7 @@ class Object {
 	friend class Lock;
 // http://hg.openjdk.java.net/jdk7/jdk7/hotspot/file/9b0ca45cd756/src/share/vm/runtime/objectMonitor.cpp#l1430
 private:
-	std::recursive_mutex *mtx=null;
+	std::recursive_mutex *mtx = null;
 	CondMonitor* cond = null;
 	void move(Object *o) {
 		if (this == o) return ;

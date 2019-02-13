@@ -230,14 +230,16 @@ void Thread::start() {
 	}
 	if (group) group->add(this);
 	pendingNameChange = true;
+	threadStatus = RUNNABLE;
 	LOGN("Starting new thread %s", getName().cstr());
 	this->thread = new std::thread([&] {
 		std::thread::id thrid = std::this_thread::get_id();
 		threads().addThread(thrid, this);
+		Thread::selfupdate();
 		try {
-			do { Thread::yield(); } while (threadStatus == NEW);
+			//do { Thread::yield(); } while (threadStatus == NEW);
 			if (threadStatus == RUNNABLE) {
-				LOGN("thread started");
+				LOGN("Thread started %s", getName().cstr());
 				setPriority(priority);
 				run();
 			}
@@ -250,11 +252,10 @@ void Thread::start() {
 			Throwable().fillInStackTrace().printStackTrace();
 		}
 		threadStatus = TERMINATED;
-		System.out.println(getName() + " terminated");
+		LOGN("Thread finished %s", getName().cstr());
 		threads().removeThread(thrid);
 	});
-	threadStatus = RUNNABLE;
-	Thread::yield();
+	//Thread::yield();
 	if (daemon) thread->detach();
 }
 void Thread::join(long millis) {TRACE;
@@ -267,13 +268,13 @@ void Thread::selfupdate() {
 	if (pendingNameChange) setNativeName(*thread, name, pendingNameChange);
 }
 
-// static functions
+// static methods
 Thread& Thread::currentThread() {
 	std::thread::id id = std::this_thread::get_id();
 	Thread *t = threads().getThread(id);
 	if (t == null) {
 		System.err.println("FATAL: thread not found: " + String::valueOf(id));
-		std::_Exit(EXIT_FAILURE);
+		std::exit(1);
 	}
 	return *t;
 }
@@ -283,7 +284,6 @@ void Thread::yield() noexcept {
 	std::this_thread::yield();
 }
 void Thread::sleep(long millis) {
-	Thread::currentThread().selfupdate();
 	std::this_thread::sleep_for(std::chrono::milliseconds(millis));
 }
 

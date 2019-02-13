@@ -53,9 +53,9 @@ inline unsigned hash_code(const T& v) {
 	if (sizeof(v) == 2) return *(uint16_t*)(&v);
 	if (sizeof(v) == 4) return *(uint32_t*)(&v);
 
-	const long *p = (const long *)&v;
+	const uint32_t *p = (const uint32_t *)&v;
 	jint h=0;
-	for (unsigned i=0; i < sizeof(v)/sizeof(long); ++i)
+	for (unsigned i=0; i < sizeof(v)/sizeof(uint32_t); ++i)
 		h = 31 * h + p[i];
 	return (unsigned)h;
 
@@ -70,7 +70,7 @@ inline unsigned hash_code(const T& v) {
 //SFINAE to choose function for Object type
 inline boolean is_equal(const Object& a, const Object& b) { return a.equals(b); }
 template<class T, class std::enable_if<!std::is_base_of<Object,T>::value,Object>::type* = nullptr>
-inline boolean is_equal(const T& a, const T& b) {return a==b;}
+inline boolean is_equal(const T& a, const T& b) {return a == b;}
 
 template<class K,class V>
 class HashMap : extends Object, implements Map<K,V> {
@@ -97,8 +97,8 @@ private:
 		mapsize = ns;
 	}
 	const MapEntry<K,V>* entry(int i) const {TRACE;
-		for (unsigned hc=0; hc<mapsize; ++hc) {
-			ArrayList<MapEntry<K,V>>& l=map[hc];
+		for (unsigned hc=0; hc < mapsize; ++hc) {
+			ArrayList<MapEntry<K,V>>& l = map[hc];
 			if (i < l.size()) { return &l.get(i); }
 			i -= l.size();
 		}
