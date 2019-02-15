@@ -56,6 +56,35 @@ private:
 		groups[ngroups] = g;
 		++ngroups;
 	}
+	void threadStartFailed(Thread *t) {
+		synchronized (*this) {
+			remove(t);
+			nUnstartedThreads++;
+		}
+	}
+	void threadTerminated(Thread *t) {
+		synchronized (*this) {
+			remove(t);
+			if (nthreads == 0) {
+				notifyAll();
+			}
+			if (daemon && (nthreads == 0) && (nUnstartedThreads == 0) && (ngroups == 0)) {
+				destroy();
+			}
+		}
+	}
+	void remove(Thread *t) {
+		synchronized (this) {
+			if (destroyed) return ;
+			for (int i = 0 ; i < nthreads ; i++) {
+				if (threads[i] == t) {
+					System.arraycopy(threads, i + 1, threads, i, --nthreads - i);
+					threads[nthreads] = null;
+					break;
+				}
+			}
+		}
+	}
 	void remove(const ThreadGroup* g) {
 		if (destroyed) return ;
 		for (int i = 0 ; i < ngroups ; i++) {

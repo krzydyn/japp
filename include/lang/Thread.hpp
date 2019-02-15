@@ -94,11 +94,12 @@ private:
 		void run() { func(); }
 	};
 	void init();
+	void start0();
 
 protected:
 	Thread(const String& name, int status) : name(name), threadStatus(status) {}
 	Thread(ThreadGroup& group,const String& name, int status) : name(name), group(&group), threadStatus(status) {}
-	void setId();
+	//void setId();
 
 public:
 	Thread(const Thread& other) = delete;
@@ -127,7 +128,7 @@ public:
 	virtual void setPriority(int newPriority);
 	virtual int getPriority() const final {return priority;}
 	void setName(const String& name);
-	String getName() const {return name;}
+	const String& getName() const {return name;}
 	ThreadGroup& getThreadGroup() {return *group;}
 	virtual void join(long millis=0);
 	virtual void join(long millis, int nanos) {TRACE;

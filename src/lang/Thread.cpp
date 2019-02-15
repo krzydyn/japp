@@ -46,6 +46,7 @@ class Threads : extends Object {
 	std::thread::id mainid;
 	boolean recursive=false; //guard for recursive trace call
 public:
+	Thread unknownThread;
 	long threadSeqNumber = 0;
 	long threadInitNumber = 0;
 	HashMap<std::thread::id,Thread*> thrmap;
@@ -56,6 +57,7 @@ public:
 		mainid = std::this_thread::get_id();
 		addThread(mainid, &main);
 		std::cout << "Threads init done" << std::endl;
+		unknownThread.setName("THREAD?");
 	}
 
 	~Threads() {
@@ -95,7 +97,8 @@ public:
 		synchronized(thrmap) {
 			if (recursive) return null; //ignore self tracing
 			CallLock cl(recursive);
-			t = thrmap.get(id);
+			if (!thrmap.containsKey(id)) t = &unknownThread;
+			else t = thrmap.get(id);
 		}
 		return t;
 	}
@@ -191,7 +194,7 @@ Thread::~Thread() {
 		delete thread;
 		thread = null;
 		if (instanceof<RunnableFunction>(target)) {
-			std::cout << "delete RunnableFunction" << std::endl;
+			LOGD("delete RunnableFunction");
 			delete target;
 		}
 	}catch(const Throwable& e) {
@@ -212,6 +215,25 @@ void Thread::setName(const String& name) {
 		setNativeName(*thread, name, pendingNameChange);
 	}
 }
+void Thread::start() {
+	if (threadStatus != NEW) {
+		throw IllegalThreadStateException();
+	}
+
+	if (group) group->add(this);
+
+	boolean started = false;
+	try {
+		start0();
+		started = true;
+	} catch (...) {
+		if (!started) {
+			group->threadStartFailed(this);
+		}
+		throw;
+	}
+}
+
 /*
  * []	Capture nothing (or, a scorched earth strategy?)
  * [&]	Capture any referenced variable by reference
@@ -220,15 +242,10 @@ void Thread::setName(const String& name) {
  * [bar]	Capture bar by making a copy; don't copy anything else
  * [this]	Capture the this pointer of the enclosing class
  */
-void Thread::start() {
-	if (threadStatus != NEW) {
-		throw IllegalThreadStateException();
-	}
-
+void Thread::start0() {
 	if (name.length() == 0) {
 		name += "Thread-" + String::valueOf(tid);
 	}
-	if (group) group->add(this);
 	pendingNameChange = true;
 	threadStatus = RUNNABLE;
 	LOGN("Starting new thread %s", getName().cstr());
@@ -274,7 +291,7 @@ Thread& Thread::currentThread() {
 	Thread *t = threads().getThread(id);
 	if (t == null) {
 		System.err.println("FATAL: thread not found: " + String::valueOf(id));
-		std::exit(1);
+		std::abort();
 	}
 	return *t;
 }
