@@ -173,7 +173,7 @@ public:
 	static Thread& currentThread();
 	//static Map<Thread, StackTraceElement[]> getAllStackTraces() {}
 	static void yield() noexcept;
-	static void sleep(long millis);
+	static void sleep(long millis=0);
 	static void sleep(long millis, int nanos) {TRACE;
 		if (millis < 0) throw IllegalArgumentException("timeout value is negative");
 		if (nanos < 0 || nanos > 999999) throw IllegalArgumentException("nanosecond timeout value out of range");

@@ -173,9 +173,8 @@ Array<StackTraceElement> Thread::getStackTrace() const {
 #endif
 }
 Thread& Thread::operator=(Thread&& o) {
-	if (threadStatus != NEW) {
-		throw IllegalThreadStateException();
-	}
+	if (threadStatus != NEW) throw IllegalThreadStateException();
+
 	priority = o.priority;
 	daemon = o.daemon;
 	tid = o.tid;
@@ -216,9 +215,7 @@ void Thread::setName(const String& name) {
 	}
 }
 void Thread::start() {
-	if (threadStatus != NEW) {
-		throw IllegalThreadStateException();
-	}
+	if (threadStatus != NEW) throw IllegalThreadStateException();
 
 	if (group) group->add(this);
 
@@ -276,8 +273,13 @@ void Thread::start0() {
 	if (daemon) thread->detach();
 }
 void Thread::join(long millis) {TRACE;
+	if (thread == null) throw NullPointerException();
+	synchronized(*this) {
 	if (thread->joinable()) {
+		threadStatus = WAITING;
 		thread->join();
+		threadStatus = RUNNABLE;
+	}
 	}
 }
 void Thread::selfupdate() {
@@ -301,7 +303,12 @@ void Thread::yield() noexcept {
 	std::this_thread::yield();
 }
 void Thread::sleep(long millis) {
+	Thread& t = currentThread();
+	synchronized(t) {
+	t.threadStatus = WAITING;
 	std::this_thread::sleep_for(std::chrono::milliseconds(millis));
+	t.threadStatus = RUNNABLE;
+	}
 }
 
 int Thread::activeCount() {
