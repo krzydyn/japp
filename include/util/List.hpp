@@ -119,7 +119,7 @@ public:
 	virtual void enqueue(const T& v) final {TRACE;add(-1,v);}
 	virtual T dequeue() final {TRACE;return removeAt(0U);}
 
-	// c++11 range-based for loops support
+	// c++11 range-based loops
 	class ListRange {
 	friend class List;
 	private:
