@@ -197,13 +197,13 @@ public:
 	Array(int l) : length(l), mEnd(this) {
 		checkArrayBounds(l, l+1);
 		a = new T[l];
-		mEnd.idx = length;
+		mEnd.idx = l;
 	}
 	Array(T* v, int l) : length(l), mEnd(this) {
 		checkArrayBounds(l, l+1);
 		a = new T[l];
 		for (int i=0; i < l; ++i) a[i]=v[i];
-		mEnd.idx = length;
+		mEnd.idx = l;
 	}
 	~Array() { delete [] a; }
 	T& operator[](int i) {
