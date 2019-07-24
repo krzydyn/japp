@@ -34,7 +34,7 @@ private:
 			cs(dec->charset()), decoder(dec), in(&in) {
 		bb = ByteBuffer::allocate(DEFAULT_BYTE_BUFFER_SIZE);
 		bb->flip();
-		System.out.println("StreamDecoder created "+in.toString());
+		System::out.println("StreamDecoder created "+in.toString());
 	}
 	const String& encodingName() const {
 		return cs.name();

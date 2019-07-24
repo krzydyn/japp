@@ -35,7 +35,7 @@ interface Map : Interface {
 public:
 	virtual ~Map() {}
 	virtual int size() const = 0;
-	virtual boolean isEmpty() const final {return size()==0;}
+	virtual boolean isEmpty() const final {return size() == 0;}
 	virtual boolean containsKey(const K& key) const = 0;
 	virtual boolean containsValue(const V& value) const = 0;
 	virtual const V& get(const K& key) const = 0;
@@ -45,6 +45,7 @@ public:
 	virtual void clear() = 0;
 };
 
+//SFINAE to choose function for Object type
 template<class T, class std::enable_if<std::is_base_of<Object,T>::value,Object>::type* = nullptr>
 inline unsigned hash_code(const T& v) {return (unsigned)v.hashCode();}
 template<class T, class std::enable_if<!std::is_base_of<Object,T>::value,Object>::type* = nullptr>
@@ -74,10 +75,16 @@ inline boolean is_equal(const T& a, const T& b) {return a == b;}
 
 template<class K,class V>
 class HashMap : extends Object, implements Map<K,V> {
+public:
+	static const int DEFAULT_INITIAL_CAPACITY = 1 << 4;
+	static const int MAXIMUM_CAPACITY = 1 << 30;
+	static constexpr float DEFAULT_LOAD_FACTOR = 0.75f;
+
 private:
 	ArrayList<MapEntry<K,V>> *map;
 	unsigned mapsize;
-	unsigned elems=0;
+	unsigned _size = 0;
+	//float loadFactor = DEFAULT_LOAD_FACTOR;
 
 	void init(unsigned s) {TRACE;
 		mapsize=s;
@@ -87,7 +94,7 @@ private:
 		if (ns == mapsize) return ;
 		ArrayList<MapEntry<K,V>> *nmap = new ArrayList<MapEntry<K,V>>[ns];
 		if (nmap == null) return ; //throw RuntimeException("Out of memory");
-		for (int i=0; i < elems; ++i) {
+		for (int i=0; i < _size; ++i) {
 			MapEntry<K,V>* e = const_cast<MapEntry<K,V>*>(entry(i));
 			unsigned hc = util::hash_code(e->getKey())%ns;
 			nmap[hc].add(std::move(*e));
@@ -113,14 +120,14 @@ public:
 		}
 	}
 
-	HashMap() {TRACE;init(10);}
+	HashMap() {TRACE;init(DEFAULT_INITIAL_CAPACITY);}
 	HashMap(unsigned s) {TRACE;init(s);}
 	~HashMap() {TRACE;
 		clear();
 		if (map) delete []map;
 	}
 
-	int size() const override {return (int)elems;}
+	int size() const override {return (int)_size;}
 	boolean containsKey(const K& key) const {TRACE;
 		unsigned hc = util::hash_code(key)%mapsize;
 		const ArrayList<MapEntry<K,V> >& l=map[hc];
@@ -168,7 +175,7 @@ public:
 			}
 		}
 		MapEntry<K,V> me(k,v);
-		l.add(me); ++elems;
+		l.add(me); ++_size;
 		return v;
 	}
 	V remove(const K& k) {TRACE;
@@ -176,7 +183,7 @@ public:
 		ArrayList<MapEntry<K,V>>& l=map[hc];
 		for (int i=0; i<l.size(); ++i) {
 			if (is_equal(l.get(i).getKey(), k)) {
-				--elems;
+				--_size;
 				return l.removeAt(i).getValue();
 			}
 		}
@@ -185,14 +192,14 @@ public:
 	void clear() {TRACE;
 		if (map)
 			for (unsigned i=0; i < mapsize; ++i) map[i].clear();
-		elems=0;
+		_size=0;
 	}
 
 	String toString() const {TRACE;
-		if (!elems) return "{}";
+		if (!_size) return "{}";
 		StringBuilder sb;
-		sb.append("["+String::valueOf(elems)+"] {");
-		for (int i=0; i < (int)elems; ++i) {
+		sb.append("["+String::valueOf(_size)+"] {");
+		for (int i=0; i < (int)_size; ++i) {
 			if (i > 0) sb.append(",");
 			const MapEntry<K,V>* e = entry(i);
 			if (e == null) sb.append("<null>");

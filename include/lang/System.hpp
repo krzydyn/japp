@@ -9,23 +9,22 @@
 
 namespace lang {
 
-class The_System final : Interface {
+class System final : Interface {
 private:
 	static Properties props;
 	static String lineSep;
 	static void arraycopy(const void *src, int srcPos, void *dest, int destPos, int length);
 public:
-	The_System();
-	~The_System(){}
+	System() = delete;
 
 	static void static_init();
 	static io::PrintStream& err;
 	static io::PrintStream& out;
 	static io::InputStream& in;
 
-	static void setIn(io::InputStream& s) {The_System::in=s; }
-	static void setOut(io::PrintStream& s) {The_System::out=s; }
-	static void setErr(io::PrintStream& s) {The_System::err=s; }
+	static void setIn(io::InputStream& s) {System::in=s; }
+	static void setOut(io::PrintStream& s) {System::out=s; }
+	static void setErr(io::PrintStream& s) {System::err=s; }
 
 	static jlong currentTimeMillis();
 	/**
@@ -76,7 +75,6 @@ public:
 		throw UnsupportedOperationException();
 	}
 };
-extern const The_System System;
 
 class Logger : extends Object {
 private:

@@ -78,7 +78,7 @@ private:
 			if (destroyed) return ;
 			for (int i = 0 ; i < nthreads ; i++) {
 				if (threads[i] == t) {
-					System.arraycopy(threads, i + 1, threads, i, --nthreads - i);
+					System::arraycopy(threads, i + 1, threads, i, --nthreads - i);
 					threads[nthreads] = null;
 					break;
 				}
@@ -90,7 +90,7 @@ private:
 		for (int i = 0 ; i < ngroups ; i++) {
 			if (groups[i] == g) {
 				ngroups -= 1;
-				System.arraycopy(groups, i + 1, groups, i, ngroups - i);
+				System::arraycopy(groups, i + 1, groups, i, ngroups - i);
 				groups[ngroups] = null;
 			}
 		}
@@ -195,7 +195,7 @@ public:
 		if (parent != null) parent->remove(this);
 	}
 	void list() {
-		list(System.out, 0);
+		list(System::out, 0);
 	}
 	void uncaughtException(const Thread& t, const Throwable& e) {
 		if (parent != null) {
@@ -207,8 +207,8 @@ public:
 				ueh->uncaughtException(t, e);
 			}
 			else {
-				System.err.print("[G]Exception in thread \""+ t.getName() + "\" ");
-				e.printStackTrace(System.err);
+				System::err.print("[G]Exception in thread \""+ t.getName() + "\" ");
+				e.printStackTrace(System::err);
 			}
 		}
 	}

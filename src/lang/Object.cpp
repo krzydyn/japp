@@ -139,10 +139,10 @@ void captureStack2(Array<StackTraceElement>& stackTrace) {
 //      also don't throw exception
 //  read SIGNAL-SAFETY(7) for list of async-safe-functions
 void signal_handle(int signum) {
-	//System.err.printf("%sReceived signal %d %s\n", "\x1b[1;37m", signum, "\x1b[m");
+	//System::err.printf("%sReceived signal %d %s\n", "\x1b[1;37m", signum, "\x1b[m");
 	static char buf[200];
 	int n = sprintf(buf, "%sReceived signal %d %s\n", "\x1b[1;37m", signum, "\x1b[m");
-	//System.err ... causes dead lock
+	//System::err ... causes dead lock
 	::write(STDERR_FILENO , buf, n);
 
 	Array<StackTraceElement> st;
@@ -169,7 +169,7 @@ void terminate_hook() {
 	std::set_terminate(null); // avoid loop
 	std::exception_ptr ep = std::current_exception();
 	if (ep != null) {
-		System.err.println("Uncatched exception received");
+		System::err.println("Uncatched exception received");
 		try {
 			std::rethrow_exception(ep);
 		} catch (const Throwable& e) {
@@ -231,7 +231,7 @@ Throwable& Throwable::fillInStackTrace() {
 	return *this;
 }
 void Throwable::printStackTrace() const {TRACE;
-	io::PrintStream& s = System.err;
+	io::PrintStream& s = System::err;
 	s.print("\x1b[0;31m");
 	printStackTrace(s);
 	s.print("\x1b[m");

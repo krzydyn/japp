@@ -41,7 +41,7 @@ public:
 		if (file.isInvalid()) {
 			throw FileNotFoundException("Invalid file path");
 		}
-		System.out.println("FileInputStream "+file.getPath());
+		System::out.println("FileInputStream "+file.getPath());
 		std::ifstream *fs = new std::ifstream();
 		in=fs; allocated=true;
 		fs->open(file.getPath().intern(), std::fstream::binary | std::fstream::in);
@@ -73,7 +73,7 @@ public:
 	void close() {
 		if (!closed) {
 			((std::ifstream*)in)->close();
-			System.out.println("FileInputStream closed");
+			System::out.println("FileInputStream closed");
 		}
 	}
 	String toString() const { return InputStream::toString()+":"+path; }

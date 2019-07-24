@@ -71,7 +71,7 @@ public:
 	}
 	virtual String resolve(const File& f) const {
 		if (isAbsolute(f)) return f.getPath();
-		return resolve(System.getProperty("user.dir"), f.getPath());
+		return resolve(System::getProperty("user.dir"), f.getPath());
 	}
 	virtual String canonicalize(const String& path) const {return path;}
 	virtual int getBooleanAttributes(const File& f) const {
@@ -189,7 +189,7 @@ const FileSystem& FileSystem::getFileSystem() {
 boolean FileSystem::useCanonCaches      = true;
 boolean FileSystem::useCanonPrefixCache = true;
 boolean FileSystem::getBooleanProperty(const String& prop, boolean defaultVal) {
-	//String val = System.getProperty(prop);
+	//String val = System::getProperty(prop);
 	return false;
 }
 

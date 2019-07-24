@@ -154,7 +154,7 @@ int arrowCursor;
 long eventNumber;
 
 int get_poll_timeout(jlong nextTaskTime) {
-	jlong curTime = System.currentTimeMillis();
+	jlong curTime = System::currentTimeMillis();
 	return nextTaskTime == -1 ? AWT_MAX_POLL_TIMEOUT : (int)(nextTaskTime - curTime);
 }
 void awt_pipe_init() {
@@ -241,11 +241,11 @@ void performPoll(long nextTaskTime) {
 }
 void waitForEvents(long nextTaskTime) {
 	performPoll(nextTaskTime);
-	if ((awt_next_flush_time > 0) && (System.currentTimeMillis() >= awt_next_flush_time)) {
+	if ((awt_next_flush_time > 0) && (System::currentTimeMillis() >= awt_next_flush_time)) {
 		awt::x11::XlibWrapper::XFlush(awt_display);
 		awt_last_flush_time = awt_next_flush_time;
 		//awt_next_flush_time = 0L;
-		awt_next_flush_time = System.currentTimeMillis() + AWT_FLUSH_TIMEOUT;
+		awt_next_flush_time = System::currentTimeMillis() + AWT_FLUSH_TIMEOUT;
 	}
 }
 
@@ -685,7 +685,7 @@ long XToolkit::getNextTaskTime() {
 	}
 	//return (Long)timeoutTasks.firstKey();
 	LOGD("XToolkit::getNextTaskTime ret t0+100");
-	return System.currentTimeMillis() + 100;
+	return System::currentTimeMillis() + 100;
 }
 
 long XToolkit::getDisplay() {

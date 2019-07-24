@@ -202,7 +202,7 @@ Thread::~Thread() {
 	}catch(...) {
 		LOGE("Unknown Exeption in ~Thread() %s", getName().cstr());
 	}
-	System.out.println(getName() + " destructor");
+	System::out.println(getName() + " destructor");
 }
 void Thread::setPriority(int newPriority) {
 	setNativePriority(*thread, newPriority);
@@ -292,7 +292,7 @@ Thread& Thread::currentThread() {
 	std::thread::id id = std::this_thread::get_id();
 	Thread *t = threads().getThread(id);
 	if (t == null) {
-		System.err.println("FATAL: thread not found: " + String::valueOf(id));
+		System::err.println("FATAL: thread not found: " + String::valueOf(id));
 		std::abort();
 	}
 	return *t;

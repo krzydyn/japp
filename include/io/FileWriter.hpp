@@ -14,7 +14,7 @@ public:
 	}
 	//FileWriter(File file) : OutputStreamWriter(FileOutputStream(file)) {}
 	~FileWriter() {
-		System.out.println("Delete " + fos->toString());
+		System::out.println("Delete " + fos->toString());
 	}
 };
 

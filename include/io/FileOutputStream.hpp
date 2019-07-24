@@ -38,7 +38,7 @@ public:
 		if (append) fs->open(f.getPath().intern(), std::fstream::binary | std::fstream::out | std::fstream::app);
 		else fs->open(f.getPath().intern(), std::fstream::binary | std::fstream::out | std::fstream::trunc);
 		if (fs->fail()) throw IOException(f.getPath()+":"+strerror(errno));
-		System.out.println("FileOutputStream allocated "+f.getPath());
+		System::out.println("FileOutputStream allocated "+f.getPath());
 		fn = f.getPath();
 		closed=false;
 	}
@@ -56,7 +56,7 @@ public:
 	void close() {
 		if (!closed) {
 			((std::ofstream*)out)->close();
-			System.out.println("FileOutputStream closed "+fn);
+			System::out.println("FileOutputStream closed "+fn);
 			closed=true;
 		}
 	}

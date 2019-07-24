@@ -5,8 +5,8 @@
 
 void test_formatString() {TRACE;
 	String s = String::format("%d %.2f", 10, 1.1);
-	System.out.println(s);
-	System.out.printf("format %04d\n", 5);
+	System::out.println(s);
+	System::out.printf("format %04d\n", 5);
 }
 void test_String() {TRACE;
 	String s1;
@@ -20,13 +20,13 @@ void test_String() {TRACE;
 		String s7(null);
 		throw Exception("ERR: expected exception");
 	} catch(const NullPointerException& e) {
-		System.out.println("OK: expected exception received");
+		System::out.println("OK: expected exception received");
 		e.printStackTrace();
 	}
 }
 
 int main(int argc, const char *argv[]) {TRACE;
-	System.out.println(Thread::currentThread().getName());
+	System::out.println(Thread::currentThread().getName());
 	test_formatString();
 	try {
 		test_String();

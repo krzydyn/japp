@@ -9,7 +9,7 @@ void test_datagrams() {
 	Shared<DatagramChannel> chn1 = selector->provider()->openDatagramChannel();
 	Shared<DatagramChannel> chn2 = selector->provider()->openDatagramChannel();
 	if (chn1 == null || chn2 == null) {
-		System.out.println("can't open socket channel");
+		System::out.println("can't open socket channel");
 	}
 	else {
 		Shared<nio::ByteBuffer> src1 = nio::ByteBuffer::allocate(100);
@@ -46,7 +46,7 @@ void test_sockets() {
 	Shared<SocketChannel> chn1 = selector->provider()->openSocketChannel();
 	Shared<SocketChannel> chn2 = selector->provider()->openSocketChannel();
 	if (chn1 == null || chn2 == null) {
-		System.out.println("can't open socket channel");
+		System::out.println("can't open socket channel");
 	}
 	else {
 		chn2->connect(InetSocketAddress(addr, port));

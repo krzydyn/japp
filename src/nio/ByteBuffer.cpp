@@ -91,7 +91,7 @@ public:
 	boolean isReadOnly() const {return false;}
 
 	ByteBuffer& compact() {
-		System.arraycopy(*hb, ix(position()), *hb, ix(0), remaining());
+		System::arraycopy(*hb, ix(position()), *hb, ix(0), remaining());
 		position(remaining());
 		limit(capacity());
 		discardMark();

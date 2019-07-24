@@ -6,7 +6,7 @@ namespace nio {
 StreamDecoder StreamDecoder::forInputStreamReader(InputStream& in, Object* lock, const String& charsetName) {
 	String csn;
 	if (charsetName == null_obj) {
-		if (Charset::defaultCharset() == null_obj) throw UnsupportedEncodingException(null_obj.toString());
+		if (Charset::defaultCharset() == null_obj) throw UnsupportedEncodingException("Undefined encoding");
 		csn = Charset::defaultCharset().name();
 	}
 	else csn = charsetName;

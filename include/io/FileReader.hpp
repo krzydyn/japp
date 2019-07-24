@@ -14,7 +14,7 @@ public:
 	}
 	//FileReader(File file) : InputStreamReader(FileInputStream(file)) {}
 	~FileReader() {
-		System.out.println("Delete " + fis->toString());
+		System::out.println("Delete " + fis->toString());
 	}
 };
 

@@ -161,7 +161,7 @@ private:
 		const Charset* cs = cache.get(csn);
 		if (cs != null) return *cs;
 
-		System.out.println("fast::lookup(" + charsetName + ") = null");
+		System::out.println("fast::lookup(" + charsetName + ") = null");
 		return (Charset&)null_obj;
 	}
 	void registerCharset(Charset& cs) {
@@ -213,19 +213,14 @@ namespace lang {
 
 Object& Object::null_obj = nullObject;
 
-The_System::The_System() {
-	Thread::currentThread();
-}
+Properties System::props;
+io::InputStream& System::in = std_in;
+io::PrintStream& System::out = std_out;
+io::PrintStream& System::err = std_err;
 
 const Logger SystemLog;
-const The_System System;
 
-Properties The_System::props;
-io::InputStream& The_System::in = std_in;
-io::PrintStream& The_System::out = std_out;
-io::PrintStream& The_System::err = std_err;
-
-const util::Map<String,String>& The_System::getenv() {
+const util::Map<String,String>& System::getenv() {
 	//return ProcessEnvironment.getenv();
 	return env;
 }

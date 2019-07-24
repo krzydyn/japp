@@ -37,7 +37,7 @@ namespace lang {
 boolean Logger::release = false;
 
 void Logger::format(const char *fn, unsigned ln, int level, const char *fmt, va_list& args) const {
-	jlong jtm = System.currentTimeMillis();
+	jlong jtm = System::currentTimeMillis();
 	int r = 0;
 	time_t t = (time_t)(jtm/1000);
 	if (jtm >= 0) r = (int)(jtm%1000);
@@ -46,18 +46,18 @@ void Logger::format(const char *fn, unsigned ln, int level, const char *fmt, va_
 	struct tm stm;
 	gmtime_r(&t, &stm);
 	String thn = Thread::currentThread().getName();
-	synchronized(System.err) {
+	synchronized(System::err) {
 	if (release) {
 		strftime (buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", localtime_r(&t, &stm));
-		System.err.printf("%s.%03llu %s[%c] %s: ", buf, r, levelColor[level], levelName[level], thn.cstr());
+		System::err.printf("%s.%03llu %s[%c] %s: ", buf, r, levelColor[level], levelName[level], thn.cstr());
 	}
 	else {
 		strftime (buf, sizeof(buf), "%H:%M:%S", localtime_r(&t, &stm));
-		System.err.printf("%s.%03llu %s[%s] %s %s(%u): ", buf, r, levelColor[level], levelName[level], thn.cstr(), fn, ln);
+		System::err.printf("%s.%03llu %s[%s] %s %s(%u): ", buf, r, levelColor[level], levelName[level], thn.cstr(), fn, ln);
 	}
-	//System.err.printf("%s.%03llu [%c]: ", buf, r, levelName[level]);
-	System.err.print(String::format(fmt, args));
-	System.err.println(SGR_RESET);
+	//System::err.printf("%s.%03llu [%c]: ", buf, r, levelName[level]);
+	System::err.print(String::format(fmt, args));
+	System::err.println(SGR_RESET);
 	}
 }
 
@@ -97,20 +97,20 @@ const Logger& Logger::notice(const char *fn, unsigned ln, const char *fmt...) co
 	return *this;
 }
 
-jlong The_System::currentTimeMillis() {
+jlong System::currentTimeMillis() {
 	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }
-jlong The_System::nanoTime() {
+jlong System::nanoTime() {
 	return duration_cast<nanoseconds>(high_resolution_clock::now()-nano_start).count();
 }
 
-const String The_System::getenv(const String& name) {
+const String System::getenv(const String& name) {
 	const char *v = std::getenv(name.cstr());
 	if (v == null) return String();
 	return v;
 }
 
-void The_System::arraycopy(const Object& src, int srcPos, Object& dest, int destPos, int length) {
+void System::arraycopy(const Object& src, int srcPos, Object& dest, int destPos, int length) {
 }
 
 } //namespace lang
