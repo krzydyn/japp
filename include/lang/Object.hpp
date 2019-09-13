@@ -14,8 +14,6 @@
 using boolean=bool;
 using byte=unsigned char;
 using jchar=unsigned short;
-using jint=long;
-using jlong=long long;
 
 #define PP_CAT(a, b) PP_CAT_I(a, b)
 #define PP_CAT_I(a, b) a ## b
@@ -87,8 +85,8 @@ public:
 
 	Object() {}
 	virtual const Class& getClass() const final;
-	virtual jint hashCode() final {return ((const Object*)this)->hashCode();}
-	virtual jint hashCode() const {return (jint)this;}
+	virtual int hashCode() final {return ((const Object*)this)->hashCode();}
+	virtual int hashCode() const {return (int)(long)this;}
 
 	virtual boolean equals(const Object& obj) const {return this == &obj;}
 	virtual String toString() final;

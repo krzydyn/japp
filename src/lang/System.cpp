@@ -37,7 +37,7 @@ namespace lang {
 boolean Logger::release = false;
 
 void Logger::format(const char *fn, unsigned ln, int level, const char *fmt, va_list& args) const {
-	jlong jtm = System::currentTimeMillis();
+	long jtm = System::currentTimeMillis();
 	int r = 0;
 	time_t t = (time_t)(jtm/1000);
 	if (jtm >= 0) r = (int)(jtm%1000);
@@ -97,10 +97,10 @@ const Logger& Logger::notice(const char *fn, unsigned ln, const char *fmt...) co
 	return *this;
 }
 
-jlong System::currentTimeMillis() {
+long System::currentTimeMillis() {
 	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }
-jlong System::nanoTime() {
+long System::nanoTime() {
 	return duration_cast<nanoseconds>(high_resolution_clock::now()-nano_start).count();
 }
 
@@ -110,7 +110,10 @@ const String System::getenv(const String& name) {
 	return v;
 }
 
-void System::arraycopy(const Object& src, int srcPos, Object& dest, int destPos, int length) {
+void System::arraycopy(const Object& src, int srcPos, Object& dst, int dstPos, int length) {
+	if (!src.getClass().isArray()) throw RuntimeException("src is not Array");
+	if (!dst.getClass().isArray()) throw RuntimeException("dst is not Array");
+	throw RuntimeException("arraycopy not impl");
 }
 
 } //namespace lang

@@ -50,7 +50,7 @@ String Boolean::toString(boolean v) {
 	return v ? "true" : "false";
 }
 
-String Integer::toString(jint v, int radix) {
+String Integer::toString(int v, int radix) {
 	if (radix <= 0) throw ArithmeticException();
 	int s = 0;
 	if (v < 0) {s=1;v=-v;}
@@ -58,7 +58,7 @@ String Integer::toString(jint v, int radix) {
 	stream << base((unsigned)radix) << (unsigned long)v;
 	return s ? "-" + stream.str() : stream.str();
 }
-String Integer::toUnsignedString(jint v, int radix) {
+String Integer::toUnsignedString(int v, int radix) {
 	if (radix <= 0) throw ArithmeticException();
 	std::stringstream stream;
 	stream << base((unsigned)radix) << (unsigned long)v;

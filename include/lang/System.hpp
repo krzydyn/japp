@@ -9,13 +9,25 @@
 
 namespace lang {
 
-class System final : Interface {
+class System final : extends Object {
 private:
+	System() = delete;
+
 	static Properties props;
 	static String lineSep;
 	static void arraycopy(const void *src, int srcPos, void *dest, int destPos, int length);
+
+	static Properties initProperties(const Properties& props);
+
+	static void checkKey(const String& key) {
+		if (key == null_obj) {
+			throw new NullPointerException("key can't be null");
+		}
+		if (key.equals("")) {
+			throw new IllegalArgumentException("key can't be empty");
+		}
+	}
 public:
-	System() = delete;
 
 	static void static_init();
 	static io::PrintStream& err;
@@ -26,12 +38,12 @@ public:
 	static void setOut(io::PrintStream& s) {System::out=s; }
 	static void setErr(io::PrintStream& s) {System::err=s; }
 
-	static jlong currentTimeMillis();
+	static long currentTimeMillis();
 	/**
 	 * This method can only be used to measure elapsed time and is
 	 * not related to any other notion of system or wall-clock time.
 	 */
-	static jlong nanoTime();
+	static long nanoTime();
 	static void arraycopy(const Object& src, int srcPos, Object& dest, int destPos, int length);
 	template<class T>
 	static void arraycopy(const Array<T>& src, int srcPos, Array<T>& dest, int destPos, int length) {
@@ -44,15 +56,19 @@ public:
 	static const Properties& getProperties() {return props;}
 	static const String lineSeparator() {return lineSep;}
 	static const String& getProperty(const String& key) {
+		checkKey(key);
 		return props.getProperty(key);
 	}
 	static const String& getProperty(const String& key, const String& def) {
+		checkKey(key);
 		return props.getProperty(key, def);
 	}
 	static const String& setProperty(const String& key, const String& value) {
+		checkKey(key);
 		return props.setProperty(key, value);
 	}
 	static String clearProperty(String key) {
+		checkKey(key);
 		return props.remove(key);
 	}
 	static const String getenv(const String& name);

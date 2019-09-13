@@ -109,7 +109,7 @@ Threads& threads() {
 	static Threads t;
 	return t;
 }
-} //anoymous namespace
+} //anonymous namespace
 
 namespace lang {
 Thread::UncaughtExceptionHandler* Thread::defaultUncaughtExceptionHandler = null;

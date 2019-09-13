@@ -104,8 +104,8 @@ public:
 		const XAtom& ot = (const XAtom&)o;
 		return (atom == ot.atom && display == ot.display);
 	}
-	jint hashCode() const override {
-		return (jint)((atom ^ display) & 0xFFFFL);
+	int hashCode() const override {
+		return (int)((atom ^ display) & 0xFFFFL);
 	}
 
 	boolean isSet() {return atom!=0;}

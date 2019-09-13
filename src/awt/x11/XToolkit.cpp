@@ -153,8 +153,8 @@ awt::EventQueue eventQueue;
 int arrowCursor;
 long eventNumber;
 
-int get_poll_timeout(jlong nextTaskTime) {
-	jlong curTime = System::currentTimeMillis();
+int get_poll_timeout(long nextTaskTime) {
+	long curTime = System::currentTimeMillis();
 	return nextTaskTime == -1 ? AWT_MAX_POLL_TIMEOUT : (int)(nextTaskTime - curTime);
 }
 void awt_pipe_init() {

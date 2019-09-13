@@ -106,20 +106,20 @@ public:
 		perm &= S_IRWXU | S_IRWXG | S_IRWXO;
 		return chmod(f.getPath().cstr(), perm) == 0;
 	}
-	virtual jlong getLastModifiedTime(const File& f) const {
+	virtual long getLastModifiedTime(const File& f) const {
 		struct stat st;
 		if (::stat(f.getPath().cstr(), &st) < 0)
 			return 0;
 		#ifdef __APPLE__
-		jlong millis = st.st_mtimespec.tv_sec; millis *= 1000;
+		long millis = st.st_mtimespec.tv_sec; millis *= 1000;
 		millis += st.st_mtimespec.tv_nsec / 1000000;
 		#else
-		jlong millis = st.st_mtim.tv_sec; millis *= 1000;
+		long millis = st.st_mtim.tv_sec; millis *= 1000;
 		millis += st.st_mtim.tv_nsec / 1000000;
 		#endif
 		return millis;
 	}
-	virtual jlong getLength(const File& f) const {
+	virtual long getLength(const File& f) const {
 		struct stat st;
 		if (::stat(f.getPath().cstr(), &st) < 0)
 			return 0;
@@ -153,7 +153,7 @@ public:
 	virtual boolean rename(const File& f1, const File& f2) const {
 		return ::rename(f1.getPath().cstr(),f2.getPath().cstr());
 	}
-	virtual boolean setLastModifiedTime(const File& f, jlong time) const {
+	virtual boolean setLastModifiedTime(const File& f, long time) const {
 		//struct timeval times[2]; // if times is null => set date&time to current
 		//utimes(path, times); <- legacy
 		struct utimbuf ubuf;
@@ -166,16 +166,16 @@ public:
 		return chmod(f.getPath().cstr(), perm) == 0;
 	}
 	virtual Array<File> listRoots() const { Array<File> a(1); a[0]=File("/"); return a;}
-	virtual jlong getSpace(const File& f, int t) const {
+	virtual long getSpace(const File& f, int t) const {
 		struct statvfs stat;
 		statvfs(f.getPath().cstr(), &stat);
-		if (t == SPACE_TOTAL) return (jlong)(stat.f_blocks * stat.f_frsize);
-		if (t == SPACE_FREE) return (jlong)(stat.f_bavail * stat.f_frsize);
-		if (t == SPACE_USABLE) return (jlong)((stat.f_blocks-stat.f_bavail)*stat.f_frsize);
+		if (t == SPACE_TOTAL) return (long)(stat.f_blocks * stat.f_frsize);
+		if (t == SPACE_FREE) return (long)(stat.f_bavail * stat.f_frsize);
+		if (t == SPACE_USABLE) return (long)((stat.f_blocks-stat.f_bavail)*stat.f_frsize);
 		return -1LL;
 	}
 	virtual int compare(const File& f1, const File& f2) const {return 0;}
-	virtual jint hashCode(const File& f) const {return 0;}
+	virtual int hashCode(const File& f) const {return 0;}
 } unixfs;
 }
 

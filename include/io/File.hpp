@@ -47,14 +47,14 @@ public:
 	 * enable, access and oweronly.
 	 */
 	virtual boolean setPermission(const File& f, int access, boolean enable, boolean owneronly) const = 0;
-	virtual jlong getLastModifiedTime(const File& f) const = 0;
-	virtual jlong getLength(const File& f) const = 0;
+	virtual long getLastModifiedTime(const File& f) const = 0;
+	virtual long getLength(const File& f) const = 0;
 	virtual boolean createFileExclusively(const String& pathname) const = 0;
 	virtual boolean unlink(File f) const = 0; //delete=>unlink (delete is C++ is keyword)
 	virtual Array<String> list(const File& f) const = 0;
 	virtual boolean createDirectory(File f) const = 0;
 	virtual boolean rename(const File& f1, const File& f2) const = 0;
-	virtual boolean setLastModifiedTime(const File& f, jlong time) const = 0;
+	virtual boolean setLastModifiedTime(const File& f, long time) const = 0;
 	virtual boolean setReadOnly(const File& f) const = 0;
 	virtual Array<File> listRoots() const = 0;
 
@@ -63,9 +63,9 @@ public:
 		SPACE_FREE   = 1,
 		SPACE_USABLE = 2
 	};
-	virtual jlong getSpace(const File& f, int t) const = 0;
+	virtual long getSpace(const File& f, int t) const = 0;
 	virtual int compare(const File& f1, const File& f2) const = 0;
-	virtual jint hashCode(const File& f) const = 0;
+	virtual int hashCode(const File& f) const = 0;
 };
 
 interface FilenameFilter : Interface {
@@ -213,11 +213,11 @@ public:
 		if (isInvalid()) return false;
 		return ((fs.getBooleanAttributes(*this) & FileSystem::BA_HIDDEN) != 0);
 	}
-	jlong lastModified() {
+	long lastModified() {
 		if (isInvalid()) return 0L;
 		return fs.getLastModifiedTime(*this);
 	}
-	jlong length() {
+	long length() {
 		if (isInvalid()) return 0L;
 		return fs.getLength(*this);
 	}

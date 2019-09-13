@@ -92,7 +92,7 @@ public:
 	virtual int compareTo(const Charset& that) const final {TRACE;
 		return pName.compareToIgnoreCase(that.pName);
 	}
-	jint hashCode() const final { return pName.hashCode(); }
+	int hashCode() const final { return pName.hashCode(); }
 	boolean equals(const Object& o) const {
 		if (!instanceof<Charset>(&o)) return false;
 		if (this == &o) return true;

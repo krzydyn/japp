@@ -101,7 +101,7 @@ public:
 	virtual boolean isDirect() const = 0;
 	virtual String toString() const;
 
-	virtual jint hashCode() const;
+	virtual int hashCode() const;
 	virtual boolean equals(const Object& ob) const;
 	virtual int compareTo(const ByteBuffer& o) const;
 	virtual ByteOrder order() final {
@@ -127,10 +127,10 @@ public:
 	virtual int getInt(int index) const = 0;
 	virtual ByteBuffer& putInt(int index, int value) = 0;
 	//virtual Shared<IntBuffer> asIntBuffer() = 0;
-	virtual jlong getLong() = 0;
-	virtual ByteBuffer& putLong(jlong value) = 0;
-	virtual jlong getLong(int index) const = 0;
-	virtual ByteBuffer& putLong(int index, jlong value) = 0;
+	virtual long getLong() = 0;
+	virtual ByteBuffer& putLong(long value) = 0;
+	virtual long getLong(int index) const = 0;
+	virtual ByteBuffer& putLong(int index, long value) = 0;
 	//virtual Shared<LongBuffer> asLongBuffer() = 0;
 };
 

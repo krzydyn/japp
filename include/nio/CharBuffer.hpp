@@ -79,7 +79,7 @@ public:
 	//public abstract CharBuffer compact();
 	virtual boolean isDirect() const = 0;
 
-	virtual jint hashCode() const;
+	virtual int hashCode() const;
 	virtual boolean equals(const Object& ob) const;
 	virtual int compareTo(const CharBuffer& o) const;
 
@@ -93,7 +93,7 @@ public:
 
 	//inherited from CharSequence
 	//public abstract CharBuffer subSequence(int start, int end);
-	
+
 	virtual CharBuffer& append(const CharSequence& csq) {
 		if (((Object&)csq) == null_obj) return put("null");
 		return put(csq.toString());

@@ -200,7 +200,7 @@ public:
 	static boolean XkbTranslateKeyCode(long xkb, int keycode, long mods, long mods_rtrn, long keysym_rtrn);
 	static void XkbSetDetectableAutoRepeat(long display, boolean detectable);
 
-	static void XConvertCase(long keysym, long keysym_lowercase, long keysym_uppercase); 
+	static void XConvertCase(long keysym, long keysym_lowercase, long keysym_uppercase);
 	static long XGetModifierMapping(long display);
 	static void XFreeModifiermap(long keymap);
 	static void XRefreshKeyboardMapping(long event);

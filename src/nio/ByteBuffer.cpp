@@ -68,7 +68,7 @@ private:
 		}
 	}
 	long _getLong(int i) const {
-		jlong l = 0;
+		long l = 0;
 		if (bigEndian) {
 			for (int j=0; j < 8; ++j) {
 				l <<= 8;
@@ -167,20 +167,20 @@ public:
 		return *this;
 	}
 	//virtual Shared<IntBuffer> asIntBuffer() = 0;
-	jlong getLong() {
+	long getLong() {
 		int i = ix(nextGetIndex(8));
 		return _getLong(i);
 	}
-	ByteBuffer& putLong(jlong value) {
+	ByteBuffer& putLong(long value) {
 		int i = ix(nextPutIndex(8));
 		_putLong(i, value);
 		return *this;
 	}
-	jlong getLong(int index) const {
+	long getLong(int index) const {
 		int i = ix(checkIndex(index, 8));
 		return _getLong(i);
 	}
-	ByteBuffer& putLong(int index, jlong value) {
+	ByteBuffer& putLong(int index, long value) {
 		int i = ix(checkIndex(index, 8));
 		_putLong(i, value);
 		return *this;
@@ -240,8 +240,8 @@ ByteBuffer& ByteBuffer::put(const Array<byte>& src, int offset, int length) {
 		put(src[i]);
 	return *this;
 }
-jint ByteBuffer::hashCode() const {
-	jint h = 1;
+int ByteBuffer::hashCode() const {
+	int h = 1;
 	int p = position();
 	for (int i = limit() - 1; i >= p; i--)
 		h = 31 * h + (int)get(i);

@@ -33,7 +33,7 @@ public:
 class String final : extends Object, implements CharSequence, implements Comparable<String> {
 private:
 	std::string value;
-	long hash = 0;
+	int hash = 0;
 
 	static const char * emptystr;
 	static void copystr(String *d, const char *s);
@@ -153,13 +153,13 @@ public:
 		return startsWith(suffix, (int)(value.length() - suffix.value.length()));
 	}
 
-	jint hashCode() const {
-		jint h = hash;
+	int hashCode() const {
+		int h = hash;
 		if (h == 0 && value.length() > 0) {
 			for (int i = 0; i < length(); i++) {
 				h = 31 * h + value[(unsigned)i];
 			}
-			const_cast<jint&>(this->hash) = h;
+			const_cast<int&>(this->hash) = h;
 		}
 		return h;
 	}
@@ -251,7 +251,7 @@ public:
 	static String valueOf(unsigned n) {return std::to_string(n); }
 	static String valueOf(long n) {return std::to_string(n); }
 	static String valueOf(unsigned long n) {return std::to_string(n); }
-	static String valueOf(jlong n) {return std::to_string(n); }
+	static String valueOf(long long n) {return std::to_string(n); }
 	static String valueOf(float n) {return std::to_string(n); }
 	static String valueOf(double n) {return std::to_string(n); }
 

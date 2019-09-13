@@ -55,10 +55,10 @@ inline unsigned hash_code(const T& v) {
 	if (sizeof(v) == 4) return *(uint32_t*)(&v);
 
 	const uint32_t *p = (const uint32_t *)&v;
-	jint h=0;
+	unsigned h=0;
 	for (unsigned i=0; i < sizeof(v)/sizeof(uint32_t); ++i)
 		h = 31 * h + p[i];
-	return (unsigned)h;
+	return h;
 
 	//when using "const char *p ...", causes a crash, maybe std::hash has the same problem??
 

@@ -42,7 +42,7 @@ public:
 	Color brighter() const { return *this; }
 	Color darker() const { return *this; }
 
-	jint hashCode() const { return value; }
+	int hashCode() const { return value; }
 	boolean equals(const Object& obj) const {
 		return instanceof<Color>(&obj) && ((const Color&)obj).getRGB() == getRGB();
 	}

@@ -107,8 +107,8 @@ CharBuffer& CharBuffer::put(const String& src, int start, int end) {
 		put(src.charAt(i));
 	return *this;
 }
-jint CharBuffer::hashCode() const {
-	jint h = 1;
+int CharBuffer::hashCode() const {
+	int h = 1;
 	int p = position();
 	for (int i = limit() - 1; i >= p; i--)
 		h = 31 * h + (int)get(i);

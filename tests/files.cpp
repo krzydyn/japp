@@ -106,5 +106,10 @@ int main() {
 	test_filelist();
 	test_writer();
 	test_reader();
+
+	printf("sizeof(short) = %d\n", (int)sizeof(short));
+	printf("sizeof(int) = %d\n", (int)sizeof(int));
+	printf("sizeof(long) = %d\n", (int)sizeof(long));
+	printf("sizeof(long long) = %d\n", (int)sizeof(long long));
 	return 0;
 }

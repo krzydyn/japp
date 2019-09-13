@@ -34,7 +34,7 @@ public:
 	static Boolean valueOf(boolean b) {return b ? TRUE : FALSE;}
 	static Boolean valueOf(const String& s) {return parseBoolean(s) ? TRUE : FALSE;}
 	static boolean parseBoolean(const String& s) {return s.equalsIgnoreCase("true");}
-	static jint hashCode(boolean value) {return value ? 1231 : 1237;}
+	static int hashCode(boolean value) {return value ? 1231 : 1237;}
 	static int compare(boolean x, boolean y) {return (x == y) ? 0 : (x ? 1 : -1);}
 
 	Boolean(const Boolean& o) : value(o.value) {}
@@ -42,7 +42,7 @@ public:
 	Boolean(const String& s) : value(parseBoolean(s)) {}
 	boolean booleanValue() const {return value;}
 	String toString() const { return toString(value); }
-	jint hashCode() const {return Boolean::hashCode(value);}
+	int hashCode() const {return Boolean::hashCode(value);}
 	boolean equals(const Object& o) const;
 	int compareTo(const Boolean& b) const { return compare(value,b.value); }
 
@@ -56,18 +56,18 @@ public:
 	static const int MIN_VALUE = (int)0x80000000;
 	static const int MAX_VALUE = 0x7fffffff;
 
-	static String toString(jint i, int radix=10);
-	static String toUnsignedString(jint i, int radix=10);
-	static String toHexString(jint i) {return toUnsignedString(i, 16);}
-	static String toOctalString(jint i) {return toUnsignedString(i, 8);}
-	static String toBinaryString(jint i) {return toUnsignedString(i, 2);}
+	static String toString(int i, int radix=10);
+	static String toUnsignedString(int i, int radix=10);
+	static String toHexString(int i) {return toUnsignedString(i, 16);}
+	static String toOctalString(int i) {return toUnsignedString(i, 8);}
+	static String toBinaryString(int i) {return toUnsignedString(i, 2);}
 	static int parseInt(const String& s, int radix=10);
 	static int parseUnsignedInt(const String& s, int radix=10);
 	static Integer valueOf(const String& s, int radix) {return Integer::valueOf(parseInt(s,radix));}
 	static Integer valueOf(const String& s) {return Integer::valueOf(parseInt(s, 10));}
 	static Integer valueOf(int i) {return Integer(i);}
 	static Integer decode(String nm);
-	static jint hashCode(int value) {return (jint)value;}
+	static int hashCode(int value) {return value;}
 	static int compare(int x, int y) {return (x < y) ? -1 : ((x == y) ? 0 : 1);}
 
 	Integer(const Integer& o) : value(o.value) {}
@@ -109,7 +109,7 @@ public:
 			throw NumberFormatException("Value out of range. Value:\"" + s + "\" Radix:" + radix);
 		return (byte)i;
 	}
-	static jint hashCode(byte value) {return (jint)value;}
+	static int hashCode(byte value) {return value;}
 	static int compare(byte x, byte y) {return x - y;}
 
 	Byte(const Byte& o) : value(o.value) {}
@@ -122,7 +122,7 @@ public:
 	float floatValue() const {return (float)value;}
 	double doubleValue() const {return (double)value;}
 	String toString() const { return toString(value); }
-	jint hashCode() const { return Byte::hashCode(value); }
+	int hashCode() const { return Byte::hashCode(value); }
 	boolean equals(const Object& o) const {
 		if (instanceof<Byte>(&o)) {
 			return value == ((const Byte&)o).byteValue();
@@ -165,7 +165,7 @@ public:
 			throw NumberFormatException("Value " + String::valueOf(i) + " out of range from input " + nm);
 		return valueOf((short)i);
 	}
-	static jint hashCode(short value) {return (jint)value;}
+	static int hashCode(short value) {return value;}
 	static int compare(short x, short y) {return (x < y) ? -1 : ((x == y) ? 0 : 1);}
 
 	Short(const Short& o) : value(o.value) {}
@@ -178,7 +178,7 @@ public:
 	float floatValue() const {return (float)value;}
 	double doubleValue() const {return (double)value;}
 	String toString() const { return toString(value); }
-	jint hashCode() const { return Short::hashCode(value); }
+	int hashCode() const { return Short::hashCode(value); }
 	boolean equals(const Object& o) const {
 		if (instanceof<Short>(&o)) {
 			return value == ((const Short&)o).shortValue();
@@ -213,7 +213,7 @@ public:
 	static Long valueOf(const String& s, int radix=10) {return Long::valueOf(parseLong(s, radix));}
 	static Long valueOf(long l) {return Long(l);}
 	static Long decode(const String& nm);
-	static jint hashCode(long value) { return (jint)(value ^ (value >> 32)); }
+	static int hashCode(long value) { return (int)(value ^ (value >> 32)); }
 	static int compare(long x, long y) {return (x < y) ? -1 : ((x == y) ? 0 : 1);}
 
 	Long(Long&& o) : value(o.value) {}
@@ -231,7 +231,7 @@ public:
 	float floatValue() const {return (float)value;}
 	double doubleValue() const {return (double)value;}
 	String toString() const { return toString(value); }
-	jint hashCode() const { return Long::hashCode(value); }
+	int hashCode() const { return Long::hashCode(value); }
 	boolean equals(const Object& o) const {
 		if (instanceof<Long>(&o)) {
 			return value == ((const Long&)o).longValue();
