@@ -465,7 +465,7 @@ public:
 	Shared<MembershipKey> join(const InetAddress& group, const NetworkInterface& interf, const InetAddress& source) {
 		throw UnsupportedOperationException(__FUNCTION__);
 	}
-	
+
 	//boolean translateReadyOps(int ops, int initialOps, SelectionKeyImpl sk) { }
 };
 
@@ -750,7 +750,6 @@ public:
 		}
 		return false;
 	}
-	
 };
 
 class PollSelectorProviderImpl : extends SelectorProvider {

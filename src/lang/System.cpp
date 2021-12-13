@@ -49,7 +49,7 @@ void Logger::format(const char *fn, unsigned ln, int level, const char *fmt, va_
 	synchronized(System::err) {
 	if (release) {
 		strftime (buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", localtime_r(&t, &stm));
-		System::err.printf("%s.%03llu %s[%c] %s: ", buf, r, levelColor[level], levelName[level], thn.cstr());
+		System::err.printf("%s.%03llu %s[%s] %s: ", buf, r, levelColor[level], levelName[level], thn.cstr());
 	}
 	else {
 		strftime (buf, sizeof(buf), "%H:%M:%S", localtime_r(&t, &stm));

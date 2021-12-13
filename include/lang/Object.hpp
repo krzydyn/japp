@@ -4,6 +4,7 @@
 #include <condition_variable>
 #include <iostream>
 #include <mutex>
+#include <functional> // std::function
 #include <memory> //shared_ptr
 
 #define interface class
@@ -98,10 +99,10 @@ public:
 	virtual void wait() final {wait(0); }
 
 	boolean operator==(const std::nullptr_t&) const {
-		boolean b = (this == null || this == (void*)&null_obj);
+		boolean b = (this == (void*)&null_obj);
 		return b;
 	}
-	boolean operator!=(const std::nullptr_t&) const {return this != null && this != &null_obj;}
+	boolean operator!=(const std::nullptr_t&) const {return null_obj != *this;}
 	boolean operator==(const Object& o) const {return this == &o;}
 	boolean operator!=(const Object& o) const {return this != &o;}
 
@@ -114,7 +115,7 @@ public:
 	public:
 		Lock(const Object* o) : Lock(*o) {}
 		Lock(const Object& o) : obj(o) {
-			if (&o == null) {
+			if (null_obj == o) {
 				std::cerr << "Lock: obj is null" << std::endl;
 				locked=false;
 				return ;

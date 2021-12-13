@@ -20,7 +20,6 @@ public:
 	PrintStream(OutputStream& o) : out(o) {}
 
 	void flush() {TRACE;
-		if (this == null) {std::cerr << "NULL" << std::endl;return ;}
 		synchronized (*this) {
 			out.flush();
 		}
@@ -86,17 +85,14 @@ public:
 
 protected:
 	void newLine() const {
-		if (this == null) {std::cerr << "NULL" << std::endl;return ;}
 		out.write('\n');
 	}
 	void write(const char *s) const {
-		if (this == null) {std::cerr << "NULL" << s;return ;}
 		synchronized (*this) {
 			out.write(s,(int)strlen(s));
 		}
 	}
 	void write(const String& s) const {
-		if (this == null) {std::cerr << "NULL" << s.intern();return ;}
 		synchronized (*this) {
 			out.write(s.cstr(),s.length());
 		}

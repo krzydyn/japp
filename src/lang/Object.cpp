@@ -82,8 +82,7 @@ std::string demangle(const std::string& name) {
 #ifdef __GNUG__ // gnu C++ compiler
 	std::size_t len = 0;
 	int status = 0;
-	std::unique_ptr< char, decltype(&std::free) > ptr(
-		__cxxabiv1::__cxa_demangle(name.c_str(), null, &len, &status), &std::free);
+	std::unique_ptr<char, decltype(&std::free)> ptr(__cxxabiv1::__cxa_demangle(name.c_str(), null, &len, &status), &std::free);
 	return status == 0 ? ptr.get() : name;
 #else
 	return name;

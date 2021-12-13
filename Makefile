@@ -7,10 +7,16 @@ TRM_BLU:=$(shell printf "\033[0;34m")
 TRM_WHI:=$(shell printf "\033[1;37m")
 TRM_END:=$(shell printf "\033[0m")
 
+# topdir is top project dir (where top makefile is)
+# curdir is build dir (where make is executed from)
+TOPDIR:=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
+# or
+TOPDIR:=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+
 export TOP_DIR:=$(CURDIR)
 export BUILD_DIR:=build
 export INC_DIR:=include
-export JRELIB:=build/jre.a
+export JRELIB:=$(BUILD_DIR)/jre.a
 
 export DEBUG=-g3
 
@@ -28,7 +34,7 @@ rebuild:
 
 .PHONY: crate-build-dir
 crate-build-dir:
-	mkdir -p build
+	mkdir -p $(BUILD_DIR)
 
 build: crate-build-dir $(BUILD_DIRS)
 clean: $(CLEAN_DIRS)

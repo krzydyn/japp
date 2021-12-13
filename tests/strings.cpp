@@ -25,11 +25,17 @@ void test_String() {TRACE;
 	}
 }
 
+void test_SIGFAULT() {TRACE;
+	char *p = nullptr;
+	p[5] = 1;
+}
+
 int main(int argc, const char *argv[]) {TRACE;
 	System::out.println(Thread::currentThread().getName());
 	test_formatString();
 	try {
 		test_String();
+		test_SIGFAULT();
 	} catch(const lang::Exception& e) {
 		e.printStackTrace();
 	}

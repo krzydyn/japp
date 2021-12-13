@@ -39,11 +39,11 @@ void String::init(const byte* value, int vlen, int offset, int count) {
 	this->value = std::string((const char *)value, (unsigned)offset, (unsigned)count);
 }
 String::String(const Array<char>& value, int offset, int count) {TRACE;
-	if (value == null || this == null) throw NullPointerException();
+	if (value == null) throw NullPointerException();
 	init((const byte*)&value[0], value.length, offset, count);
 }
 String::String(const Array<byte>& value, int offset, int count) {TRACE;
-	if (value == null || this == null) throw NullPointerException();
+	if (value == null) throw NullPointerException();
 	init(&value[0], value.length, offset, count);
 }
 
