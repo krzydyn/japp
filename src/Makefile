@@ -20,6 +20,8 @@ CPPFLAGS:=$(DEBUG) -I$(INC_DIR) -fPIC -std=c++11
 CPPFLAGS+=-Wall -Wconversion -Werror
 #CPPFLAGS+=-O2
 CPPFLAGS+=-fstack-protector-all
+CPPFLAGS+=-fsanitize=address
+LDFLAGS+=-fsanitize=address
 
 SRC:=
 SRCS+=$(wildcard $(SOURCE_DIR)/*.cpp)

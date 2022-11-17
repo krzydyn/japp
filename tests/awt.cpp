@@ -10,6 +10,7 @@ void showWindow() {
 	awt::Frame& f = *(new awt::Frame("Test title"));
 	f.setBounds(300,200,300,150);
 	f.setVisible(true);
+	Thread::sleep(100);
 }
 
 int main() {

@@ -24,6 +24,7 @@ GCC_VERSION:=$(shell gcc --version | awk '/^gcc/ {print $$4}')
 CC:=g++
 CPPFLAGS:=$(DEBUG) -I$(INC_DIR) -fPIC -std=c++11
 CPPFLAGS+=-Wall -Wconversion -Werror #-pedantic
+CPPFLAGS+=-fsanitize=address
 #CPPFLAGS+=-fstack-protector
 #CPPFLAGS+=-O2
 
@@ -43,6 +44,7 @@ endif
 #LDFLAGS+=-ljre
 LDFLAGS+=-lpthread
 LDFLAGS+=-lX11
+LDFLAGS+=-fsanitize=address
 
 ifeq ($(STATIC),1)
 LDFLAGS+=-Wl,dynamic

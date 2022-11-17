@@ -65,7 +65,7 @@ ArrayList<Class*>& classmap() {
 boolean initialize();
 static const boolean SET_TERMINATE = initialize();
 
-void terminate_hook();
+[[noreturn]] void terminate_hook();
 void signal_handle(int signum);
 boolean initialize() {
 	(void)SET_TERMINATE;

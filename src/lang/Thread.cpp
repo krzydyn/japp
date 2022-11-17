@@ -45,6 +45,7 @@ class Threads : extends Object {
 	};
 	std::thread::id mainid;
 	boolean recursive=false; //guard for recursive trace call
+	static boolean destroyed;
 public:
 	Thread unknownThread;
 	long threadSeqNumber = 0;
@@ -61,10 +62,13 @@ public:
 	}
 
 	~Threads() {
-		std::cout << "Threads destructor" << std::endl;
+		std::cout << "Threads destructor " << thrmap.size() << std::endl;
 		removeThread(mainid);
+		std::cout << "Threads destructor done" << std::endl;
+		destroyed = true;
 	}
 	long nextThreadNum() {
+		if (destroyed) return -1;
 		long n = 0;
 		synchronized(*this) {
 			n = threadInitNumber++;
@@ -72,6 +76,7 @@ public:
 		return n;
 	}
 	long nextThreadID() {
+		if (destroyed) return -1;
 		long tid = 0;
 		synchronized(*this) {
 			tid = ++threadSeqNumber;
@@ -79,6 +84,7 @@ public:
 		return tid;
 	}
 	void addThread(std::thread::id id, Thread* t) {
+		if (destroyed) throw IllegalThreadStateException();
 		synchronized(thrmap) {
 			if (recursive) return; //ignore self tracing
 			CallLock cl(recursive);
@@ -86,6 +92,7 @@ public:
 		}
 	}
 	void removeThread(std::thread::id id) {
+		if (destroyed) throw IllegalThreadStateException();
 		synchronized(thrmap) {
 			if (recursive) return; //ignore self tracing
 			CallLock cl(recursive);
@@ -93,6 +100,7 @@ public:
 		}
 	}
 	Thread* getThread(std::thread::id id) {
+		if (destroyed) return null;
 		Thread *t = null;
 		synchronized(thrmap) {
 			if (recursive) return null; //ignore self tracing
@@ -104,11 +112,11 @@ public:
 	}
 };
 
-//threads lazy initialization
+static Threads thrds;
 Threads& threads() {
-	static Threads t;
-	return t;
+	return thrds;
 }
+boolean Threads::destroyed = false;
 } //anonymous namespace
 
 namespace lang {
@@ -188,8 +196,9 @@ Thread& Thread::operator=(Thread&& o) {
 // Executing the destructor for a joinable thread results in calling std::terminate.
 Thread::~Thread() {
 	if (thread == null) return ;
+	LOGN("destroy thread %s\n", Thread::getName().cstr());
 	try {
-		join();
+		join(); //no virt call in desruct.
 		delete thread;
 		thread = null;
 		if (instanceof<RunnableFunction>(target)) {
@@ -274,6 +283,7 @@ void Thread::start0() {
 }
 void Thread::join(long millis) {TRACE;
 	if (thread == null) throw NullPointerException();
+	LOGN("Join on thread %s\n", getName().cstr());
 	synchronized(*this) {
 	if (thread->joinable()) {
 		threadStatus = WAITING;
